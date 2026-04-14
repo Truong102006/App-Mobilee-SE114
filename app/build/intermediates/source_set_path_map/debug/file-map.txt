@@ -1,0 +1,68 @@
+com.soulmate.app-annotation-experimental-1.3.1-0 C:\Users\ASUS\.gradle\caches\transforms-3\077a6b4f1e92a4fb3bee7302ef2576c9\transformed\annotation-experimental-1.3.1\res
+com.soulmate.app-ui-graphics-release-1 C:\Users\ASUS\.gradle\caches\transforms-3\08024faa659286f13feb8974735b4337\transformed\ui-graphics-release\res
+com.soulmate.app-ui-util-release-2 C:\Users\ASUS\.gradle\caches\transforms-3\0ec988ac7fe5988f1bbea7240c96dba0\transformed\ui-util-release\res
+com.soulmate.app-navigation-runtime-ktx-2.7.6-3 C:\Users\ASUS\.gradle\caches\transforms-3\10626d0fe44525d762a277d58173c5ca\transformed\navigation-runtime-ktx-2.7.6\res
+com.soulmate.app-ui-tooling-release-4 C:\Users\ASUS\.gradle\caches\transforms-3\10df9ffc7ed3628b823fb88b474d606f\transformed\ui-tooling-release\res
+com.soulmate.app-activity-compose-1.8.2-5 C:\Users\ASUS\.gradle\caches\transforms-3\13b9cdd35efa56e1f0017b32763f6f2f\transformed\activity-compose-1.8.2\res
+com.soulmate.app-play-services-base-18.0.1-6 C:\Users\ASUS\.gradle\caches\transforms-3\15247c6e7fdb51f1a3b969ea2b74b6d1\transformed\play-services-base-18.0.1\res
+com.soulmate.app-navigation-common-2.7.6-7 C:\Users\ASUS\.gradle\caches\transforms-3\1922f5082e427503391523d235601745\transformed\navigation-common-2.7.6\res
+com.soulmate.app-lifecycle-livedata-core-2.7.0-8 C:\Users\ASUS\.gradle\caches\transforms-3\1aa48d2a6ea4e87d8d6b4e07f97d8da8\transformed\lifecycle-livedata-core-2.7.0\res
+com.soulmate.app-foundation-release-9 C:\Users\ASUS\.gradle\caches\transforms-3\23b8e9047358cb70457da00d0a08f67e\transformed\foundation-release\res
+com.soulmate.app-animation-core-release-10 C:\Users\ASUS\.gradle\caches\transforms-3\23d7f0b2daf148e8279994fc205160cc\transformed\animation-core-release\res
+com.soulmate.app-lifecycle-livedata-core-ktx-2.7.0-11 C:\Users\ASUS\.gradle\caches\transforms-3\2906a23ff7b60462a01eb254bdbbf98c\transformed\lifecycle-livedata-core-ktx-2.7.0\res
+com.soulmate.app-ui-test-manifest-1.5.1-12 C:\Users\ASUS\.gradle\caches\transforms-3\2dd537057620b56ca113fe2572513e97\transformed\ui-test-manifest-1.5.1\res
+com.soulmate.app-emoji2-1.4.0-13 C:\Users\ASUS\.gradle\caches\transforms-3\315bc17c548a3fed650084622cba173f\transformed\emoji2-1.4.0\res
+com.soulmate.app-customview-poolingcontainer-1.0.0-14 C:\Users\ASUS\.gradle\caches\transforms-3\31e2d08398bdb5a7004d1dfb62250636\transformed\customview-poolingcontainer-1.0.0\res
+com.soulmate.app-savedstate-1.2.1-15 C:\Users\ASUS\.gradle\caches\transforms-3\33945bd38e6c8259c1077f5066afec4d\transformed\savedstate-1.2.1\res
+com.soulmate.app-core-runtime-2.2.0-16 C:\Users\ASUS\.gradle\caches\transforms-3\376cef1b92175411f09d5a7db3235670\transformed\core-runtime-2.2.0\res
+com.soulmate.app-material3-1.1.1-17 C:\Users\ASUS\.gradle\caches\transforms-3\3834f7d95fde6a59df5f7b39990f854d\transformed\material3-1.1.1\res
+com.soulmate.app-lifecycle-viewmodel-ktx-2.7.0-18 C:\Users\ASUS\.gradle\caches\transforms-3\40c3affdb4062152866406f690751b84\transformed\lifecycle-viewmodel-ktx-2.7.0\res
+com.soulmate.app-lifecycle-viewmodel-savedstate-2.7.0-19 C:\Users\ASUS\.gradle\caches\transforms-3\418158624b388460b1b8465f57e7ff7c\transformed\lifecycle-viewmodel-savedstate-2.7.0\res
+com.soulmate.app-play-services-measurement-api-21.5.0-20 C:\Users\ASUS\.gradle\caches\transforms-3\4601c064d913c22e3a3869f3c524bae1\transformed\play-services-measurement-api-21.5.0\res
+com.soulmate.app-ui-unit-release-21 C:\Users\ASUS\.gradle\caches\transforms-3\49bcaf13e5f23079e3f79d90cb3c20bb\transformed\ui-unit-release\res
+com.soulmate.app-hilt-navigation-compose-1.1.0-22 C:\Users\ASUS\.gradle\caches\transforms-3\4bea1173122df77c3c89c9fd49154d8c\transformed\hilt-navigation-compose-1.1.0\res
+com.soulmate.app-activity-ktx-1.8.2-23 C:\Users\ASUS\.gradle\caches\transforms-3\55c5f287bf1cee72294dd48d7942962e\transformed\activity-ktx-1.8.2\res
+com.soulmate.app-material-release-24 C:\Users\ASUS\.gradle\caches\transforms-3\5b7b55017d3d4bddd92310b42c6a54a6\transformed\material-release\res
+com.soulmate.app-ads-adservices-java-1.0.0-beta05-25 C:\Users\ASUS\.gradle\caches\transforms-3\5c7b15a86f3a1542f81c86b7e2276cb3\transformed\ads-adservices-java-1.0.0-beta05\res
+com.soulmate.app-foundation-layout-release-26 C:\Users\ASUS\.gradle\caches\transforms-3\620a70d5f63278ff4c4f1ed2ff14cd09\transformed\foundation-layout-release\res
+com.soulmate.app-core-1.12.0-27 C:\Users\ASUS\.gradle\caches\transforms-3\63cb74d829a0d401a8d9b177c95ec826\transformed\core-1.12.0\res
+com.soulmate.app-animation-release-28 C:\Users\ASUS\.gradle\caches\transforms-3\654f268cfaa15d65aee18baf0bcca787\transformed\animation-release\res
+com.soulmate.app-room-runtime-2.6.1-29 C:\Users\ASUS\.gradle\caches\transforms-3\6ee0daa8a0eff224bb404dff0d35475d\transformed\room-runtime-2.6.1\res
+com.soulmate.app-ui-release-30 C:\Users\ASUS\.gradle\caches\transforms-3\6f6189c097a86a7413e1ec68c8fb14ee\transformed\ui-release\res
+com.soulmate.app-lifecycle-process-2.7.0-31 C:\Users\ASUS\.gradle\caches\transforms-3\7844613b9183f8ee85ca31a0965aecb8\transformed\lifecycle-process-2.7.0\res
+com.soulmate.app-lifecycle-runtime-ktx-2.7.0-32 C:\Users\ASUS\.gradle\caches\transforms-3\7971f01ed54aaf4c0f374d24fc7ae3ef\transformed\lifecycle-runtime-ktx-2.7.0\res
+com.soulmate.app-navigation-compose-2.7.6-33 C:\Users\ASUS\.gradle\caches\transforms-3\843818a4f6ec45f3175263d5bed4603f\transformed\navigation-compose-2.7.6\res
+com.soulmate.app-play-services-basement-18.1.0-34 C:\Users\ASUS\.gradle\caches\transforms-3\859b4852f70b1ae6ebc5f227ba236c53\transformed\play-services-basement-18.1.0\res
+com.soulmate.app-material-ripple-release-35 C:\Users\ASUS\.gradle\caches\transforms-3\865a89bd1d667e41b088db248f7298b5\transformed\material-ripple-release\res
+com.soulmate.app-browser-1.4.0-36 C:\Users\ASUS\.gradle\caches\transforms-3\8767a955d7eea85fba507c8a2296bec3\transformed\browser-1.4.0\res
+com.soulmate.app-ui-tooling-preview-release-37 C:\Users\ASUS\.gradle\caches\transforms-3\8be0aca0fb67af2ebf71170e9430f139\transformed\ui-tooling-preview-release\res
+com.soulmate.app-material-icons-core-release-38 C:\Users\ASUS\.gradle\caches\transforms-3\8cba4cf230064062e630f04cc254252a\transformed\material-icons-core-release\res
+com.soulmate.app-hilt-navigation-1.1.0-39 C:\Users\ASUS\.gradle\caches\transforms-3\921d48e07a77c1efe3f809051d6ce855\transformed\hilt-navigation-1.1.0\res
+com.soulmate.app-navigation-common-ktx-2.7.6-40 C:\Users\ASUS\.gradle\caches\transforms-3\929e7cd00433550029602c073ad2ce88\transformed\navigation-common-ktx-2.7.6\res
+com.soulmate.app-profileinstaller-1.3.0-41 C:\Users\ASUS\.gradle\caches\transforms-3\93996b1f5f49d20330013ad7a99baec5\transformed\profileinstaller-1.3.0\res
+com.soulmate.app-navigation-runtime-2.7.6-42 C:\Users\ASUS\.gradle\caches\transforms-3\a6cee2c342d9c73a29e77de19ae51b39\transformed\navigation-runtime-2.7.6\res
+com.soulmate.app-startup-runtime-1.1.1-43 C:\Users\ASUS\.gradle\caches\transforms-3\a72648a1799638f08ae8932dffc4e798\transformed\startup-runtime-1.1.1\res
+com.soulmate.app-sqlite-framework-2.4.0-44 C:\Users\ASUS\.gradle\caches\transforms-3\a8b67edc8e97981fef0e461095b7d9b2\transformed\sqlite-framework-2.4.0\res
+com.soulmate.app-savedstate-ktx-1.2.1-45 C:\Users\ASUS\.gradle\caches\transforms-3\ab3cf9bf5a1726937c83d384848a800b\transformed\savedstate-ktx-1.2.1\res
+com.soulmate.app-sqlite-2.4.0-46 C:\Users\ASUS\.gradle\caches\transforms-3\b29127e957b010362b9f688c66f11e65\transformed\sqlite-2.4.0\res
+com.soulmate.app-lifecycle-livedata-2.7.0-47 C:\Users\ASUS\.gradle\caches\transforms-3\c10d9b3eadb788a80f47e7244e04cf74\transformed\lifecycle-livedata-2.7.0\res
+com.soulmate.app-runtime-release-48 C:\Users\ASUS\.gradle\caches\transforms-3\c17e2c5096181152e6316c6f24bb17e4\transformed\runtime-release\res
+com.soulmate.app-firebase-common-20.4.2-49 C:\Users\ASUS\.gradle\caches\transforms-3\c4be6d023dec7b5b5cdf1a19011dc75d\transformed\firebase-common-20.4.2\res
+com.soulmate.app-lifecycle-viewmodel-2.7.0-50 C:\Users\ASUS\.gradle\caches\transforms-3\d0ee56b77dd34b0aa869d8aa80082699\transformed\lifecycle-viewmodel-2.7.0\res
+com.soulmate.app-lifecycle-runtime-2.7.0-51 C:\Users\ASUS\.gradle\caches\transforms-3\d4ba610d118ee26123b17418cc42f221\transformed\lifecycle-runtime-2.7.0\res
+com.soulmate.app-ui-geometry-release-52 C:\Users\ASUS\.gradle\caches\transforms-3\da66fd9b14b8f2b0522c9a7e83aa4b41\transformed\ui-geometry-release\res
+com.soulmate.app-ui-text-release-53 C:\Users\ASUS\.gradle\caches\transforms-3\da84081d35f12095413d23f3ff2a1ca4\transformed\ui-text-release\res
+com.soulmate.app-ads-adservices-1.0.0-beta05-54 C:\Users\ASUS\.gradle\caches\transforms-3\e01bd8c919851120841a4e235d482b11\transformed\ads-adservices-1.0.0-beta05\res
+com.soulmate.app-runtime-saveable-release-55 C:\Users\ASUS\.gradle\caches\transforms-3\e2af3af496b8abeaebb03a4b51523db8\transformed\runtime-saveable-release\res
+com.soulmate.app-ui-tooling-data-release-56 C:\Users\ASUS\.gradle\caches\transforms-3\e3f62ecc1d2a36b74c75c597bfbc0a27\transformed\ui-tooling-data-release\res
+com.soulmate.app-activity-1.8.2-57 C:\Users\ASUS\.gradle\caches\transforms-3\e7b8a429f589c323683ed54dec11ded9\transformed\activity-1.8.2\res
+com.soulmate.app-fragment-1.5.1-58 C:\Users\ASUS\.gradle\caches\transforms-3\ea00ef669b93bf5f01c2e90f80a36321\transformed\fragment-1.5.1\res
+com.soulmate.app-room-ktx-2.6.1-59 C:\Users\ASUS\.gradle\caches\transforms-3\eeda9cd96d759ae5b1db45d2233589e3\transformed\room-ktx-2.6.1\res
+com.soulmate.app-core-ktx-1.12.0-60 C:\Users\ASUS\.gradle\caches\transforms-3\f4907b159cb2b3dcdbdc28536923cec7\transformed\core-ktx-1.12.0\res
+com.soulmate.app-lifecycle-viewmodel-compose-2.7.0-61 C:\Users\ASUS\.gradle\caches\transforms-3\f96f92bbbaa20bb5fd1ba11217331088\transformed\lifecycle-viewmodel-compose-2.7.0\res
+com.soulmate.app-resValues-62 C:\Users\ASUS\Documents\KÌ 4-UIT\App Mobile-SE114\app\build\generated\res\resValues\debug
+com.soulmate.app-packageDebugResources-63 C:\Users\ASUS\Documents\KÌ 4-UIT\App Mobile-SE114\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.soulmate.app-packageDebugResources-64 C:\Users\ASUS\Documents\KÌ 4-UIT\App Mobile-SE114\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.soulmate.app-merged_res-65 C:\Users\ASUS\Documents\KÌ 4-UIT\App Mobile-SE114\app\build\intermediates\merged_res\debug
+com.soulmate.app-debug-66 C:\Users\ASUS\Documents\KÌ 4-UIT\App Mobile-SE114\app\src\debug\res
+com.soulmate.app-main-67 C:\Users\ASUS\Documents\KÌ 4-UIT\App Mobile-SE114\app\src\main\res
