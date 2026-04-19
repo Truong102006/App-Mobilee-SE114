@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -13,23 +12,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+
+import android.net.Uri
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 import com.soulmate.app.ui.theme.TextPrimary
 import com.soulmate.app.ui.theme.BackgroundMain
@@ -41,7 +48,8 @@ import com.soulmate.app.ui.theme.SoulMateTheme
 
 data class DiaryDraft(
     val title: String,
-    val contentHtml: String
+    val contentHtml: String,
+    val images: List<Uri>
 )
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -52,6 +60,15 @@ fun MultimediaEditor(
     var title by remember { mutableStateOf("") }
 
     val richTextState = rememberRichTextState()
+
+    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
+    ) { uris ->
+        selectedImages = selectedImages + uris
+    }
+
+    var zoomedImageUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -67,7 +84,8 @@ fun MultimediaEditor(
                         onClick = {
                             val draft = DiaryDraft(
                                 title = title,
-                                contentHtml = richTextState.toHtml()
+                                contentHtml = richTextState.toHtml(),
+                                images = selectedImages
                             )
                             onSaveClick(draft)
                         }
@@ -98,17 +116,7 @@ fun MultimediaEditor(
 
             HorizontalDivider(color = PrimaryGreenLight.copy(alpha = 0.2f), thickness = 1.dp)
 
-            RichTextToolbar(
-                isBold = richTextState.currentSpanStyle.fontWeight == FontWeight.Bold,
-                isItalic = richTextState.currentSpanStyle.fontStyle == FontStyle.Italic,
-                isUnderline = richTextState.currentSpanStyle.textDecoration == TextDecoration.Underline,
-                isStrikeout = richTextState.currentSpanStyle.textDecoration == TextDecoration.LineThrough,
-
-                onToggleBold = { richTextState.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
-                onToggleItalic = { richTextState.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
-                onToggleUnderline = { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline)) },
-                onToggleStrikeout = { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) }
-            )
+            RichTextToolbar(state = richTextState)
 
             HorizontalDivider(color = PrimaryGreenLight.copy(alpha = 0.2f), thickness = 1.dp)
 
@@ -119,7 +127,50 @@ fun MultimediaEditor(
                     .weight(1f)
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
+
+            if (selectedImages.isNotEmpty()) {
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(selectedImages) { uri ->
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { zoomedImageUri = uri },
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = PrimaryGreenLight.copy(alpha = 0.2f), thickness = 1.dp)
+            }
+
+            EditorBottomToolbar(
+                onAddImageClick = {
+                    photoPickerLauncher.launch(
+                        androidx.activity.result.PickVisualMediaRequest(
+                            androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+                        )
+                    )
+                },
+                onRecordAudioClick = {
+                    // record feature
+                }
+            )
         }
+    }
+
+    zoomedImageUri?.let { uri ->
+        ImageZoomDialog(
+            uri = uri,
+            onDismiss = { zoomedImageUri = null }
+        )
     }
 }
 
