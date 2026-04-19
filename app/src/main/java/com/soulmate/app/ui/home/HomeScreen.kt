@@ -6,25 +6,23 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.delay
 import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.*
-import com.soulmate.app.ui.home.components.SongItem
+import kotlin.math.abs
 
 @Composable
 fun HomeScreen() {
 
     val listState = rememberLazyListState()
 
-
     val songs = listOf(
         "Blinding Lights" to R.drawable.song1,
         "Tháp drill tự do" to R.drawable.song22,
         "Nghe như tình yêu" to R.drawable.song36,
         "Stay" to R.drawable.song4,
-
         "Bước qua mùa cô đơn" to R.drawable.song5,
         "Lạ lùng" to R.drawable.song6,
         "Nàng thơ" to R.drawable.song7,
@@ -36,19 +34,40 @@ fun HomeScreen() {
 
     var selectedIndex by remember { mutableStateOf(0) }
 
-    // 🔥 AUTO SCROLL + CENTER
+    // 🔥 AUTO SCROLL
     LaunchedEffect(Unit) {
         var index = 0
         while (true) {
-            delay(2000)
+            delay(2200)
 
-            index++
-            if (index >= songs.size) index = 0
-
-            selectedIndex = index
+            index = (index + 1) % songs.size
 
             listState.animateScrollToItem(index)
         }
+    }
+
+    // 🔥 DETECT CENTER ITEM (CHUẨN)
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+            .collect { visibleItems ->
+
+                val center = listState.layoutInfo.viewportEndOffset / 2
+
+                var minDistance = Int.MAX_VALUE
+                var closestIndex = 0
+
+                visibleItems.forEach { item ->
+                    val itemCenter = item.offset + item.size / 2
+                    val distance = abs(itemCenter - center)
+
+                    if (distance < minDistance) {
+                        minDistance = distance
+                        closestIndex = item.index
+                    }
+                }
+
+                selectedIndex = closestIndex
+            }
     }
 
     Column(
@@ -76,7 +95,7 @@ fun HomeScreen() {
 
         LazyRow(
             state = listState,
-            contentPadding = PaddingValues(horizontal = 100.dp) // 🔥 tạo khoảng để center
+            contentPadding = PaddingValues(horizontal = 120.dp)
         ) {
             itemsIndexed(songs) { index, song ->
 

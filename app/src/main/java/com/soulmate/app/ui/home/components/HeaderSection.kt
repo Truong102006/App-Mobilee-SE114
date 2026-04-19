@@ -1,10 +1,15 @@
 package com.soulmate.app.ui.home.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable // 🔥 QUAN TRỌNG (thiếu cái này gây lỗi)
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,40 +23,50 @@ import com.soulmate.app.R
 
 @Composable
 fun HeaderSection() {
-    Box {
+    val hasAvatar = true
+
+    Box(modifier = Modifier.fillMaxWidth().height(358.dp)) {
+        // Background Image
         Image(
             painter = painterResource(id = R.drawable.img_3),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(358.dp)
+            modifier = Modifier.fillMaxSize()
         )
 
+        // Text Greeting
         Column(
-            modifier = Modifier.padding(start = 16.dp, top = 50.dp)
+            modifier = Modifier.padding(start = 16.dp, top = 40.dp)
         ) {
-            Text(
-                text = "Hello There !",
-                fontSize = 16.sp,
-                color = Color(0xFF768B90)
-            )
-
-            Text(
-                text = "Dmanhz",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Hello There !", fontSize = 16.sp, color = Color(0xFF6c6c6c))
+            Text("Dmanhz", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         }
 
-        Image(
-            painter = painterResource(id = R.drawable.ava1),
-            contentDescription = null,
+        // Avatar Box - Updated with specific constraints
+        Box(
             modifier = Modifier
-                .size(52.dp)
-                .align(Alignment.TopEnd)
-                .padding(top = 50.dp, end = 16.dp)
-                .clip(CircleShape)
-        )
+                .offset(x = 329.dp, y = 40.dp) // Tọa độ chính xác theo yêu cầu
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            if (hasAvatar) {
+                Image(
+                    painter = painterResource(id = R.drawable.ava1),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "User",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
     }
 }
