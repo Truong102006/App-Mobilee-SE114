@@ -22,21 +22,65 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+
+import com.soulmate.app.ui.theme.TextPrimary
 import com.soulmate.app.ui.theme.BackgroundMain
+import com.soulmate.app.ui.theme.PrimaryGreen
 import com.soulmate.app.ui.theme.PrimaryGreenLight
 
 import androidx.compose.ui.tooling.preview.Preview
 import com.soulmate.app.ui.theme.SoulMateTheme
 
+data class DiaryDraft(
+    val title: String,
+    val contentHtml: String
+)
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun MultimediaEditor() {
+fun MultimediaEditor(
+    onSaveClick: (DiaryDraft) -> Unit = {}
+) {
     var title by remember { mutableStateOf("") }
 
     val richTextState = rememberRichTextState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = BackgroundMain
+        containerColor = BackgroundMain,
+        topBar = {
+            TopAppBar(
+                title = { Text("Diary", color = TextPrimary) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = BackgroundMain
+                ),
+                actions = {
+                    IconButton(
+                        onClick = {
+                            val draft = DiaryDraft(
+                                title = title,
+                                contentHtml = richTextState.toHtml()
+                            )
+                            onSaveClick(draft)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Save diary",
+                            tint = PrimaryGreen
+                        )
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
 
         Column(
