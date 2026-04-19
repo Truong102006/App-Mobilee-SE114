@@ -22,6 +22,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+
+import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 import com.soulmate.app.ui.theme.TextPrimary
 import com.soulmate.app.ui.theme.BackgroundMain
@@ -33,7 +47,8 @@ import com.soulmate.app.ui.theme.SoulMateTheme
 
 data class DiaryDraft(
     val title: String,
-    val contentHtml: String
+    val contentHtml: String,
+    val images: List<Uri>
 )
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -44,6 +59,13 @@ fun MultimediaEditor(
     var title by remember { mutableStateOf("") }
 
     val richTextState = rememberRichTextState()
+
+    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
+    ) { uris ->
+        selectedImages = selectedImages + uris
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -59,7 +81,8 @@ fun MultimediaEditor(
                         onClick = {
                             val draft = DiaryDraft(
                                 title = title,
-                                contentHtml = richTextState.toHtml()
+                                contentHtml = richTextState.toHtml(),
+                                images = selectedImages
                             )
                             onSaveClick(draft)
                         }
@@ -100,6 +123,41 @@ fun MultimediaEditor(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            if (selectedImages.isNotEmpty()) {
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(selectedImages) { uri ->
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = PrimaryGreenLight.copy(alpha = 0.2f), thickness = 1.dp)
+            }
+
+            EditorBottomToolbar(
+                onAddImageClick = {
+                    photoPickerLauncher.launch(
+                        androidx.activity.result.PickVisualMediaRequest(
+                            androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+                        )
+                    )
+                },
+                onRecordAudioClick = {
+                    // task record
+                }
             )
         }
     }
