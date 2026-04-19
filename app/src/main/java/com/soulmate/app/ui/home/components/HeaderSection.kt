@@ -25,8 +25,10 @@ import com.soulmate.app.R
 fun HeaderSection() {
     val hasAvatar = true
 
-    Box(modifier = Modifier.fillMaxWidth().height(358.dp)) {
-        // Background Image
+    // Giảm chiều cao Box tổng xuống (ví dụ 280.dp thay vì 358.dp) để ảnh nền ngắn lại
+    Box(modifier = Modifier.fillMaxWidth().height(310.dp)) {
+
+        // 1. Background Image - Nằm trọn trong Box đã thu ngắn
         Image(
             painter = painterResource(id = R.drawable.img_3),
             contentDescription = null,
@@ -34,7 +36,7 @@ fun HeaderSection() {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Text Greeting
+        // 2. Text Greeting - Giữ nguyên vị trí bên trái
         Column(
             modifier = Modifier.padding(start = 16.dp, top = 40.dp)
         ) {
@@ -42,11 +44,12 @@ fun HeaderSection() {
             Text("Dmanhz", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         }
 
-        // Avatar Box - Updated with specific constraints
+        // 3. Avatar Box - Thay đổi từ offset sang Alignment
         Box(
             modifier = Modifier
-                .offset(x = 329.dp, y = 40.dp) // Tọa độ chính xác theo yêu cầu
-                .size(48.dp)
+                .align(Alignment.TopEnd) // Đưa box về phía góc trên bên phải
+                .padding(top = 40.dp, end = 10.dp) // Margin Top 40dp và Margin Right 10dp
+                .size(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
                 .background(Color.White),

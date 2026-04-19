@@ -1,110 +1,173 @@
 package com.soulmate.app.ui.home
 
+import android.net.Uri
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.material.*
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.*
 import kotlin.math.abs
 
 @Composable
 fun HomeScreen() {
+    val context = LocalContext.current
 
-    val listState = rememberLazyListState()
+    // 1. Khởi tạo ExoPlayer (Nâng cấp)
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build()
+    }
 
-    val songs = listOf(
-        "Blinding Lights" to R.drawable.song1,
-        "Tháp drill tự do" to R.drawable.song22,
-        "Nghe như tình yêu" to R.drawable.song36,
-        "Stay" to R.drawable.song4,
-        "Bước qua mùa cô đơn" to R.drawable.song5,
-        "Lạ lùng" to R.drawable.song6,
-        "Nàng thơ" to R.drawable.song7,
-        "Có chắc yêu là đây" to R.drawable.song8,
-        "Đưa nhau đi trốn" to R.drawable.song9,
-        "Big City Boy" to R.drawable.song10,
-        "Túy Âm" to R.drawable.song11
-    )
-
-    var selectedIndex by remember { mutableStateOf(0) }
-
-    // 🔥 AUTO SCROLL
-    LaunchedEffect(Unit) {
-        var index = 0
-        while (true) {
-            delay(2200)
-
-            index = (index + 1) % songs.size
-
-            listState.animateScrollToItem(index)
+    // Giải phóng Player khi thoát ứng dụng để tránh rò rỉ bộ nhớ
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
         }
     }
 
-    // 🔥 DETECT CENTER ITEM (CHUẨN)
+    // 2. Danh sách bài hát (Nâng cấp lên Triple: Tên - Ảnh - File Nhạc)
+    // Lưu ý: R.raw.song1, R.raw.song2... là các file bạn bỏ vào thư mục res/raw
+    // 2. Danh sách bài hát (Sửa lỗi ép kiểu)
+    val songs = remember {
+        listOf<Triple<String, Int, Int>>(
+            Triple("Alaba trap", R.drawable.song111, R.raw.song1),
+            Triple("Thích quá rùi nà", R.drawable.song222, R.raw.song2),
+            Triple("Nghe như tình yêu", R.drawable.song33, R.raw.song3),
+            Triple("Stay", R.drawable.song4, R.raw.song4),
+            Triple("Bước qua mùa cô đơn", R.drawable.song5, R.raw.song5),
+            Triple("Lạ lùng", R.drawable.song6, R.raw.song6),
+            Triple("Cần gì nói yêu", R.drawable.song77, R.raw.song7),
+            Triple("Cua", R.drawable.song88, R.raw.song8),
+            Triple("Mamma Mia", R.drawable.song99, R.raw.song9),
+            Triple("Big City Boy", R.drawable.song10, R.raw.song10),
+            Triple("Pho Real", R.drawable.song_11, R.raw.pho_real)
+        )
+    }
+
+    // Trạng thái bài hát đang phát
+    var currentPlayingSong by remember { mutableStateOf<Triple<String, Int, Int>?>(null) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    // 3. Logic xử lý phát nhạc khi nhấn chọn bài
+    LaunchedEffect(currentPlayingSong) {
+        currentPlayingSong?.let { song ->
+            val uri = Uri.parse("android.resource://${context.packageName}/${song.third}")
+            val mediaItem = MediaItem.fromUri(uri)
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
+            exoPlayer.play()
+            isPlaying = true
+        }
+    }
+
+    // Logic xử lý Play/Pause từ Mini Player
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) exoPlayer.play() else exoPlayer.pause()
+    }
+
+    // --- Giữ nguyên logic cuộn vô tận ---
+    val virtualCount = 10000
+    val listState = rememberLazyListState()
+    var selectedIndex by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        val centerStart = (virtualCount / 2)
+        val offsetStart = centerStart - (centerStart % songs.size)
+        listState.scrollToItem(offsetStart)
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3200)
+            if (!listState.isScrollInProgress) {
+                listState.animateScrollToItem(listState.firstVisibleItemIndex + 1)
+            }
+        }
+    }
+
     LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
-            .collect { visibleItems ->
-
-                val center = listState.layoutInfo.viewportEndOffset / 2
-
-                var minDistance = Int.MAX_VALUE
-                var closestIndex = 0
-
-                visibleItems.forEach { item ->
-                    val itemCenter = item.offset + item.size / 2
-                    val distance = abs(itemCenter - center)
-
-                    if (distance < minDistance) {
-                        minDistance = distance
-                        closestIndex = item.index
-                    }
+        snapshotFlow { listState.layoutInfo }
+            .distinctUntilChanged()
+            .collect { layoutInfo ->
+                val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+                val closestItem = layoutInfo.visibleItemsInfo.minByOrNull { item ->
+                    abs((item.offset + item.size / 2) - viewportCenter)
                 }
-
-                selectedIndex = closestIndex
+                closestItem?.let {
+                    selectedIndex = it.index % songs.size
+                }
             }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-
-        HeaderSection()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        MoodCard()
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Your Favourite Songs",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 16.dp)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyRow(
-            state = listState,
-            contentPadding = PaddingValues(horizontal = 120.dp)
-        ) {
-            itemsIndexed(songs) { index, song ->
-
-                SongItem(
+    Scaffold(
+        bottomBar = {
+            currentPlayingSong?.let { song ->
+                BottomMusicPlayer(
                     title = song.first,
-                    image = song.second,
-                    selected = index == selectedIndex
+                    imageRes = song.second,
+                    isPlaying = isPlaying,
+                    onPlayPauseClick = { isPlaying = !isPlaying }
                 )
             }
+        },
+        backgroundColor = Color(0xFFFDFDFD)
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
+            HeaderSection()
+            Spacer(modifier = Modifier.height(16.dp))
+            MoodCard()
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Text(
+                text = "Your Favourite Songs",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 16.dp),
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(0.dp))
+
+            Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
+                LazyRow(
+                    state = listState,
+                    contentPadding = PaddingValues(horizontal = 90.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(virtualCount) { index ->
+                        val songIndex = index % songs.size
+                        val song = songs[songIndex]
+
+                        Box(modifier = Modifier.clickable {
+                            currentPlayingSong = song
+                        }) {
+                            SongItem(
+                                title = song.first,
+                                image = song.second,
+                                selected = songIndex == selectedIndex
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

@@ -54,7 +54,7 @@ fun MoodCard() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "How are you feeling today?", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text(text = "How are you feeling today?", fontWeight = FontWeight.Bold, fontSize = 15.sp)
             Text(text = if (isRecording) "Recording..." else "Tap to record mood", color = Color.Gray)
         }
 
