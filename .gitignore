@@ -1,0 +1,38 @@
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Local config
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# Android Studio
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Generated files
+*.apk
+*.ap_
+*.aab
+
+# Log files
+*.log
+
+# Kotlin
+*.class
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Firebase / Google Services (nếu có file riêng)
+google-services.json
+
+# Keystore (rất quan trọng)
+*.jks
+*.keystore
