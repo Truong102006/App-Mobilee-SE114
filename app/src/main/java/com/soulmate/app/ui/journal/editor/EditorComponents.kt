@@ -11,6 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.input.TextFieldValue
+
+import com.mohamedrejeb.richeditor.model.RichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
+
 import com.soulmate.app.ui.theme.TextPrimary
 import com.soulmate.app.ui.theme.TextSecondary
 
@@ -52,13 +58,11 @@ fun DiaryTitleField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaryContentField(
-    content: String,
-    onContentChange: (String) -> Unit,
+    state: RichTextState,
     modifier: Modifier = Modifier
 ) {
-    TextField(
-        value = content,
-        onValueChange = onContentChange,
+    RichTextEditor(
+        state = state,
         modifier = modifier,
         placeholder = {
             Text(
@@ -72,9 +76,8 @@ fun DiaryContentField(
             color = TextPrimary,
             lineHeight = 24.sp
         ),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
+        colors = RichTextEditorDefaults.richTextEditorColors(
+            containerColor = Color.Transparent,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             cursorColor = TextPrimary
