@@ -14,6 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.soulmate.app.ui.theme.BackgroundMain
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.soulmate.app.ui.theme.SoulMateTheme
+
 @Composable
 fun MultimediaEditor() {
     var title by remember { mutableStateOf("") }
@@ -46,5 +49,13 @@ fun MultimediaEditor() {
 
             // more feat: album -> insert images, voice, save button, bottom navigator
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun MultimediaEditorPreview() {
+    SoulMateTheme {
+        MultimediaEditor()
     }
 }
