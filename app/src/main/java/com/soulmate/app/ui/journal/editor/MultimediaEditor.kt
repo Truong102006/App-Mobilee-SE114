@@ -49,7 +49,8 @@ import com.soulmate.app.ui.theme.SoulMateTheme
 data class DiaryDraft(
     val title: String,
     val contentHtml: String,
-    val images: List<Uri>
+    val images: List<Uri>,
+    val mood: Mood
 )
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -70,6 +71,8 @@ fun MultimediaEditor(
 
     var zoomedImageUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
+    var selectedMood by remember { mutableStateOf(Mood.Neutral) }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = BackgroundMain,
@@ -85,7 +88,8 @@ fun MultimediaEditor(
                             val draft = DiaryDraft(
                                 title = title,
                                 contentHtml = richTextState.toHtml(),
-                                images = selectedImages
+                                images = selectedImages,
+                                mood = selectedMood
                             )
                             onSaveClick(draft)
                         }
@@ -106,6 +110,13 @@ fun MultimediaEditor(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            MoodSelector(
+                selectedMood = selectedMood,
+                onMoodChange = { selectedMood = it }
+            )
+
+            HorizontalDivider(color = PrimaryGreenLight.copy(alpha = 0.2f), thickness = 1.dp)
+
             DiaryTitleField(
                 title = title,
                 onTitleChange = { title = it },
