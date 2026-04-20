@@ -20,17 +20,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Locale
 
 @Composable
 fun MusicPlayerDetailScreen(
     title: String,
-    artist: String, // Thêm tham số tên tác giả
+    artist: String,
     imageRes: Int,
     isPlaying: Boolean,
+    currentPosition: Long, // Thêm: Vị trí hiện tại (ms) từ ExoPlayer
+    duration: Long,        // Thêm: Tổng thời lượng (ms) từ ExoPlayer
     onPlayPauseClick: () -> Unit,
     onNextClick: () -> Unit,
     onBackClick: () -> Unit,
-    onPreviousClick: () -> Unit
+    onPreviousClick: () -> Unit,
+    onSeek: (Long) -> Unit // Thêm: Hàm để xử lý khi người dùng kéo thanh nhạc
 ) {
     // Logic xoay đĩa nhạc
     val infiniteTransition = rememberInfiniteTransition()
@@ -43,11 +47,8 @@ fun MusicPlayerDetailScreen(
         )
     )
 
-    // Giả lập vị trí thanh Slider (Thực tế nên lấy từ ExoPlayer)
-    var sliderPosition by remember { mutableStateOf(0.3f) }
-
     Box(modifier = Modifier.fillMaxSize()) {
-        // 1. Hình nền mờ (Background Blur) lấy từ ảnh bài hát
+        // 1. Background Blur
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = null,
@@ -57,7 +58,6 @@ fun MusicPlayerDetailScreen(
                 .blur(30.dp)
         )
 
-        // Lớp phủ tối (Overlay) để nổi bật các nút điều khiển và chữ
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -70,7 +70,6 @@ fun MusicPlayerDetailScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Nút mũi tên xuống để thu nhỏ lại (Giống Zing MP3)
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier.align(Alignment.Start)
@@ -85,12 +84,12 @@ fun MusicPlayerDetailScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // 2. Đĩa nhạc xoay tròn có VIỀN TRẮNG
+            // 2. Đĩa nhạc
             Box(
                 modifier = Modifier
                     .size(300.dp)
                     .rotate(if (isPlaying) rotation else 0f)
-                    .border(4.dp, Color.White, CircleShape) // Viền trắng
+                    .border(4.dp, Color.White, CircleShape)
                     .padding(8.dp)
                     .clip(CircleShape)
             ) {
@@ -100,8 +99,6 @@ fun MusicPlayerDetailScreen(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-
-                // Lỗ tròn giữa đĩa (Center Hole)
                 Box(
                     modifier = Modifier
                         .size(45.dp)
@@ -113,31 +110,23 @@ fun MusicPlayerDetailScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Thông tin bài hát và Tên tác giả
-            Text(
-                text = title,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                maxLines = 1
-            )
-            Text(
-                text = artist, // Đã thay chữ "Now Playing" bằng tên tác giả
-                fontSize = 18.sp,
-                color = Color.LightGray,
-                maxLines = 1
-            )
+            Text(text = title, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1)
+            Text(text = artist, fontSize = 18.sp, color = Color.LightGray, maxLines = 1)
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // 3. Thanh thời lượng (Seek Bar)
+            // 3. THANH THỜI LƯỢNG (SEEK BAR) THỰC TẾ
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 Slider(
-                    value = sliderPosition,
-                    onValueChange = { sliderPosition = it },
+                    // Tính toán % tiến trình: (vị trí hiện tại / tổng thời gian)
+                    value = if (duration > 0f) currentPosition.toFloat() / duration else 0f,
+                    onValueChange = { percent ->
+                        // Khi kéo thanh, tính toán lại mili giây tương ứng
+                        onSeek((percent * duration).toLong())
+                    },
                     colors = SliderDefaults.colors(
                         thumbColor = Color.White,
-                        activeTrackColor = Color(0xFFED8413), // Màu cam thương hiệu của bạn
+                        activeTrackColor = Color(0xFFED8413),
                         inactiveTrackColor = Color.White.copy(alpha = 0.3f)
                     )
                 )
@@ -145,34 +134,28 @@ fun MusicPlayerDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("1:20", color = Color.White, fontSize = 12.sp)
-                    Text("3:45", color = Color.White, fontSize = 12.sp)
+                    // Hiển thị thời gian hiện tại (VD: 01:20)
+                    Text(text = formatTime(currentPosition), color = Color.White, fontSize = 12.sp)
+                    // Hiển thị tổng thời gian (VD: 03:45)
+                    Text(text = formatTime(duration), color = Color.White, fontSize = 12.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 4. Các nút điều hướng (Trước đó - Phát/Dừng - Kế tiếp)
+            // 4. Các nút điều hướng
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Nút Bài trước đó (Previous)
                 IconButton(onClick = onPreviousClick) {
-                    Icon(
-                        imageVector = Icons.Default.SkipPrevious,
-                        contentDescription = "Previous",
-                        tint = Color.White,
-                        modifier = Modifier.size(50.dp)
-                    )
+                    Icon(Icons.Default.SkipPrevious, "Prev", tint = Color.White, modifier = Modifier.size(50.dp))
                 }
 
-                // Nút Play/Pause chính
                 FloatingActionButton(
                     onClick = onPlayPauseClick,
-                    backgroundColor = Color(0xFFED8413),
-                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
+                    backgroundColor = Color(0xFFED8413)
                 ) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
@@ -182,17 +165,21 @@ fun MusicPlayerDetailScreen(
                     )
                 }
 
-                // Nút Bài tiếp theo (Next)
                 IconButton(onClick = onNextClick) {
-                    Icon(
-                        imageVector = Icons.Default.SkipNext,
-                        contentDescription = "Next",
-                        tint = Color.White,
-                        modifier = Modifier.size(50.dp)
-                    )
+                    Icon(Icons.Default.SkipNext, "Next", tint = Color.White, modifier = Modifier.size(50.dp))
                 }
             }
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
+}
+
+/**
+ * Hàm hỗ trợ định dạng mili giây sang chuỗi thời gian mm:ss
+ */
+private fun formatTime(ms: Long): String {
+    val totalSeconds = ms / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
 }

@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -21,7 +22,7 @@ import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.*
 import kotlin.math.abs
 
-// Khai báo cấu trúc bài hát mới
+// 1. Cấu trúc dữ liệu bài hát
 data class Song(
     val title: String,
     val artist: String,
@@ -33,31 +34,45 @@ data class Song(
 fun HomeScreen() {
     val context = LocalContext.current
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
-    var isFullScreen by remember { mutableStateOf(false) }
 
+    // Quản lý trạng thái màn hình và phát nhạc
+    var isFullScreen by remember { mutableStateOf(false) }
+    var currentPlayingSong by remember { mutableStateOf<Song?>(null) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    // --- CÁC BIẾN QUẢN LÝ THỜI GIAN THỰC ---
+    var currentPosition by remember { mutableLongStateOf(0L) }
+    var duration by remember { mutableLongStateOf(0L) }
+
+    // Giải phóng Player khi thoát
     DisposableEffect(Unit) {
         onDispose { exoPlayer.release() }
     }
 
-    // Danh sách bài hát với đầy đủ Tên - Tác giả - Ảnh - Nhạc
     val songs = remember {
         listOf(
             Song("Alaba trap", "MCK", R.drawable.song111, R.raw.song1),
-            Song("Thích quá rùi nà", "Tlinh", R.drawable.song222, R.raw.song2),
+            Song("Thích quá rùi nà", "Tlinh", R.drawable.song22, R.raw.song2),
             Song("Nghe như tình yêu", "HIEUTHUHAI", R.drawable.song33, R.raw.song3),
             Song("Stay", "Justin Bieber", R.drawable.song4, R.raw.song4),
             Song("Bước qua mùa cô đơn", "Vũ", R.drawable.song5, R.raw.song5),
+
             Song("Lạ lùng", "Vũ", R.drawable.song6, R.raw.song6),
             Song("Cần gì nói yêu", "Wxrdie", R.drawable.song77, R.raw.song7),
             Song("Cua", "HIEUTHUHAI", R.drawable.song88, R.raw.song8),
             Song("Mamma Mia", "HIEUTHUHAI", R.drawable.song99, R.raw.song9),
             Song("Big City Boy", "Binz", R.drawable.song10, R.raw.song10),
-            Song("Pho Real", "Low G", R.drawable.song_11, R.raw.pho_real)
+            Song("Pho Real", "Low G", R.drawable.song11, R.raw.pho_real),
+
+            Song("Hooligan", "BTS", R.drawable.song12, R.raw.song12),
+            Song("IDOL", "BTS", R.drawable.song13, R.raw.song13),
+            Song("DNA", "BTS", R.drawable.song14, R.raw.song14),
+            Song("Not Today", "BTS", R.drawable.song15, R.raw.song15),
+            Song("Go Go", "BTS", R.drawable.song16, R.raw.song16)
         )
     }
 
-    var currentPlayingSong by remember { mutableStateOf<Song?>(null) }
-    var isPlaying by remember { mutableStateOf(false) }
+    // --- LOGIC ĐIỀU KHIỂN ---
 
     val playNextSong = {
         currentPlayingSong?.let { current ->
@@ -75,6 +90,17 @@ fun HomeScreen() {
         } ?: Unit
     }
 
+    // Theo dõi trạng thái kết thúc bài hát để tự chuyển bài
+    LaunchedEffect(exoPlayer) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) playNextSong()
+            }
+        }
+        exoPlayer.addListener(listener)
+    }
+
+    // Cập nhật Media Source khi đổi bài
     LaunchedEffect(currentPlayingSong) {
         currentPlayingSong?.let { song ->
             val uri = Uri.parse("android.resource://${context.packageName}/${song.musicRes}")
@@ -86,13 +112,24 @@ fun HomeScreen() {
         }
     }
 
+    // Điều khiển Play/Pause
     LaunchedEffect(isPlaying) {
         if (isPlaying) exoPlayer.play() else exoPlayer.pause()
     }
 
+    // --- CẬP NHẬT THỜI GIAN THỰC (THANH NHẠC) ---
+    LaunchedEffect(isPlaying, currentPlayingSong) {
+        while (isPlaying) {
+            currentPosition = exoPlayer.currentPosition
+            duration = exoPlayer.duration.coerceAtLeast(0L)
+            delay(500) // Cập nhật mỗi 0.5 giây
+        }
+    }
+
+    // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
     val listState = rememberLazyListState()
-    var selectedIndex by remember { mutableStateOf(0) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         listState.scrollToItem(virtualCount / 2)
@@ -117,6 +154,7 @@ fun HomeScreen() {
             }
     }
 
+    // --- GIAO DIỆN ---
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             bottomBar = {
@@ -124,7 +162,7 @@ fun HomeScreen() {
                     if (!isFullScreen) {
                         BottomMusicPlayer(
                             title = song.title,
-                            artist = song.artist, // Truyền thêm artist
+                            artist = song.artist,
                             imageRes = song.imageRes,
                             isPlaying = isPlaying,
                             onPlayPauseClick = { isPlaying = !isPlaying },
@@ -172,16 +210,20 @@ fun HomeScreen() {
             }
         }
 
+        // Màn hình chi tiết với thanh thời lượng thực tế
         if (isFullScreen && currentPlayingSong != null) {
             MusicPlayerDetailScreen(
                 title = currentPlayingSong!!.title,
-                artist = currentPlayingSong!!.artist, // Truyền thêm artist
+                artist = currentPlayingSong!!.artist,
                 imageRes = currentPlayingSong!!.imageRes,
                 isPlaying = isPlaying,
+                currentPosition = currentPosition,
+                duration = duration,
                 onPlayPauseClick = { isPlaying = !isPlaying },
                 onNextClick = playNextSong,
                 onPreviousClick = playPreviousSong,
-                onBackClick = { isFullScreen = false }
+                onBackClick = { isFullScreen = false },
+                onSeek = { newPos -> exoPlayer.seekTo(newPos) }
             )
         }
     }
