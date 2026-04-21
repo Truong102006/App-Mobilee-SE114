@@ -61,8 +61,8 @@ fun SettingScreen() {
                     checked = isDarkMode,
                     onCheckedChange = { isDarkMode = it },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color(0xFF6200EE),
-                        checkedTrackColor = Color(0xFFBB86FC)
+                        checkedThumbColor = Color(0xFFf09a37),
+                        checkedTrackColor = Color(0xfffccd51)
                     )
                 )
             }
@@ -75,7 +75,7 @@ fun SettingScreen() {
                 Switch(
                     checked = notificationEnabled,
                     onCheckedChange = { notificationEnabled = it },
-                    colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF6200EE))
+                    colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFf09a37))
                 )
             }
         )
@@ -158,7 +158,7 @@ fun SettingSectionTitle(title: String, isDarkMode: Boolean) {
         text = title,
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
-        color = if (isDarkMode) Color(0xFFBB86FC) else Color(0xFF6200EE),
+        color = if (isDarkMode) Color(0xfffccd51) else Color(0xFFf09a37),
         modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
     )
 }
