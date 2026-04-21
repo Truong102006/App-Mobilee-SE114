@@ -19,7 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.soulmate.app.ui.Screen
 import com.soulmate.app.ui.home.HomeScreen
-import com.soulmate.app.ui.diary.DiaryScreen
+import com.soulmate.app.ui.journal.editor.MultimediaEditor
 import com.soulmate.app.ui.setting.SettingScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
                         startDestination = Screen.Home.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable(Screen.Diary.route) { DiaryScreen() }
+                        composable(Screen.Diary.route) { MultimediaEditor() }
                         composable(Screen.Home.route) { HomeScreen() }
                         composable(Screen.Setting.route) { SettingScreen() }
                     }
