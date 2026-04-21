@@ -1,7 +1,7 @@
 package com.soulmate.app.ui.home.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,95 +11,107 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun BottomMusicPlayer(
     title: String,
-    artist: String, // Thêm tham số tên tác giả
+    artist: String,
     imageRes: Int,
     isPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
     onNextClick: () -> Unit,
     onPlayerClick: () -> Unit
 ) {
-    Surface(
+    Box(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 10.dp)
             .fillMaxWidth()
             .height(72.dp)
-            .shadow(12.dp, RoundedCornerShape(16.dp))
-            .border(
-                width = 2.dp,
-                color = Color(0xFFED8413), // Viền màu cam đồng bộ
-                shape = RoundedCornerShape(16.dp)
-            )
-            .clickable { onPlayerClick() }, // Click để mở màn hình đĩa xoay
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onPlayerClick() }
     ) {
+        // 1. LỚP NỀN: Ảnh bài hát Blur nằm ngang
+        Image(
+            painter = painterResource(id = imageRes),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(25.dp), // Độ mờ cao để tạo hiệu ứng nền mượt
+            contentScale = ContentScale.Crop // Cắt ảnh theo phương ngang của Box
+        )
+
+        // 2. LỚP PHỦ: Làm tối để chữ trắng nổi bật hơn
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.35f))
+        )
+
+        // 3. NỘI DUNG CHÍNH (Row)
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 12.dp),
+            // FIX LỖI Ở ĐÂY: verticalAlignment phải đi với CenterVertically
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Ảnh Thumbnail bài hát
+            // Ảnh nhỏ (Album Art) không mờ
             Image(
                 painter = painterResource(id = imageRes),
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(10.dp)),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Thông tin bài hát
+            // Thông tin Text
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
                     fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
-                    color = Color.Black
+                    overflow = TextOverflow.Ellipsis
                 )
-                // Hiển thị tên tác giả thay cho chữ "Now Playing"
                 Text(
                     text = artist,
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    maxLines = 1
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
-            // Nút Play/Pause
+            // Nút điều khiển (Màu trắng để hợp với nền Blur tối)
             IconButton(onClick = onPlayPauseClick) {
                 Icon(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = Color(0xFFED8413)
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
-            // Nút Chuyển bài kế tiếp
             IconButton(onClick = onNextClick) {
                 Icon(
                     imageVector = Icons.Default.SkipNext,
-                    contentDescription = "Next Song",
-                    modifier = Modifier.size(28.dp),
-                    tint = Color.Black.copy(alpha = 0.7f)
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
                 )
             }
         }
