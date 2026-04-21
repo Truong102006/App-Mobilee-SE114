@@ -23,6 +23,11 @@ import com.soulmate.app.ui.diary.DiaryScreen
 import com.soulmate.app.ui.setting.SettingScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
 import dagger.hilt.android.AndroidEntryPoint
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+
+import com.soulmate.app.ui.theme.SoulMateTheme
+import com.soulmate.app.ui.journal.editor.MultimediaEditor
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -91,6 +96,15 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+            // val context = LocalContext.current
+
+            // MultimediaEditor(
+            //    onSaveClick = { draftData ->
+            //        val message = "Title: ${draftData.title}\nContent: ${draftData.contentHtml}"
+
+            //        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            //    }
+            //)
         }
     }
 }
