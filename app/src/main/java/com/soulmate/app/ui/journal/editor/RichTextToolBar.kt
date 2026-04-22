@@ -105,7 +105,7 @@ fun RichTextToolbar(
 
         DividerVertical()
 
-        val colors = listOf(TextPrimary, PrimaryGreen, Color(0xFFE53935), Color(0xFF1E88E5))
+        val colors = listOf(Color(0xFFf0f6fc), PrimaryGreen, Color(0xFFE53935), Color(0xFF1E88E5))
         colors.forEach { color ->
             Box(
                 modifier = Modifier

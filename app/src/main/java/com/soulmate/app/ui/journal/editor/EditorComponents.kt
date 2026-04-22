@@ -3,6 +3,7 @@ package com.soulmate.app.ui.journal.editor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -19,14 +20,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.Alignment
-import coil.compose.AsyncImage
 
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
-
-import com.soulmate.app.ui.theme.TextPrimary
-import com.soulmate.app.ui.theme.TextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,8 +38,8 @@ fun DiaryTitleField(
         modifier = modifier,
         placeholder = {
             Text(
-                text = "Title of your today...",
-                color = TextSecondary,
+                text = "Tiêu đề ngày hôm nay...",
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -50,7 +47,7 @@ fun DiaryTitleField(
         textStyle = TextStyle(
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         ),
         singleLine = true,
         colors = TextFieldDefaults.colors(
@@ -58,7 +55,7 @@ fun DiaryTitleField(
             unfocusedContainerColor = Color.Transparent,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = TextPrimary
+            cursorColor = MaterialTheme.colorScheme.primary
         )
     )
 }
@@ -74,21 +71,21 @@ fun DiaryContentField(
         modifier = modifier,
         placeholder = {
             Text(
-                text = "How is your day going on? Tell me about it...",
-                color = TextSecondary,
+                text = "Ngày hôm nay của bạn thế nào? Hãy kể cho tôi nghe...",
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 fontSize = 16.sp
             )
         },
         textStyle = TextStyle(
             fontSize = 16.sp,
-            color = TextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             lineHeight = 24.sp
         ),
         colors = RichTextEditorDefaults.richTextEditorColors(
             containerColor = Color.Transparent,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = TextPrimary
+            cursorColor = MaterialTheme.colorScheme.primary
         )
     )
 }
