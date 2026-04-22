@@ -35,6 +35,7 @@ import kotlinx.coroutines.delay
 fun HistoryScreen(viewModel: HistoryViewModel) {
     val notes = viewModel.historyNotes
     var noteToEdit by remember { mutableStateOf<RecordingNote?>(null) }
+    var noteToDelete by remember { mutableStateOf<RecordingNote?>(null) }
 
     Scaffold(
         topBar = {
@@ -60,7 +61,7 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
                 items(notes, key = { it.id }) { note ->
                     SwipeableHistoryItem(
                         item = note,
-                        onDelete = { viewModel.deleteNote(note) },
+                        onDelete = { noteToDelete = note },
                         onEdit = { noteToEdit = note }
                     )
                 }
@@ -77,6 +78,31 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
                 viewModel.updateNote(noteToEdit!!.id, newText)
                 noteToEdit = null
             }
+        )
+    }
+
+    // Dialog xác nhận xóa
+    if (noteToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { noteToDelete = null },
+            title = { Text("Xác nhận xóa", fontWeight = FontWeight.Bold) },
+            text = { Text("Bạn có chắc chắn muốn xóa mục nhật ký này không?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteNote(noteToDelete!!)
+                        noteToDelete = null
+                    }
+                ) {
+                    Text("Xóa", color = Color.Red, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { noteToDelete = null }) {
+                    Text("Hủy", color = Color.Gray)
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
         )
     }
 }
@@ -206,7 +232,8 @@ fun EditNoteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.textFieldColors(
                         backgroundColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colors.primary
+                        focusedIndicatorColor = MaterialTheme.colors.primary,
+                        textColor = MaterialTheme.colors.onSurface
                     )
                 )
                 Spacer(modifier = Modifier.height(24.dp))
