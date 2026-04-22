@@ -223,10 +223,11 @@ fun RecordingOverlay(
                             if (isRecording) {
                                 speechRecognizer.stopListening()
                             } else {
+                                // QUAN TRỌNG: Reset text khi bắt đầu ghi âm mới để tránh chồng lấp
                                 transcribedText = ""
                                 speechRecognizer.startListening(recognizerIntent)
+                                isRecording = true
                             }
-                            isRecording = !isRecording
                         },
                         shape = CircleShape,
                         modifier = Modifier.size(80.dp),
@@ -240,8 +241,11 @@ fun RecordingOverlay(
                         onClick = {
                             if (transcribedText.isNotEmpty()) {
                                 onPost(transcribedText)
+                                // Xóa text sau khi gửi thành công
                                 transcribedText = ""
                                 isRecording = false
+                                // Dừng lắng nghe nếu đang chạy
+                                speechRecognizer.stopListening()
                             }
                         },
                         modifier = Modifier.align(Alignment.CenterEnd).size(56.dp),
