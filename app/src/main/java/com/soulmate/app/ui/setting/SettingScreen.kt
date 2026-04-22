@@ -25,15 +25,14 @@ import androidx.compose.ui.unit.sp
 import com.soulmate.app.R
 
 @Composable
-fun SettingScreen() {
-    // Trạng thái Dark Mode (Lưu ý: Để áp dụng toàn app cần đẩy biến này lên cấp cao hơn hoặc dùng ViewModel)
-    var isDarkMode by remember { mutableStateOf(false) }
+fun SettingScreen(themeViewModel: ThemeViewModel) {
+    val isDarkMode by themeViewModel.isDarkMode
     var notificationEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (isDarkMode) Color(0xFF121212) else Color(0xFFF8F9FA))
+            .background(MaterialTheme.colors.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
@@ -41,28 +40,27 @@ fun SettingScreen() {
             text = "Settings",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isDarkMode) Color.White else Color.Black,
+            color = MaterialTheme.colors.onBackground,
             modifier = Modifier.padding(vertical = 16.dp)
         )
 
-        // --- SECTION: PROFILE (Đã sửa dùng ảnh ava1) ---
-        ProfileSection(isDarkMode)
+        // --- SECTION: PROFILE ---
+        ProfileSection()
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // --- SECTION: GENERAL ---
-        SettingSectionTitle("General", isDarkMode)
+        SettingSectionTitle("General")
         SettingItem(
             icon = Icons.Default.Brightness4,
             title = "Dark Mode",
-            isDarkMode = isDarkMode,
             trailing = {
                 Switch(
                     checked = isDarkMode,
-                    onCheckedChange = { isDarkMode = it },
+                    onCheckedChange = { themeViewModel.toggleDarkMode() },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color(0xFFf09a37),
-                        checkedTrackColor = Color(0xfffccd51)
+                        checkedThumbColor = MaterialTheme.colors.primary,
+                        checkedTrackColor = MaterialTheme.colors.primaryVariant
                     )
                 )
             }
@@ -70,12 +68,11 @@ fun SettingScreen() {
         SettingItem(
             icon = Icons.Default.Notifications,
             title = "Notifications",
-            isDarkMode = isDarkMode,
             trailing = {
                 Switch(
                     checked = notificationEnabled,
                     onCheckedChange = { notificationEnabled = it },
-                    colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFf09a37))
+                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary)
                 )
             }
         )
@@ -83,17 +80,17 @@ fun SettingScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         // --- SECTION: ACCOUNT & SECURITY ---
-        SettingSectionTitle("Account", isDarkMode)
-        SettingItem(icon = Icons.Default.Person, title = "Edit Profile", isDarkMode = isDarkMode)
-        SettingItem(icon = Icons.Default.Lock, title = "Privacy & Security", isDarkMode = isDarkMode)
-        SettingItem(icon = Icons.Default.Language, title = "Language", subtitle = "Vietnamese", isDarkMode = isDarkMode)
+        SettingSectionTitle("Account")
+        SettingItem(icon = Icons.Default.Person, title = "Edit Profile")
+        SettingItem(icon = Icons.Default.Lock, title = "Privacy & Security")
+        SettingItem(icon = Icons.Default.Language, title = "Language", subtitle = "Vietnamese")
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // --- SECTION: SUPPORT ---
-        SettingSectionTitle("Support", isDarkMode)
-        SettingItem(icon = Icons.Default.Info, title = "About SoulMate", isDarkMode = isDarkMode)
-        SettingItem(icon = Icons.Default.Help, title = "Help Center", isDarkMode = isDarkMode)
+        SettingSectionTitle("Support")
+        SettingItem(icon = Icons.Default.Info, title = "About SoulMate")
+        SettingItem(icon = Icons.Default.Help, title = "Help Center")
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -109,23 +106,22 @@ fun SettingScreen() {
             Text(text = "Log Out", color = Color.White, fontWeight = FontWeight.Bold)
         }
 
-        Spacer(modifier = Modifier.height(40.dp)) // Padding dưới cùng để tránh bị che bởi Bottom Bar
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
 @Composable
-fun ProfileSection(isDarkMode: Boolean) {
+fun ProfileSection() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(if (isDarkMode) Color(0xFF1E1E1E) else Color.White)
+            .background(MaterialTheme.colors.surface)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // --- THAY THẾ BOX TEXT THÀNH IMAGE ---
         Image(
-            painter = painterResource(id = R.drawable.ava1), // Đảm bảo file tên là ava1 trong drawable
+            painter = painterResource(id = R.drawable.ava1),
             contentDescription = "Avatar",
             modifier = Modifier
                 .size(65.dp)
@@ -141,7 +137,7 @@ fun ProfileSection(isDarkMode: Boolean) {
                 text = "Dmanhz",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
-                color = if (isDarkMode) Color.White else Color.Black
+                color = MaterialTheme.colors.onSurface
             )
             Text(
                 text = "dmanhz@gmail.com",
@@ -153,12 +149,12 @@ fun ProfileSection(isDarkMode: Boolean) {
 }
 
 @Composable
-fun SettingSectionTitle(title: String, isDarkMode: Boolean) {
+fun SettingSectionTitle(title: String) {
     Text(
         text = title,
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
-        color = if (isDarkMode) Color(0xfffccd51) else Color(0xFFf09a37),
+        color = MaterialTheme.colors.primary,
         modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
     )
 }
@@ -167,7 +163,6 @@ fun SettingSectionTitle(title: String, isDarkMode: Boolean) {
 fun SettingItem(
     icon: ImageVector,
     title: String,
-    isDarkMode: Boolean,
     subtitle: String? = null,
     trailing: @Composable (() -> Unit)? = null
 ) {
@@ -176,7 +171,7 @@ fun SettingItem(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isDarkMode) Color(0xFF1E1E1E) else Color.White)
+            .background(MaterialTheme.colors.surface)
             .clickable { /* Xử lý khi click vào item */ }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -184,7 +179,7 @@ fun SettingItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (isDarkMode) Color.LightGray else Color.DarkGray,
+            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -192,7 +187,7 @@ fun SettingItem(
             Text(
                 text = title,
                 fontSize = 16.sp,
-                color = if (isDarkMode) Color.White else Color.Black
+                color = MaterialTheme.colors.onSurface
             )
             if (subtitle != null) {
                 Text(text = subtitle, fontSize = 12.sp, color = Color.Gray)
@@ -202,7 +197,6 @@ fun SettingItem(
             trailing()
         } else {
             Icon(
-                // Nếu bị lỗi đỏ ở ChevronRight, hãy dùng KeyboardArrowRight
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = null,
                 tint = Color.LightGray

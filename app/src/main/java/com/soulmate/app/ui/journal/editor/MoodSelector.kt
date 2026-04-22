@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,9 +27,6 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-
-import com.soulmate.app.ui.theme.BackgroundLight
-import com.soulmate.app.ui.theme.TextPrimary
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalFoundationApi::class)
@@ -103,7 +101,7 @@ fun MoodSelector(
                                     .size(60.dp)
                                     .scale(scale)
                                     .clip(CircleShape)
-                                    .background(BackgroundLight)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                             )
                         }
 
@@ -124,7 +122,7 @@ fun MoodSelector(
                 text = moods[centerIndex].label,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }

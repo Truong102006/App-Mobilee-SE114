@@ -67,26 +67,34 @@ fun MoodCard() {
             .fillMaxWidth()
             .height(96.dp)
             .shadow(6.dp, shape = RoundedCornerShape(16.dp)) // Đã thêm import shadow
-            .background(Color.White, shape = RoundedCornerShape(16.dp))
-            .border(2.dp, Color(0xFFffbc25), RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colors.surface, shape = RoundedCornerShape(16.dp))
+            .border(2.dp, MaterialTheme.colors.primary, RoundedCornerShape(16.dp))
             .clickable { permissionLauncher.launch(Manifest.permission.RECORD_AUDIO) }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "How are you feeling today?", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            Text(text = "Tap to record mood", color = Color.Gray)
+            Text(
+                text = "How are you feeling today?",
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = MaterialTheme.colors.onSurface
+            )
+            Text(
+                text = "Tap to record mood",
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+            )
         }
 
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFFFE0B2)),
+                .background(MaterialTheme.colors.primary.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             IconButton(onClick = { permissionLauncher.launch(Manifest.permission.RECORD_AUDIO) }) {
-                Icon(Icons.Default.Mic, contentDescription = "Mic", tint = Color(0xFF2E7D32))
+                Icon(Icons.Default.Mic, contentDescription = "Mic", tint = MaterialTheme.colors.primary)
             }
         }
     }
@@ -113,7 +121,6 @@ fun RecordingOverlay(
     val context = LocalContext.current
     var isRecording by remember { mutableStateOf(false) }
     var transcribedText by remember { mutableStateOf("") }
-    val orangeMain = Color(0xFFffbc25)
 
     // Khởi tạo Speech Recognizer
     val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
@@ -156,13 +163,18 @@ fun RecordingOverlay(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text("Ghi âm nhật ký", color = orangeMain, fontWeight = FontWeight.Bold,
-                            modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        Text(
+                            "Ghi âm nhật ký",
+                            color = MaterialTheme.colors.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
                     },
-                    backgroundColor = Color.White,
+                    backgroundColor = MaterialTheme.colors.surface,
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.Black)
+                            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = MaterialTheme.colors.onSurface)
                         }
                     },
                     actions = { Box(Modifier.size(48.dp)) },
@@ -170,10 +182,16 @@ fun RecordingOverlay(
                 )
             }
         ) { padding ->
-            Column(modifier = Modifier.fillMaxSize().padding(padding).background(Color(0xFFFDFDFD)).padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .background(MaterialTheme.colors.background)
+                    .padding(16.dp)
+            ) {
 
                 LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(history) { item -> DiaryPostItem(item, orangeMain) }
+                    items(history) { item -> DiaryPostItem(item) }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -184,19 +202,20 @@ fun RecordingOverlay(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp)
-                        .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(16.dp)),
-                    placeholder = { Text("Đang lắng nghe...") },
+                        .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+                    placeholder = { Text("Đang lắng nghe...", color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)) },
                     colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White,
+                        backgroundColor = MaterialTheme.colors.surface,
                         focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+                        unfocusedIndicatorColor = Color.Transparent,
+                        textColor = MaterialTheme.colors.onSurface
                     ),
                     shape = RoundedCornerShape(16.dp)
                 )
 
                 Box(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
                     IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.CenterStart)) {
-                        Icon(Icons.Default.ArrowBackIos, contentDescription = null, tint = Color.Gray)
+                        Icon(Icons.Default.ArrowBackIos, contentDescription = null, tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
                     }
 
                     Button(
@@ -211,7 +230,7 @@ fun RecordingOverlay(
                         },
                         shape = CircleShape,
                         modifier = Modifier.size(80.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = if (isRecording) Color.Red else orangeMain)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = if (isRecording) Color.Red else MaterialTheme.colors.primary)
                     ) {
                         Icon(imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
                             contentDescription = null, tint = Color.White, modifier = Modifier.size(36.dp))
@@ -229,7 +248,7 @@ fun RecordingOverlay(
                         enabled = transcribedText.isNotEmpty()
                     ) {
                         Icon(Icons.Default.Send, contentDescription = null,
-                            tint = if (transcribedText.isNotEmpty()) orangeMain else Color.Gray, modifier = Modifier.size(32.dp))
+                            tint = if (transcribedText.isNotEmpty()) MaterialTheme.colors.primary else Color.Gray, modifier = Modifier.size(32.dp))
                     }
                 }
             }
@@ -238,13 +257,14 @@ fun RecordingOverlay(
 }
 
 @Composable
-fun DiaryPostItem(item: RecordingNote, borderColor: Color) {
+fun DiaryPostItem(item: RecordingNote) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .border(1.dp, borderColor, RoundedCornerShape(16.dp)),
+            .border(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+        backgroundColor = MaterialTheme.colors.surface,
         elevation = 0.dp
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
@@ -259,11 +279,11 @@ fun DiaryPostItem(item: RecordingNote, borderColor: Color) {
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = item.userName, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                    Text(text = item.dateTime, fontSize = 11.sp, color = Color.Gray)
+                    Text(text = item.userName, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colors.onSurface)
+                    Text(text = item.dateTime, fontSize = 11.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = item.text, fontSize = 14.sp, color = Color.DarkGray)
+                Text(text = item.text, fontSize = 14.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
             }
         }
     }

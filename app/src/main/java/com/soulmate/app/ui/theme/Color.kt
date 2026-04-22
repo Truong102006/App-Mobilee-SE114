@@ -16,3 +16,18 @@ val BackgroundMain = Color(0xFFFAF9FF)
 val BackgroundLight = Color(0xFFE0E8FF)
 val TextPrimary = Color(0xFF282C35)
 val TextSecondary = Color(0xFF717784)
+
+// Light Colors
+val LightBackground = Color(0xFFF8F9FA)
+val LightSurface = Color(0xFFFFFFFF)
+val LightOnSurface = Color(0xFF000000)
+val LightOnSurfaceVariant = Color(0xFF717784)
+val BrandOrange = Color(0xFFf09a37)
+val BrandYellow = Color(0xfffccd51)
+
+// Dark Colors
+val DarkBackground = Color(0xFF121212)
+val DarkSurface = Color(0xFF1E1E1E)
+val DarkOnSurface = Color(0xFFFFFFFF)
+val DarkOnSurfaceVariant = Color(0xFFB0B0B0)
+val DarkError = Color(0xFFFF4444)

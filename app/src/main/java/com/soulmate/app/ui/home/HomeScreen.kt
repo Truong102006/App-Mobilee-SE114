@@ -5,13 +5,16 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -20,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.*
+import com.soulmate.app.ui.theme.SoulMateTheme
 import kotlin.math.abs
 
 // 1. Cấu trúc dữ liệu bài hát
@@ -33,7 +37,10 @@ data class Song(
 @Composable
 fun HomeScreen() {
     val context = LocalContext.current
-    val exoPlayer = remember { ExoPlayer.Builder(context).build() }
+    val isPreview = LocalInspectionMode.current
+    val exoPlayer = remember {
+        if (isPreview) null else ExoPlayer.Builder(context).build()
+    }
 
     // Quản lý trạng thái màn hình và phát nhạc
     var isFullScreen by remember { mutableStateOf(false) }
@@ -46,7 +53,7 @@ fun HomeScreen() {
 
     // Giải phóng Player khi thoát
     DisposableEffect(Unit) {
-        onDispose { exoPlayer.release() }
+        onDispose { exoPlayer?.release() }
     }
 
     val songs = remember {
@@ -92,37 +99,43 @@ fun HomeScreen() {
 
     // Theo dõi trạng thái kết thúc bài hát để tự chuyển bài
     LaunchedEffect(exoPlayer) {
-        val listener = object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_ENDED) playNextSong()
+        exoPlayer?.let { player ->
+            val listener = object : Player.Listener {
+                override fun onPlaybackStateChanged(state: Int) {
+                    if (state == Player.STATE_ENDED) playNextSong()
+                }
             }
+            player.addListener(listener)
         }
-        exoPlayer.addListener(listener)
     }
 
     // Cập nhật Media Source khi đổi bài
     LaunchedEffect(currentPlayingSong) {
-        currentPlayingSong?.let { song ->
-            val uri = Uri.parse("android.resource://${context.packageName}/${song.musicRes}")
-            val mediaItem = MediaItem.fromUri(uri)
-            exoPlayer.setMediaItem(mediaItem)
-            exoPlayer.prepare()
-            exoPlayer.play()
-            isPlaying = true
+        exoPlayer?.let { player ->
+            currentPlayingSong?.let { song ->
+                val uri = Uri.parse("android.resource://${context.packageName}/${song.musicRes}")
+                val mediaItem = MediaItem.fromUri(uri)
+                player.setMediaItem(mediaItem)
+                player.prepare()
+                player.play()
+                isPlaying = true
+            }
         }
     }
 
     // Điều khiển Play/Pause
     LaunchedEffect(isPlaying) {
-        if (isPlaying) exoPlayer.play() else exoPlayer.pause()
+        if (isPlaying) exoPlayer?.play() else exoPlayer?.pause()
     }
 
     // --- CẬP NHẬT THỜI GIAN THỰC (THANH NHẠC) ---
     LaunchedEffect(isPlaying, currentPlayingSong) {
-        while (isPlaying) {
-            currentPosition = exoPlayer.currentPosition
-            duration = exoPlayer.duration.coerceAtLeast(0L)
-            delay(500) // Cập nhật mỗi 0.5 giây
+        exoPlayer?.let { player ->
+            while (isPlaying) {
+                currentPosition = player.currentPosition
+                duration = player.duration.coerceAtLeast(0L)
+                delay(500) // Cập nhật mỗi 0.5 giây
+            }
         }
     }
 
@@ -154,6 +167,44 @@ fun HomeScreen() {
             }
     }
 
+    HomeScreenContent(
+        songs = songs,
+        isFullScreen = isFullScreen,
+        currentPlayingSong = currentPlayingSong,
+        isPlaying = isPlaying,
+        currentPosition = currentPosition,
+        duration = duration,
+        listState = listState,
+        selectedIndex = selectedIndex,
+        onSongClick = { currentPlayingSong = it },
+        onPlayPauseClick = { isPlaying = !isPlaying },
+        onNextClick = playNextSong,
+        onPreviousClick = playPreviousSong,
+        onPlayerClick = { isFullScreen = true },
+        onBackClick = { isFullScreen = false },
+        onSeek = { newPos -> exoPlayer?.seekTo(newPos) }
+    )
+}
+
+@Composable
+fun HomeScreenContent(
+    songs: List<Song>,
+    isFullScreen: Boolean,
+    currentPlayingSong: Song?,
+    isPlaying: Boolean,
+    currentPosition: Long,
+    duration: Long,
+    listState: LazyListState,
+    selectedIndex: Int,
+    onSongClick: (Song) -> Unit,
+    onPlayPauseClick: () -> Unit,
+    onNextClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    onPlayerClick: () -> Unit,
+    onBackClick: () -> Unit,
+    onSeek: (Long) -> Unit
+) {
+    val virtualCount = 50000
     // --- GIAO DIỆN ---
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -165,14 +216,14 @@ fun HomeScreen() {
                             artist = song.artist,
                             imageRes = song.imageRes,
                             isPlaying = isPlaying,
-                            onPlayPauseClick = { isPlaying = !isPlaying },
-                            onNextClick = playNextSong,
-                            onPlayerClick = { isFullScreen = true }
+                            onPlayPauseClick = onPlayPauseClick,
+                            onNextClick = onNextClick,
+                            onPlayerClick = onPlayerClick
                         )
                     }
                 }
             },
-            backgroundColor = Color(0xFFFDFDFD)
+            backgroundColor = MaterialTheme.colors.background
         ) { paddingValues ->
             Column(
                 modifier = Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState())
@@ -185,13 +236,14 @@ fun HomeScreen() {
                     text = "Your Favourite Songs",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.onBackground,
                     modifier = Modifier.padding(start = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
                     LazyRow(
                         state = listState,
-                        contentPadding = PaddingValues(horizontal = 90.dp),
+                        contentPadding = PaddingValues(horizontal = 70.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         items(virtualCount) { index ->
@@ -200,7 +252,7 @@ fun HomeScreen() {
                             Box(modifier = Modifier.clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
-                            ) { currentPlayingSong = song }) {
+                            ) { onSongClick(song) }) {
                                 SongItem(song.title, song.imageRes, songIndex == selectedIndex)
                             }
                         }
@@ -213,18 +265,47 @@ fun HomeScreen() {
         // Màn hình chi tiết với thanh thời lượng thực tế
         if (isFullScreen && currentPlayingSong != null) {
             MusicPlayerDetailScreen(
-                title = currentPlayingSong!!.title,
-                artist = currentPlayingSong!!.artist,
-                imageRes = currentPlayingSong!!.imageRes,
+                title = currentPlayingSong.title,
+                artist = currentPlayingSong.artist,
+                imageRes = currentPlayingSong.imageRes,
                 isPlaying = isPlaying,
                 currentPosition = currentPosition,
                 duration = duration,
-                onPlayPauseClick = { isPlaying = !isPlaying },
-                onNextClick = playNextSong,
-                onPreviousClick = playPreviousSong,
-                onBackClick = { isFullScreen = false },
-                onSeek = { newPos -> exoPlayer.seekTo(newPos) }
+                onPlayPauseClick = onPlayPauseClick,
+                onNextClick = onNextClick,
+                onPreviousClick = onPreviousClick,
+                onBackClick = onBackClick,
+                onSeek = onSeek
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    val sampleSongs = listOf(
+        Song("Alaba trap", "MCK", R.drawable.song111, R.raw.song1),
+        Song("Thích quá rùi nà", "Tlinh", R.drawable.song22, R.raw.song2),
+        Song("Nghe như tình yêu", "HIEUTHUHAI", R.drawable.song33, R.raw.song3)
+    )
+    SoulMateTheme {
+        HomeScreenContent(
+            songs = sampleSongs,
+            isFullScreen = false,
+            currentPlayingSong = sampleSongs[0],
+            isPlaying = false,
+            currentPosition = 30000L,
+            duration = 180000L,
+            listState = rememberLazyListState(),
+            selectedIndex = 0,
+            onSongClick = {},
+            onPlayPauseClick = {},
+            onNextClick = {},
+            onPreviousClick = {},
+            onPlayerClick = {},
+            onBackClick = {},
+            onSeek = {}
+        )
     }
 }

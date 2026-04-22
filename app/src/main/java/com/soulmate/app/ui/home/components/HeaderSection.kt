@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -40,8 +41,8 @@ fun HeaderSection() {
         Column(
             modifier = Modifier.padding(start = 16.dp, top = 40.dp)
         ) {
-            Text("Hello There !", fontSize = 16.sp, color = Color(0xFF6c6c6c))
-            Text("Dmanhz", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("Hello There !", fontSize = 16.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
+            Text("Dmanhz", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.onSurface)
         }
 
         // 3. Avatar Box - Thay đổi từ offset sang Alignment
@@ -51,8 +52,8 @@ fun HeaderSection() {
                 .padding(top = 40.dp, end = 10.dp) // Margin Top 40dp và Margin Right 10dp
                 .size(52.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
-                .background(Color.White),
+                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colors.surface),
             contentAlignment = Alignment.Center
         ) {
             if (hasAvatar) {
