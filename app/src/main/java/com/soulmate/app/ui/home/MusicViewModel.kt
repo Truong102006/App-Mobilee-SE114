@@ -26,21 +26,35 @@ class MusicViewModel @Inject constructor(
 
     val songs = listOf(
         Song("Alaba trap", "MCK", R.drawable.song111, R.raw.song1),
+
+        Song("Hooligan", "BTS", R.drawable.song12, R.raw.song12),
+        Song("IDOL", "BTS", R.drawable.song13, R.raw.song13),
+        Song("DNA", "BTS", R.drawable.song14, R.raw.song14),
+        Song("Not Today", "BTS", R.drawable.song15, R.raw.song15),
+        Song("Go Go", "BTS", R.drawable.song16, R.raw.song16),
+
         Song("Thích quá rùi nà", "Tlinh", R.drawable.song22, R.raw.song2),
         Song("Nghe như tình yêu", "HIEUTHUHAI", R.drawable.song33, R.raw.song3),
         Song("Stay", "Justin Bieber", R.drawable.song4, R.raw.song4),
         Song("Bước qua mùa cô đơn", "Vũ", R.drawable.song5, R.raw.song5),
         Song("Lạ lùng", "Vũ", R.drawable.song6, R.raw.song6),
+
+        Song("Chìm Sâu", "RPT MCK", R.drawable.song17, R.raw.song17),
+        Song("Vẫn Đợi", "Wrxdie", R.drawable.song18, R.raw.song18),
+        Song("Phóng Zìn Zìn", "Tlinh", R.drawable.song19, R.raw.song19),
+        Song("Đen đá không đường", "AMEE", R.drawable.song20, R.raw.song20),
+        Song("50 Năm Về Sau", "Đặng Thanh Tuyền", R.drawable.song21, R.raw.song21),
+
         Song("Cần gì nói yêu", "Wxrdie", R.drawable.song77, R.raw.song7),
         Song("Cua", "HIEUTHUHAI", R.drawable.song88, R.raw.song8),
         Song("Mamma Mia", "HIEUTHUHAI", R.drawable.song99, R.raw.song9),
         Song("Big City Boy", "Binz", R.drawable.song10, R.raw.song10),
         Song("Pho Real", "Low G", R.drawable.song11, R.raw.pho_real),
-        Song("Hooligan", "BTS", R.drawable.song12, R.raw.song12),
-        Song("IDOL", "BTS", R.drawable.song13, R.raw.song13),
-        Song("DNA", "BTS", R.drawable.song14, R.raw.song14),
-        Song("Not Today", "BTS", R.drawable.song15, R.raw.song15),
-        Song("Go Go", "BTS", R.drawable.song16, R.raw.song16)
+
+
+
+
+
     )
 
     private val _currentPlayingSong = mutableStateOf<Song?>(null)
