@@ -12,9 +12,10 @@ import androidx.compose.ui.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.soulmate.app.ui.home.components.*
+import com.soulmate.app.ui.journal.history.HistoryViewModel
 
 @Composable
-fun HomeScreen(musicViewModel: MusicViewModel) {
+fun HomeScreen(musicViewModel: MusicViewModel, historyViewModel: HistoryViewModel) {
     val songs = musicViewModel.songs
     val currentPlayingSong by musicViewModel.currentPlayingSong
     val isPlaying by musicViewModel.isPlaying
@@ -64,7 +65,8 @@ fun HomeScreen(musicViewModel: MusicViewModel) {
         onPreviousClick = { musicViewModel.playPreviousSong() },
         onPlayerClick = { musicViewModel.toggleFullScreen(true) },
         onBackClick = { musicViewModel.toggleFullScreen(false) },
-        onSeek = { musicViewModel.seekTo(it) }
+        onSeek = { musicViewModel.seekTo(it) },
+        historyViewModel = historyViewModel
     )
 }
 
@@ -84,7 +86,8 @@ fun HomeScreenContent(
     onPreviousClick: () -> Unit,
     onPlayerClick: () -> Unit,
     onBackClick: () -> Unit,
-    onSeek: (Long) -> Unit
+    onSeek: (Long) -> Unit,
+    historyViewModel: HistoryViewModel? = null
 ) {
     val virtualCount = 50000
     // --- GIAO DIỆN ---
@@ -112,7 +115,7 @@ fun HomeScreenContent(
             ) {
                 HeaderSection()
                 Spacer(modifier = Modifier.height(16.dp))
-                MoodCard()
+                MoodCard(historyViewModel)
                 Spacer(modifier = Modifier.height(18.dp))
                 Text(
                     text = "Your Favourite Songs",

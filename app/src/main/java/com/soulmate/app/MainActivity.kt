@@ -23,6 +23,7 @@ import com.soulmate.app.ui.home.HomeScreen
 import com.soulmate.app.ui.home.MusicViewModel
 import com.soulmate.app.ui.journal.editor.MultimediaEditor
 import com.soulmate.app.ui.journal.history.HistoryScreen
+import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.setting.SettingScreen
 import com.soulmate.app.ui.setting.ThemeViewModel
 import com.soulmate.app.ui.theme.SoulMateTheme
@@ -32,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
+    private val historyViewModel: HistoryViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,8 +93,8 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable(Screen.Diary.route) { MultimediaEditor() }
-                        composable(Screen.Home.route) { HomeScreen(musicViewModel) }
-                        composable(Screen.History.route) { HistoryScreen() }
+                        composable(Screen.Home.route) { HomeScreen(musicViewModel, historyViewModel) }
+                        composable(Screen.History.route) { HistoryScreen(historyViewModel) }
                         composable(Screen.Setting.route) { SettingScreen(themeViewModel) }
                     }
                 }

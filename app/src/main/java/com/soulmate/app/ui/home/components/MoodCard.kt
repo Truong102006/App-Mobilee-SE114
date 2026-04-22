@@ -8,7 +8,9 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,8 +20,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,18 +27,22 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.soulmate.app.R
+import com.soulmate.app.ui.journal.history.HistoryViewModel
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Model dữ liệu (Nên để trong file riêng nhưng để ở đây để fix lỗi Unresolved nhanh)
+// Model dữ liệu
 data class RecordingNote(
     val id: Long = System.currentTimeMillis(),
     val dateTime: String,
@@ -48,13 +52,11 @@ data class RecordingNote(
 )
 
 @Composable
-fun MoodCard() {
+fun MoodCard(historyViewModel: HistoryViewModel? = null) {
     var showRecordingScreen by remember { mutableStateOf(false) }
-    // Khởi tạo danh sách bài đăng
     var recordingNotes by remember { mutableStateOf(listOf<RecordingNote>()) }
     val context = LocalContext.current
 
-    // Launcher xin quyền ghi âm thật
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -66,7 +68,7 @@ fun MoodCard() {
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .height(96.dp)
-            .shadow(6.dp, shape = RoundedCornerShape(16.dp)) // Đã thêm import shadow
+            .shadow(6.dp, shape = RoundedCornerShape(16.dp))
             .background(MaterialTheme.colors.surface, shape = RoundedCornerShape(16.dp))
             .border(2.dp, MaterialTheme.colors.primary, RoundedCornerShape(16.dp))
             .clickable { permissionLauncher.launch(Manifest.permission.RECORD_AUDIO) }
@@ -107,6 +109,13 @@ fun MoodCard() {
                 val newNote = RecordingNote(dateTime = sdf.format(Date()), text = newText)
                 recordingNotes = listOf(newNote) + recordingNotes
             },
+            onDelete = { note ->
+                recordingNotes = recordingNotes.filter { it.id != note.id }
+            },
+            onSave = { note ->
+                historyViewModel?.addNote(note)
+                recordingNotes = recordingNotes.filter { it.id != note.id }
+            },
             history = recordingNotes
         )
     }
@@ -116,13 +125,14 @@ fun MoodCard() {
 fun RecordingOverlay(
     onDismiss: () -> Unit,
     onPost: (String) -> Unit,
+    onDelete: (RecordingNote) -> Unit,
+    onSave: (RecordingNote) -> Unit,
     history: List<RecordingNote>
 ) {
     val context = LocalContext.current
     var isRecording by remember { mutableStateOf(false) }
     var transcribedText by remember { mutableStateOf("") }
 
-    // Khởi tạo Speech Recognizer
     val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
     val recognizerIntent = remember {
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -191,7 +201,13 @@ fun RecordingOverlay(
             ) {
 
                 LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(history) { item -> DiaryPostItem(item) }
+                    items(history, key = { it.id }) { item ->
+                        SwipeableDiaryItem(
+                            item = item,
+                            onDelete = { onDelete(item) },
+                            onSave = { onSave(item) }
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -223,7 +239,6 @@ fun RecordingOverlay(
                             if (isRecording) {
                                 speechRecognizer.stopListening()
                             } else {
-                                // QUAN TRỌNG: Reset text khi bắt đầu ghi âm mới để tránh chồng lấp
                                 transcribedText = ""
                                 speechRecognizer.startListening(recognizerIntent)
                                 isRecording = true
@@ -241,10 +256,8 @@ fun RecordingOverlay(
                         onClick = {
                             if (transcribedText.isNotEmpty()) {
                                 onPost(transcribedText)
-                                // Xóa text sau khi gửi thành công
                                 transcribedText = ""
                                 isRecording = false
-                                // Dừng lắng nghe nếu đang chạy
                                 speechRecognizer.stopListening()
                             }
                         },
@@ -260,13 +273,85 @@ fun RecordingOverlay(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun SwipeableDiaryItem(
+    item: RecordingNote,
+    onDelete: () -> Unit,
+    onSave: () -> Unit
+) {
+    val density = LocalDensity.current
+    // Quẹt khoảng 100dp để lộ đủ 2 nút (mỗi nút 40dp + khoảng cách)
+    val swipeLimit = with(density) { 100.dp.toPx() }
+    val swipeableState = rememberSwipeableState(initialValue = 0)
+    val anchors = mapOf(0f to 0, -swipeLimit to 1)
+
+    // Tự động đóng sau 3 giây nếu đang ở trạng thái mở
+    if (swipeableState.currentValue == 1) {
+        LaunchedEffect(item.id) {
+            delay(3000)
+            swipeableState.animateTo(0)
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .swipeable(
+                state = swipeableState,
+                anchors = anchors,
+                thresholds = { _, _ -> FractionalThreshold(0.3f) },
+                orientation = Orientation.Horizontal
+            )
+    ) {
+        // Lớp dưới: Chứa các nút bấm
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onSave,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF4CAF50).copy(alpha = 0.1f))
+            ) {
+                Icon(Icons.Default.Check, contentDescription = "Save", tint = Color(0xFF4CAF50))
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.Red.copy(alpha = 0.1f))
+            ) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+            }
+        }
+
+        // Lớp trên: Nội dung thẻ nhật ký, sẽ bị kéo đi
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(swipeableState.offset.value.toInt(), 0) }
+                .fillMaxWidth()
+        ) {
+            DiaryPostItem(item)
+        }
+    }
+}
+
 @Composable
 fun DiaryPostItem(item: RecordingNote) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
             .border(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
         backgroundColor = MaterialTheme.colors.surface,
         elevation = 0.dp
