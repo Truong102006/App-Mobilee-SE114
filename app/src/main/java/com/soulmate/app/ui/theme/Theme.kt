@@ -1,22 +1,83 @@
 package com.soulmate.app.ui.theme
 
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme as MaterialTheme3
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+private val LightColorPalette = lightColors(
+    primary = BrandOrange,
+    primaryVariant = BrandYellow,
+    secondary = BrandYellow,
+    background = LightBackground,
+    surface = LightSurface,
+    onPrimary = Color.White,
+    onSecondary = Color.Black,
+    onBackground = Color.Black,
+    onSurface = Color.Black
+)
+
+private val DarkColorPalette = darkColors(
+    primary = BrandYellow,
+    primaryVariant = BrandOrange,
+    secondary = BrandOrange,
+    background = DarkBackground,
+    surface = DarkSurface,
+    onPrimary = Color.Black,
+    onSecondary = Color.White,
+    onBackground = Color.White,
+    onSurface = Color.White,
+    error = DarkError
+)
+
+private val LightColorScheme3 = lightColorScheme(
+    primary = BrandOrange,
+    secondary = BrandYellow,
+    tertiary = PrimaryGreen,
+    background = LightBackground,
+    surface = LightSurface,
+    onPrimary = Color.White,
+    onSecondary = Color.Black,
+    onTertiary = Color.White,
+    onBackground = Color.Black,
+    onSurface = Color.Black,
+    surfaceVariant = Color(0xFFF2F4F7)
+)
+
+private val DarkColorScheme3 = darkColorScheme(
+    primary = BrandYellow,
+    secondary = BrandOrange,
+    tertiary = PrimaryGreen,
+    background = DarkBackground,
+    surface = DarkSurface,
+    onPrimary = Color.Black,
+    onSecondary = Color.White,
+    onTertiary = Color.White,
+    onBackground = Color.White,
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF2C2C2E)
 )
 
 @Composable
 fun SoulMateTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    MaterialTheme(
-        colorScheme = LightColorScheme,
-        typography = Typography,
-        content = content
-    )
+    val colors = if (darkTheme) DarkColorPalette else LightColorPalette
+    val colorScheme3 = if (darkTheme) DarkColorScheme3 else LightColorScheme3
+
+    MaterialTheme3(
+        colorScheme = colorScheme3
+    ) {
+        MaterialTheme(
+            colors = colors,
+            typography = Typography,
+            content = content
+        )
+    }
 }

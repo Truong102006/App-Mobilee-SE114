@@ -3,6 +3,7 @@ package com.soulmate.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
@@ -19,35 +20,39 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.soulmate.app.ui.Screen
 import com.soulmate.app.ui.home.HomeScreen
+import com.soulmate.app.ui.home.MusicViewModel
 import com.soulmate.app.ui.journal.editor.MultimediaEditor
+import com.soulmate.app.ui.journal.history.HistoryScreen
+import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.setting.SettingScreen
+import com.soulmate.app.ui.setting.ThemeViewModel
 import com.soulmate.app.ui.theme.SoulMateTheme
 import dagger.hilt.android.AndroidEntryPoint
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
-
-import com.soulmate.app.ui.theme.SoulMateTheme
-import com.soulmate.app.ui.journal.editor.MultimediaEditor
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val themeViewModel: ThemeViewModel by viewModels()
+    private val musicViewModel: MusicViewModel by viewModels()
+    private val historyViewModel: HistoryViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SoulMateTheme {
+            SoulMateTheme(darkTheme = themeViewModel.isDarkMode.value) {
                 val navController = rememberNavController()
 
                 // Danh sách các màn hình xuất hiện trên Bottom Bar
                 val items = listOf(
                     Screen.Diary,
                     Screen.Home,
+                    Screen.History,
                     Screen.Setting
                 )
 
                 Scaffold(
                     bottomBar = {
                         BottomNavigation(
-                            backgroundColor = Color.White, // Bạn có thể đổi màu tùy thích
+                            backgroundColor = MaterialTheme.colors.surface,
                             elevation = 8.dp
                         ) {
                             val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -66,17 +71,14 @@ class MainActivity : ComponentActivity() {
                                     },
                                     label = { Text(screen.title) },
                                     selected = isSelected,
-                                    selectedContentColor = Color(0xffef9b38), // Màu khi chọn
-                                    unselectedContentColor = Color.Gray,      // Màu khi không chọn
+                                    selectedContentColor = MaterialTheme.colors.primary,
+                                    unselectedContentColor = Color.Gray,
                                     onClick = {
                                         navController.navigate(screen.route) {
-                                            // Tránh chồng chất nhiều instance của cùng một màn hình
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
                                             }
-                                            // Tránh mở lại màn hình đó nếu đang ở chính nó
                                             launchSingleTop = true
-                                            // Giữ lại trạng thái của màn hình khi quay lại
                                             restoreState = true
                                         }
                                     }
@@ -91,20 +93,12 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable(Screen.Diary.route) { MultimediaEditor() }
-                        composable(Screen.Home.route) { HomeScreen() }
-                        composable(Screen.Setting.route) { SettingScreen() }
+                        composable(Screen.Home.route) { HomeScreen(musicViewModel, historyViewModel) }
+                        composable(Screen.History.route) { HistoryScreen(historyViewModel) }
+                        composable(Screen.Setting.route) { SettingScreen(themeViewModel) }
                     }
                 }
             }
-            // val context = LocalContext.current
-
-            // MultimediaEditor(
-            //    onSaveClick = { draftData ->
-            //        val message = "Title: ${draftData.title}\nContent: ${draftData.contentHtml}"
-
-            //        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            //    }
-            //)
         }
     }
 }

@@ -66,14 +66,13 @@ fun MultimediaEditor(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = BackgroundMain,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
                         "Nhật Ký",
-                        // CHUYỂN VỀ: PrimaryGreen cho tiêu đề
-                        color = PrimaryGreen,
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 24.sp
@@ -81,7 +80,7 @@ fun MultimediaEditor(
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = BackgroundMain
+                    containerColor = MaterialTheme.colorScheme.background
                 ),
                 actions = {
                     Surface(
@@ -96,13 +95,12 @@ fun MultimediaEditor(
                         },
                         modifier = Modifier.padding(end = 12.dp),
                         shape = CircleShape,
-                        // CHUYỂN VỀ: PrimaryGreen nhạt cho nền nút
-                        color = PrimaryGreen.copy(alpha = 0.15f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Save diary",
-                            tint = PrimaryGreen, // Icon xanh lá
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(8.dp).size(24.dp)
                         )
                     }
@@ -129,9 +127,9 @@ fun MultimediaEditor(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     // CHUYỂN VỀ: Viền xanh PrimaryGreen cho border ngoài
-                    .border(1.5.dp, PrimaryGreen, RoundedCornerShape(24.dp)),
+                    .border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(24.dp)),
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 8.dp
             ) {
                 Column(
@@ -144,7 +142,7 @@ fun MultimediaEditor(
                         Text(
                             text = currentDateTime,
                             style = MaterialTheme.typography.labelMedium,
-                            color = PrimaryGreen, // Chữ ngày tháng màu xanh lá
+                            color = MaterialTheme.colorScheme.primary, // Chữ ngày tháng màu xanh lá
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -163,8 +161,8 @@ fun MultimediaEditor(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             // CHUYỂN VỀ: Viền xanh cho thanh thuộc tính
-                            .border(1.dp, PrimaryGreen.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
-                        color = BackgroundMain.copy(alpha = 0.3f),
+                            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         RichTextToolbar(state = richTextState)
@@ -216,7 +214,7 @@ fun MultimediaEditor(
                     }
 
                     // Bottom Toolbar
-                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                     EditorBottomToolbar(
                         onAddImageClick = {
                             photoPickerLauncher.launch(
