@@ -20,6 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.soulmate.app.ui.Screen
 import com.soulmate.app.ui.home.HomeScreen
+import com.soulmate.app.ui.home.MusicViewModel
 import com.soulmate.app.ui.journal.editor.MultimediaEditor
 import com.soulmate.app.ui.journal.history.HistoryScreen
 import com.soulmate.app.ui.setting.SettingScreen
@@ -30,6 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val themeViewModel: ThemeViewModel by viewModels()
+    private val musicViewModel: MusicViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +91,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable(Screen.Diary.route) { MultimediaEditor() }
-                        composable(Screen.Home.route) { HomeScreen() }
+                        composable(Screen.Home.route) { HomeScreen(musicViewModel) }
                         composable(Screen.History.route) { HistoryScreen() }
                         composable(Screen.Setting.route) { SettingScreen(themeViewModel) }
                     }

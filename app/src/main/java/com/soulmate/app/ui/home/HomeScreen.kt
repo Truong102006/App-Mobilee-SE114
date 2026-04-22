@@ -1,6 +1,5 @@
 package com.soulmate.app.ui.home
 
-import android.net.Uri
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -10,134 +9,18 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.*
-import com.soulmate.app.ui.theme.SoulMateTheme
-import kotlin.math.abs
-
-// 1. Cấu trúc dữ liệu bài hát
-data class Song(
-    val title: String,
-    val artist: String,
-    val imageRes: Int,
-    val musicRes: Int
-)
 
 @Composable
-fun HomeScreen() {
-    val context = LocalContext.current
-    val isPreview = LocalInspectionMode.current
-    val exoPlayer = remember {
-        if (isPreview) null else ExoPlayer.Builder(context).build()
-    }
-
-    // Quản lý trạng thái màn hình và phát nhạc
-    var isFullScreen by remember { mutableStateOf(false) }
-    var currentPlayingSong by remember { mutableStateOf<Song?>(null) }
-    var isPlaying by remember { mutableStateOf(false) }
-
-    // --- CÁC BIẾN QUẢN LÝ THỜI GIAN THỰC ---
-    var currentPosition by remember { mutableLongStateOf(0L) }
-    var duration by remember { mutableLongStateOf(0L) }
-
-    // Giải phóng Player khi thoát
-    DisposableEffect(Unit) {
-        onDispose { exoPlayer?.release() }
-    }
-
-    val songs = remember {
-        listOf(
-            Song("Alaba trap", "MCK", R.drawable.song111, R.raw.song1),
-            Song("Thích quá rùi nà", "Tlinh", R.drawable.song22, R.raw.song2),
-            Song("Nghe như tình yêu", "HIEUTHUHAI", R.drawable.song33, R.raw.song3),
-            Song("Stay", "Justin Bieber", R.drawable.song4, R.raw.song4),
-            Song("Bước qua mùa cô đơn", "Vũ", R.drawable.song5, R.raw.song5),
-
-            Song("Lạ lùng", "Vũ", R.drawable.song6, R.raw.song6),
-            Song("Cần gì nói yêu", "Wxrdie", R.drawable.song77, R.raw.song7),
-            Song("Cua", "HIEUTHUHAI", R.drawable.song88, R.raw.song8),
-            Song("Mamma Mia", "HIEUTHUHAI", R.drawable.song99, R.raw.song9),
-            Song("Big City Boy", "Binz", R.drawable.song10, R.raw.song10),
-            Song("Pho Real", "Low G", R.drawable.song11, R.raw.pho_real),
-
-            Song("Hooligan", "BTS", R.drawable.song12, R.raw.song12),
-            Song("IDOL", "BTS", R.drawable.song13, R.raw.song13),
-            Song("DNA", "BTS", R.drawable.song14, R.raw.song14),
-            Song("Not Today", "BTS", R.drawable.song15, R.raw.song15),
-            Song("Go Go", "BTS", R.drawable.song16, R.raw.song16)
-        )
-    }
-
-    // --- LOGIC ĐIỀU KHIỂN ---
-
-    val playNextSong = {
-        currentPlayingSong?.let { current ->
-            val currentIndex = songs.indexOf(current)
-            val nextIndex = (currentIndex + 1) % songs.size
-            currentPlayingSong = songs[nextIndex]
-        } ?: Unit
-    }
-
-    val playPreviousSong = {
-        currentPlayingSong?.let { current ->
-            val currentIndex = songs.indexOf(current)
-            val prevIndex = if (currentIndex <= 0) songs.size - 1 else currentIndex - 1
-            currentPlayingSong = songs[prevIndex]
-        } ?: Unit
-    }
-
-    // Theo dõi trạng thái kết thúc bài hát để tự chuyển bài
-    LaunchedEffect(exoPlayer) {
-        exoPlayer?.let { player ->
-            val listener = object : Player.Listener {
-                override fun onPlaybackStateChanged(state: Int) {
-                    if (state == Player.STATE_ENDED) playNextSong()
-                }
-            }
-            player.addListener(listener)
-        }
-    }
-
-    // Cập nhật Media Source khi đổi bài
-    LaunchedEffect(currentPlayingSong) {
-        exoPlayer?.let { player ->
-            currentPlayingSong?.let { song ->
-                val uri = Uri.parse("android.resource://${context.packageName}/${song.musicRes}")
-                val mediaItem = MediaItem.fromUri(uri)
-                player.setMediaItem(mediaItem)
-                player.prepare()
-                player.play()
-                isPlaying = true
-            }
-        }
-    }
-
-    // Điều khiển Play/Pause
-    LaunchedEffect(isPlaying) {
-        if (isPlaying) exoPlayer?.play() else exoPlayer?.pause()
-    }
-
-    // --- CẬP NHẬT THỜI GIAN THỰC (THANH NHẠC) ---
-    LaunchedEffect(isPlaying, currentPlayingSong) {
-        exoPlayer?.let { player ->
-            while (isPlaying) {
-                currentPosition = player.currentPosition
-                duration = player.duration.coerceAtLeast(0L)
-                delay(500) // Cập nhật mỗi 0.5 giây
-            }
-        }
-    }
+fun HomeScreen(musicViewModel: MusicViewModel) {
+    val songs = musicViewModel.songs
+    val currentPlayingSong by musicViewModel.currentPlayingSong
+    val isPlaying by musicViewModel.isPlaying
+    val currentPosition by musicViewModel.currentPosition
+    val duration by musicViewModel.duration
+    val isFullScreen by musicViewModel.isFullScreen
 
     // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
@@ -150,18 +33,17 @@ fun HomeScreen() {
 
     LaunchedEffect(Unit) {
         while (true) {
-            delay(2800)
+            kotlinx.coroutines.delay(2800)
             try { listState.animateScrollToItem(listState.firstVisibleItemIndex + 1) } catch (e: Exception) {}
         }
     }
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo }
-            .distinctUntilChanged()
             .collect { layoutInfo ->
                 val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
                 val closestItem = layoutInfo.visibleItemsInfo.minByOrNull { item ->
-                    abs((item.offset + item.size / 2) - viewportCenter)
+                    kotlin.math.abs((item.offset + item.size / 2) - viewportCenter)
                 }
                 closestItem?.let { selectedIndex = it.index % songs.size }
             }
@@ -176,13 +58,13 @@ fun HomeScreen() {
         duration = duration,
         listState = listState,
         selectedIndex = selectedIndex,
-        onSongClick = { currentPlayingSong = it },
-        onPlayPauseClick = { isPlaying = !isPlaying },
-        onNextClick = playNextSong,
-        onPreviousClick = playPreviousSong,
-        onPlayerClick = { isFullScreen = true },
-        onBackClick = { isFullScreen = false },
-        onSeek = { newPos -> exoPlayer?.seekTo(newPos) }
+        onSongClick = { musicViewModel.playSong(it) },
+        onPlayPauseClick = { musicViewModel.togglePlayPause() },
+        onNextClick = { musicViewModel.playNextSong() },
+        onPreviousClick = { musicViewModel.playPreviousSong() },
+        onPlayerClick = { musicViewModel.toggleFullScreen(true) },
+        onBackClick = { musicViewModel.toggleFullScreen(false) },
+        onSeek = { musicViewModel.seekTo(it) }
     )
 }
 
@@ -278,34 +160,5 @@ fun HomeScreenContent(
                 onSeek = onSeek
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    val sampleSongs = listOf(
-        Song("Alaba trap", "MCK", R.drawable.song111, R.raw.song1),
-        Song("Thích quá rùi nà", "Tlinh", R.drawable.song22, R.raw.song2),
-        Song("Nghe như tình yêu", "HIEUTHUHAI", R.drawable.song33, R.raw.song3)
-    )
-    SoulMateTheme {
-        HomeScreenContent(
-            songs = sampleSongs,
-            isFullScreen = false,
-            currentPlayingSong = sampleSongs[0],
-            isPlaying = false,
-            currentPosition = 30000L,
-            duration = 180000L,
-            listState = rememberLazyListState(),
-            selectedIndex = 0,
-            onSongClick = {},
-            onPlayPauseClick = {},
-            onNextClick = {},
-            onPreviousClick = {},
-            onPlayerClick = {},
-            onBackClick = {},
-            onSeek = {}
-        )
     }
 }
