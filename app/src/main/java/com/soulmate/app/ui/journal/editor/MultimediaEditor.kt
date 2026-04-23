@@ -1,10 +1,10 @@
 package com.soulmate.app.ui.journal.editor
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,35 +22,50 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.soulmate.app.ui.theme.*
-import androidx.compose.ui.tooling.preview.Preview
 import java.text.SimpleDateFormat
 import java.util.*
-
-// GIỮ NGUYÊN DATA CLASS GỐC
-data class DiaryDraft(
-    val title: String,
-    val contentHtml: String,
-    val images: List<Uri>,
-    val mood: Mood
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MultimediaEditor(
-    onSaveClick: (DiaryDraft) -> Unit = {}
+    viewModel: DiaryViewModel = hiltViewModel(),
+    onBackClick: () -> Unit = {}
 ) {
-    // GIỮ NGUYÊN CÁC LOGIC STATE GỐC
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+    
     var title by remember { mutableStateOf("") }
     val richTextState = rememberRichTextState()
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var zoomedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var selectedMood by remember { mutableStateOf(Mood.Neutral) }
+
+    // Đồng bộ Mood từ ViewModel UI State
+    val selectedMood = remember(uiState.selectedMood) {
+        Mood.values().find { it.label == uiState.selectedMood } ?: Mood.Neutral
+    }
+
+    // Theo dõi khi lưu thành công
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            Toast.makeText(context, "Đã lưu nhật ký thành công!", Toast.LENGTH_SHORT).show()
+            onBackClick()
+        }
+    }
+
+    // Theo dõi lỗi
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            Toast.makeText(context, "Lỗi: $it", Toast.LENGTH_LONG).show()
+        }
+    }
 
     // Logic lấy thời gian hiện tại
     val currentDateTime = remember {
@@ -83,26 +98,25 @@ fun MultimediaEditor(
                     containerColor = MaterialTheme.colorScheme.background
                 ),
                 actions = {
-                    Surface(
-                        onClick = {
-                            val draft = DiaryDraft(
-                                title = title,
-                                contentHtml = richTextState.toHtml(),
-                                images = selectedImages,
-                                mood = selectedMood
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp).padding(end = 16.dp))
+                    } else {
+                        Surface(
+                            onClick = {
+                                viewModel.onTextChanged(richTextState.annotatedString.text)
+                                viewModel.saveDiary()
+                            },
+                            modifier = Modifier.padding(end = 12.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Save diary",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(8.dp).size(24.dp)
                             )
-                            onSaveClick(draft)
-                        },
-                        modifier = Modifier.padding(end = 12.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Save diary",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(8.dp).size(24.dp)
-                        )
+                        }
                     }
                 }
             )
@@ -117,16 +131,14 @@ fun MultimediaEditor(
             Box(modifier = Modifier.padding(vertical = 8.dp)) {
                 MoodSelector(
                     selectedMood = selectedMood,
-                    onMoodChange = { selectedMood = it }
+                    onMoodChange = { viewModel.onMoodSelected(it.label) }
                 )
             }
 
-            // Body chính với VIỀN XANH LÁ và SHADOW
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    // CHUYỂN VỀ: Viền xanh PrimaryGreen cho border ngoài
                     .border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(24.dp)),
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
@@ -137,12 +149,11 @@ fun MultimediaEditor(
                         .fillMaxSize()
                         .padding(top = 16.dp)
                 ) {
-                    // Hiển thị Thứ, ngày, tháng, năm trước Title
                     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                         Text(
                             text = currentDateTime,
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary, // Chữ ngày tháng màu xanh lá
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -155,12 +166,10 @@ fun MultimediaEditor(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Toolbar Rich Editor với VIỀN XANH LÁ nhạt
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
-                            // CHUYỂN VỀ: Viền xanh cho thanh thuộc tính
                             .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
@@ -168,7 +177,6 @@ fun MultimediaEditor(
                         RichTextToolbar(state = richTextState)
                     }
 
-                    // Content Area
                     DiaryContentField(
                         state = richTextState,
                         modifier = Modifier
@@ -213,7 +221,6 @@ fun MultimediaEditor(
                         }
                     }
 
-                    // Bottom Toolbar
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                     EditorBottomToolbar(
                         onAddImageClick = {
@@ -221,7 +228,16 @@ fun MultimediaEditor(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         },
-                        onRecordAudioClick = { /* record feature */ }
+                        onRecordAudioClick = { 
+                            // Khi nhấn ghi âm, mô phỏng việc lấy text và phân tích mood
+                            val currentText = richTextState.annotatedString.text
+                            if (currentText.isNotBlank()) {
+                                viewModel.analyzeMoodFromText(currentText)
+                                Toast.makeText(context, "Gemini đang phân tích cảm xúc...", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Vui lòng nhập nội dung trước khi phân tích!", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     )
                 }
             }
@@ -233,13 +249,5 @@ fun MultimediaEditor(
             uri = uri,
             onDismiss = { zoomedImageUri = null }
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MultimediaEditorPreview() {
-    SoulMateTheme {
-        MultimediaEditor()
     }
 }
