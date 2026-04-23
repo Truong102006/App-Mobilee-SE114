@@ -56,6 +56,7 @@ fun MultimediaEditor(
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             Toast.makeText(context, "Đã lưu nhật ký thành công!", Toast.LENGTH_SHORT).show()
+            viewModel.onSaveCompleteHandled()
             onBackClick()
         }
     }
@@ -63,7 +64,8 @@ fun MultimediaEditor(
     // Theo dõi lỗi
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
-            Toast.makeText(context, "Lỗi: $it", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            viewModel.onErrorHandled()
         }
     }
 
@@ -99,10 +101,15 @@ fun MultimediaEditor(
                 ),
                 actions = {
                     if (uiState.isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp).padding(end = 16.dp))
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp).padding(end = 16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     } else {
                         Surface(
                             onClick = {
+                                // Cập nhật text từ editor vào ViewModel trước khi lưu
                                 viewModel.onTextChanged(richTextState.annotatedString.text)
                                 viewModel.saveDiary()
                             },

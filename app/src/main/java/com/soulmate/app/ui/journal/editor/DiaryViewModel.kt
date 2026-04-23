@@ -48,6 +48,13 @@ class DiaryViewModel @Inject constructor(
     fun saveDiary() {
         viewModelScope.launch {
             val currentState = _uiState.value
+            
+            // Validation cơ bản
+            if (currentState.text.isBlank()) {
+                _uiState.value = _uiState.value.copy(error = "Nội dung nhật ký không được để trống")
+                return@launch
+            }
+
             val diary = Diary(
                 id = "", // Firestore sẽ tự tạo ID
                 userId = "current_user_id", // Cần lấy từ Auth sau
@@ -56,13 +63,21 @@ class DiaryViewModel @Inject constructor(
                 timestamp = System.currentTimeMillis()
             )
             
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             saveDiaryUseCase(diary).onSuccess {
                 _uiState.value = _uiState.value.copy(isLoading = false, isSaved = true)
             }.onFailure {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = it.message)
             }
         }
+    }
+
+    fun onSaveCompleteHandled() {
+        _uiState.value = _uiState.value.copy(isSaved = false)
+    }
+
+    fun onErrorHandled() {
+        _uiState.value = _uiState.value.copy(error = null)
     }
 }
 
