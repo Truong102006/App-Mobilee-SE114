@@ -1,10 +1,28 @@
 package com.soulmate.app.di
 
+import com.soulmate.app.data.repository.AIRepositoryImpl
+import com.soulmate.app.data.repository.DiaryRepositoryImpl
+import com.soulmate.app.domain.repository.IAIRepository
+import com.soulmate.app.domain.repository.IDiaryRepository
+import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindDiaryRepository(
+        diaryRepositoryImpl: DiaryRepositoryImpl
+    ): IDiaryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAIRepository(
+        aiRepositoryImpl: AIRepositoryImpl
+    ): IAIRepository
 }
