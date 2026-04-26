@@ -92,7 +92,20 @@ class MainActivity : ComponentActivity() {
                         startDestination = Screen.Home.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable(Screen.Diary.route) { MultimediaEditor() }
+                        composable(Screen.Diary.route) { 
+                            MultimediaEditor(
+                                historyViewModel = historyViewModel,
+                                onBackClick = {
+                                    navController.navigate(Screen.History.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            ) 
+                        }
                         composable(Screen.Home.route) { HomeScreen(musicViewModel, historyViewModel) }
                         composable(Screen.History.route) { HistoryScreen(historyViewModel) }
                         composable(Screen.Setting.route) { SettingScreen(themeViewModel) }

@@ -28,9 +28,10 @@ class DiaryViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(selectedMood = mood)
     }
 
-    /**
-     * Gọi khi người dùng hoàn thành ghi âm và có văn bản chuyển đổi
-     */
+    fun onImagesChanged(images: List<String>) {
+        _uiState.value = _uiState.value.copy(imageUrls = images)
+    }
+
     fun analyzeMoodFromText(text: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
@@ -49,17 +50,17 @@ class DiaryViewModel @Inject constructor(
         viewModelScope.launch {
             val currentState = _uiState.value
             
-            // Validation cơ bản
             if (currentState.text.isBlank()) {
                 _uiState.value = _uiState.value.copy(error = "Nội dung nhật ký không được để trống")
                 return@launch
             }
 
             val diary = Diary(
-                id = "", // Firestore sẽ tự tạo ID
-                userId = "current_user_id", // Cần lấy từ Auth sau
+                id = "", 
+                userId = "current_user_id", 
                 text = currentState.text,
                 moodTag = currentState.selectedMood,
+                imageUrls = emptyList(), // Không lưu danh sách ảnh vào Firebase nữa
                 timestamp = System.currentTimeMillis()
             )
             
@@ -84,6 +85,7 @@ class DiaryViewModel @Inject constructor(
 data class DiaryUiState(
     val text: String = "",
     val selectedMood: String = "Neutral",
+    val imageUrls: List<String> = emptyList(),
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
     val error: String? = null
