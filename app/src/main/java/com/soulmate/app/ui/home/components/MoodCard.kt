@@ -46,13 +46,15 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Model dữ liệu
+// Model dữ liệu cập nhật
 data class RecordingNote(
     val id: Long = System.currentTimeMillis(),
     val dateTime: String,
-    val text: String,
+    val text: String, // Đây sẽ chứa mã HTML
     val userName: String = "Dmanhz",
-    val avatarRes: Int = R.drawable.ava1
+    val avatarRes: Int = R.drawable.ava1,
+    val moodTag: String? = null,
+    val imageUrls: List<String> = emptyList() // Thêm danh sách ảnh
 )
 
 @Composable
@@ -216,7 +218,6 @@ fun RecordingOverlay(
                                 onDelete = { noteToDelete = item },
                                 onSave = { 
                                     showSaveSuccess = true
-                                    // Wait for animation then perform save
                                 }
                             )
                         }
@@ -288,7 +289,6 @@ fun RecordingOverlay(
                 SaveSuccessNotification(
                     onAnimationFinish = {
                         showSaveSuccess = false
-                        // Find the first item and save it (just for demonstration, you'd usually pass which item to save)
                         if (history.isNotEmpty()) {
                             onSave(history[0]) 
                         }

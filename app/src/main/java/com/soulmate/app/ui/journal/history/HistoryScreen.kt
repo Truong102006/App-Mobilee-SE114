@@ -1,13 +1,13 @@
 package com.soulmate.app.ui.journal.history
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +29,14 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichText
 import com.soulmate.app.ui.home.components.RecordingNote
+import com.soulmate.app.ui.journal.editor.Mood
 import kotlinx.coroutines.delay
 
 @Composable
@@ -119,13 +127,6 @@ fun SwipeableHistoryItem(
     val swipeableState = rememberSwipeableState(initialValue = 0)
     val anchors = mapOf(0f to 0, -swipeLimit to 1)
 
-    if (swipeableState.currentValue == 1) {
-        LaunchedEffect(item.id) {
-            delay(3000)
-            swipeableState.animateTo(0)
-        }
-    }
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -179,6 +180,29 @@ fun SwipeableHistoryItem(
 
 @Composable
 fun HistoryItem(item: RecordingNote) {
+    val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
+    val richTextState = rememberRichTextState()
+
+    // Đồng bộ HTML từ Diary sang RichTextState trong History
+    LaunchedEffect(item.text, isDark) {
+        val processedHtml = if (isDark) {
+            // Tự động chuyển màu chữ đen sang trắng trong chế độ Dark Mode để dễ đọc
+            val blackPattern = "(?i)color\\s*:\\s*(?:rgb\\(0,\\s*0,\\s*0\\)|rgba\\(0,\\s*0,\\s*0,\\s*1(?:\\.0)?\\)|#000(?:000)?|black)".toRegex()
+            item.text.replace(blackPattern, "color: #FFFFFF")
+        } else {
+            item.text
+        }
+        richTextState.setHtml(processedHtml)
+    }
+
+    val imageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (android.os.Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory()) else add(GifDecoder.Factory())
+            }.build()
+    }
+
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -187,23 +211,65 @@ fun HistoryItem(item: RecordingNote) {
         backgroundColor = MaterialTheme.colors.surface,
         elevation = 2.dp
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-            Image(
-                painter = painterResource(id = item.avatarRes),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(45.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = item.userName, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colors.onSurface)
-                    Text(text = item.dateTime, fontSize = 12.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = item.avatarRes),
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(text = item.userName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
+                        Text(text = item.dateTime, fontSize = 11.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
+                    }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = item.text, fontSize = 15.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))
+
+                // Hiển thị mood icon nếu có
+                item.moodTag?.let { tag ->
+                    Mood.entries.find { it.label == tag }?.let { mood ->
+                        AsyncImage(
+                            model = mood.iconRes,
+                            contentDescription = mood.label,
+                            imageLoader = imageLoader,
+                            modifier = Modifier.size(35.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Hiển thị văn bản với đầy đủ định dạng (màu sắc, kiểu chữ) từ Diary
+            RichText(
+                state = richTextState,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Hiển thị ảnh kèm theo nếu có
+            if (item.imageUrls.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(item.imageUrls) { url ->
+                        AsyncImage(
+                            model = url,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(110.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(0.5.dp, Color.LightGray.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
             }
         }
     }
