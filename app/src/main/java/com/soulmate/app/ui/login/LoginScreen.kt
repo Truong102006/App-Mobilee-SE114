@@ -59,10 +59,11 @@ fun LoginScreen(
         1.0f to Color(0xFFEDDD53)
     )
 
+    // Cố định màu nền trắng cho toàn màn hình và Card để không bị đổi màu khi ở DarkMode
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(Color.White)
     ) {
         // Top Header
         Box(
@@ -98,7 +99,8 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .wrapContentHeight(),
             shape = RoundedCornerShape(32.dp),
-            elevation = 8.dp
+            elevation = 8.dp,
+            backgroundColor = Color.White // Cố định nền Card màu trắng
         ) {
             Column(
                 modifier = Modifier
@@ -118,13 +120,16 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email Address") },
+                    label = { Text("Email Address", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     enabled = !isLoading,
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black), // Cố định màu chữ đen
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF3fd6a7),
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        backgroundColor = Color.White,
+                        textColor = Color.Black
                     )
                 )
 
@@ -133,10 +138,11 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text("Password", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     enabled = !isLoading,
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
@@ -146,7 +152,9 @@ fun LoginScreen(
                     },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF3fd6a7),
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        backgroundColor = Color.White,
+                        textColor = Color.Black
                     )
                 )
 
@@ -161,7 +169,10 @@ fun LoginScreen(
                         Checkbox(
                             checked = rememberMe,
                             onCheckedChange = { rememberMe = it },
-                            colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2A7B9B)),
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = Color(0xFF2A7B9B),
+                                uncheckedColor = Color.Gray
+                            ),
                             enabled = !isLoading
                         )
                         Text(text = "Remember me", fontSize = 14.sp, color = Color.DarkGray)
