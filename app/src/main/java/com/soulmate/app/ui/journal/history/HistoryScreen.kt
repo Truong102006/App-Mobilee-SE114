@@ -50,7 +50,7 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
 
     Scaffold(
         topBar = {
-            // Thêm margin top 15.dp cho phần TopAppBar
+            // Thêm margin top 30.dp cho phần TopAppBar
             Column(modifier = Modifier.background(MaterialTheme.colors.surface)) {
                 Spacer(modifier = Modifier.height(30.dp))
                 TopAppBar(
@@ -222,8 +222,8 @@ fun HistoryItem(item: RecordingNote) {
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
-        backgroundColor = MaterialTheme.colors.surface,
+            .border(2.dp, MaterialTheme.colors.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
+        backgroundColor = if (isDark) Color(0xFFB5B5B5) else MaterialTheme.colors.surface,
         elevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -241,8 +241,8 @@ fun HistoryItem(item: RecordingNote) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
-                        Text(text = item.userName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
-                        Text(text = item.dateTime, fontSize = 11.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
+                        Text(text = item.userName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = if (isDark) Color.Black else MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
+                        Text(text = item.dateTime, fontSize = 11.sp, color = if (isDark) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
                     }
                 }
 
@@ -298,7 +298,7 @@ fun EditNoteDialog(
     onConfirm: (String) -> Unit
 ) {
     val richTextState = rememberRichTextState()
-    
+
     // Khởi tạo nội dung RichText từ mã HTML đã lưu
     LaunchedEffect(note.text) {
         richTextState.setHtml(note.text)
@@ -312,13 +312,13 @@ fun EditNoteDialog(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    "Chỉnh sửa nhật ký", 
-                    fontSize = 18.sp, 
-                    fontWeight = FontWeight.Bold, 
+                    "Chỉnh sửa nhật ký",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.primary,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
-                
+
                 // Sử dụng RichTextEditor thay vì TextField để hiển thị định dạng thật
                 Surface(
                     modifier = Modifier
@@ -344,7 +344,7 @@ fun EditNoteDialog(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onDismiss) {
                         Text("Hủy", color = Color.Gray)
