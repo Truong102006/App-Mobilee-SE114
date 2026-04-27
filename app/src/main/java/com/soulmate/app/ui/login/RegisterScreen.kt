@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.login
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,16 +16,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.soulmate.app.R
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun RegisterScreen(
+    viewModel: AuthViewModel = hiltViewModel(),
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
@@ -35,6 +40,21 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var acceptTerms by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val isLoading by viewModel.isLoading
+
+    LaunchedEffect(Unit) {
+        viewModel.authSuccess.collectLatest {
+            onRegisterSuccess()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.error.collectLatest { errorMsg ->
+            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val customGradient = Brush.horizontalGradient(
         0.0f to Color(0xFF2A7B9B),
@@ -89,6 +109,13 @@ fun RegisterScreen(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth().height(2.dp),
+                        color = Color(0xFF2A7B9B)
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
@@ -97,6 +124,7 @@ fun RegisterScreen(
                     label = { Text("User Name") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading,
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF3fd6a7),
                         unfocusedBorderColor = Color.LightGray
@@ -111,6 +139,7 @@ fun RegisterScreen(
                     label = { Text("Email Address") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading,
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF3fd6a7),
                         unfocusedBorderColor = Color.LightGray
@@ -125,6 +154,7 @@ fun RegisterScreen(
                     label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
@@ -146,6 +176,7 @@ fun RegisterScreen(
                     label = { Text("Confirm Password") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading,
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val image = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
@@ -168,7 +199,8 @@ fun RegisterScreen(
                     Checkbox(
                         checked = acceptTerms,
                         onCheckedChange = { acceptTerms = it },
-                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2A7B9B))
+                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2A7B9B)),
+                        enabled = !isLoading
                     )
                     Text(
                         text = "I accept the policy and terms",
@@ -182,7 +214,9 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         if (acceptTerms) {
-                            onRegisterSuccess()
+                            viewModel.register(name, email, password, confirmPassword)
+                        } else {
+                            Toast.makeText(context, "Vui lòng chấp nhận điều khoản", Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier
@@ -191,10 +225,11 @@ fun RegisterScreen(
                         .clip(RoundedCornerShape(27.dp))
                         .background(customGradient),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
-                    elevation = null
+                    elevation = null,
+                    enabled = !isLoading
                 ) {
                     Text(
-                        text = "Sign up",
+                        text = if (isLoading) "Creating account..." else "Sign up",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -210,7 +245,7 @@ fun RegisterScreen(
                         color = Color(0xFF2A7B9B),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { onNavigateToLogin() }
+                        modifier = Modifier.clickable(enabled = !isLoading) { onNavigateToLogin() }
                     )
                 }
 

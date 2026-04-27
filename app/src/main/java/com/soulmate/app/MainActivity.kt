@@ -7,9 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -58,13 +58,15 @@ class MainActivity : ComponentActivity() {
                 } == true
 
                 Scaffold(
-                    // Không sử dụng insets mặc định của Scaffold để có thể tự kiểm soát phần top
+                    // Không sử dụng insets mặc định của Scaffold để có thể tự kiểm soát các phần
                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
                     bottomBar = {
                         if (!isAuthScreen) {
                             BottomNavigation(
                                 backgroundColor = MaterialTheme.colors.surface,
-                                elevation = 8.dp
+                                elevation = 8.dp,
+                                // Thêm padding ở dưới cùng cho BottomNavigation để không bị che bởi thanh điều hướng nút bấm
+                                modifier = Modifier.padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
                             ) {
                                 val items = listOf(
                                     Screen.Diary,
@@ -103,13 +105,17 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
+                    // Tính toán padding dưới: bao gồm cả BottomBar và thanh điều hướng hệ thống
+                    val bottomPadding = if (isAuthScreen) {
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    } else {
+                        innerPadding.calculateBottomPadding()
+                    }
+
                     NavHost(
                         navController = navController,
                         startDestination = Screen.Login.route,
-                        // Đối với màn hình Auth, ta không áp dụng padding của Scaffold để có thể tràn viền lên top
-                        modifier = Modifier.padding(
-                            bottom = if (!isAuthScreen) innerPadding.calculateBottomPadding() else 0.dp
-                        )
+                        modifier = Modifier.padding(bottom = bottomPadding)
                     ) {
                         composable(Screen.Login.route) {
                             LoginScreen(
