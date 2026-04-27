@@ -52,7 +52,7 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
         topBar = {
             // Thêm margin top 15.dp cho phần TopAppBar
             Column(modifier = Modifier.background(MaterialTheme.colors.surface)) {
-                Spacer(modifier = Modifier.height(35.dp))
+                Spacer(modifier = Modifier.height(30.dp))
                 TopAppBar(
                     title = { Text("Lịch sử nhật ký", fontWeight = FontWeight.Bold) },
                     backgroundColor = MaterialTheme.colors.surface,
@@ -134,10 +134,10 @@ fun SwipeableHistoryItem(
     val swipeableState = rememberSwipeableState(initialValue = 0)
     val anchors = mapOf(0f to 0, -swipeLimit to 1)
 
-    // Tự động đóng thanh chức năng sau 3 giây
+    // Tự động đóng thanh chức năng sau 2.5 giây
     if (swipeableState.currentValue == 1) {
         LaunchedEffect(item.id) {
-            delay(3000)
+            delay(2500)
             swipeableState.animateTo(0)
         }
     }
