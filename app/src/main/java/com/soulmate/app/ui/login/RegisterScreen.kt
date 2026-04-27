@@ -94,11 +94,11 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Full Name") },
+                    label = { Text("User Name") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFF2A7B9B),
+                        focusedBorderColor = Color(0xFF3fd6a7),
                         unfocusedBorderColor = Color.LightGray
                     )
                 )
@@ -112,7 +112,7 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFF2A7B9B),
+                        focusedBorderColor = Color(0xFF3fd6a7),
                         unfocusedBorderColor = Color.LightGray
                     )
                 )
@@ -133,7 +133,7 @@ fun RegisterScreen(
                         }
                     },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFF2A7B9B),
+                        focusedBorderColor = Color(0xFF3fd6a7),
                         unfocusedBorderColor = Color.LightGray
                     )
                 )
@@ -154,7 +154,7 @@ fun RegisterScreen(
                         }
                     },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFF2A7B9B),
+                        focusedBorderColor = Color(0xFF3fd6a7),
                         unfocusedBorderColor = Color.LightGray
                     )
                 )
@@ -180,15 +180,18 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(5.dp))
 
                 Button(
-                    onClick = onRegisterSuccess,
+                    onClick = {
+                        if (acceptTerms) {
+                            onRegisterSuccess()
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
                         .clip(RoundedCornerShape(27.dp))
                         .background(customGradient),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
-                    elevation = null,
-                    enabled = acceptTerms
+                    elevation = null
                 ) {
                     Text(
                         text = "Sign up",
@@ -235,15 +238,33 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    SocialIcon(iconRes = R.drawable.google)
+                    RegisterSocialIcon(iconRes = R.drawable.google)
                     Spacer(modifier = Modifier.width(16.dp))
-                    SocialIcon(iconRes = R.drawable.twitter)
+                    RegisterSocialIcon(iconRes = R.drawable.twitter)
                     Spacer(modifier = Modifier.width(16.dp))
-                    SocialIcon(iconRes = R.drawable.facebook)
+                    RegisterSocialIcon(iconRes = R.drawable.facebook)
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
             }
+        }
+    }
+}
+
+@Composable
+fun RegisterSocialIcon(iconRes: Int) {
+    Card(
+        modifier = Modifier.size(45.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = 2.dp,
+        backgroundColor = Color.White
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
