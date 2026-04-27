@@ -1,103 +1,249 @@
 package com.soulmate.app.ui.login
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.soulmate.app.R
 
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var acceptTerms by remember { mutableStateOf(false) }
 
-    Column(
+    val customGradient = Brush.horizontalGradient(
+        0.0f to Color(0xFF2A7B9B),
+        0.5f to Color(0xFF57C785),
+        1.0f to Color(0xFFEDDD53)
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(Color(0xFFF5F5F5))
     ) {
-        Text(
-            text = "Tạo tài khoản mới",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colors.primary
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Text(
-            text = "Điền thông tin để đăng ký",
-            fontSize = 16.sp,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Mật khẩu") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Xác nhận mật khẩu") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = onRegisterSuccess,
+        // Top Header
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(12.dp)
+                .height(139.dp)
+                .clip(RoundedCornerShape(bottomStart = 110.dp, bottomEnd = 0.dp))
+                .background(customGradient)
+                .padding(top = 45.dp, end = 52.dp),
+            contentAlignment = Alignment.TopEnd
         ) {
-            Text("Đăng Ký", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "Join With Us !",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Sign Up",
+                    color = Color.White,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        // Register Card
+        Card(
+            modifier = Modifier
+                .padding(top = 160.dp, start = 24.dp, end = 24.dp, bottom = 20.dp)
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(32.dp),
+            elevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Row {
-            Text("Đã có tài khoản? ", color = Color.Gray)
-            Text(
-                text = "Đăng nhập",
-                color = MaterialTheme.colors.primary,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onNavigateToLogin() }
-            )
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Full Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF2A7B9B),
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email Address") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF2A7B9B),
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = image, contentDescription = null, tint = Color.Gray)
+                        }
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF2A7B9B),
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirm Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                            Icon(imageVector = image, contentDescription = null, tint = Color.Gray)
+                        }
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF2A7B9B),
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = acceptTerms,
+                        onCheckedChange = { acceptTerms = it },
+                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2A7B9B))
+                    )
+                    Text(
+                        text = "I accept the policy and terms",
+                        fontSize = 14.sp,
+                        color = Color.DarkGray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Button(
+                    onClick = onRegisterSuccess,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .clip(RoundedCornerShape(27.dp))
+                        .background(customGradient),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
+                    elevation = null,
+                    enabled = acceptTerms
+                ) {
+                    Text(
+                        text = "Sign up",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row {
+                    Text(text = "Already have an account? ", fontSize = 14.sp, color = Color.DarkGray)
+                    Text(
+                        text = "Log in",
+                        color = Color(0xFF2A7B9B),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onNavigateToLogin() }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Social Signup Divider
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                    Text(
+                        text = " Or sign up with ",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Social Icons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SocialIcon(iconRes = R.drawable.google)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    SocialIcon(iconRes = R.drawable.twitter)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    SocialIcon(iconRes = R.drawable.facebook)
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
 }
