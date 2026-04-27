@@ -127,6 +127,14 @@ fun SwipeableHistoryItem(
     val swipeableState = rememberSwipeableState(initialValue = 0)
     val anchors = mapOf(0f to 0, -swipeLimit to 1)
 
+    // Tự động đóng thanh chức năng sau 3 giây
+    if (swipeableState.currentValue == 1) {
+        LaunchedEffect(item.id) {
+            delay(2300)
+            swipeableState.animateTo(0)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
