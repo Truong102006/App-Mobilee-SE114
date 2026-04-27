@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.login
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,16 +16,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.soulmate.app.R
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LoginScreen(
+    viewModel: AuthViewModel = hiltViewModel(),
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
@@ -32,6 +37,21 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
+    
+    val context = LocalContext.current
+    val isLoading by viewModel.isLoading
+
+    LaunchedEffect(Unit) {
+        viewModel.authSuccess.collectLatest {
+            onLoginSuccess()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.error.collectLatest { errorMsg ->
+            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val customGradient = Brush.horizontalGradient(
         0.0f to Color(0xFF2A7B9B),
@@ -39,12 +59,13 @@ fun LoginScreen(
         1.0f to Color(0xFFEDDD53)
     )
 
+    // Cố định màu nền trắng cho toàn màn hình và Card để không bị đổi màu khi ở DarkMode
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(Color.White)
     ) {
-        // Top Blue Header (Giữ nguyên các thông số cũ)
+        // Top Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -78,7 +99,8 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .wrapContentHeight(),
             shape = RoundedCornerShape(32.dp),
-            elevation = 8.dp
+            elevation = 8.dp,
+            backgroundColor = Color.White // Cố định nền Card màu trắng
         ) {
             Column(
                 modifier = Modifier
@@ -86,17 +108,28 @@ fun LoginScreen(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth().height(2.dp),
+                        color = Color(0xFF2A7B9B)
+                    )
+                }
+                
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email Address") },
+                    label = { Text("Email Address", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading,
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black), // Cố định màu chữ đen
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF3fd6a7),
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        backgroundColor = Color.White,
+                        textColor = Color.Black
                     )
                 )
 
@@ -105,9 +138,11 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text("Password", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading,
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
@@ -117,7 +152,9 @@ fun LoginScreen(
                     },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF3fd6a7),
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color.LightGray,
+                        backgroundColor = Color.White,
+                        textColor = Color.Black
                     )
                 )
 
@@ -132,7 +169,11 @@ fun LoginScreen(
                         Checkbox(
                             checked = rememberMe,
                             onCheckedChange = { rememberMe = it },
-                            colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2A7B9B))
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = Color(0xFF2A7B9B),
+                                uncheckedColor = Color.Gray
+                            ),
+                            enabled = !isLoading
                         )
                         Text(text = "Remember me", fontSize = 14.sp, color = Color.DarkGray)
                     }
@@ -141,24 +182,25 @@ fun LoginScreen(
                         color = Color(0xFF2A7B9B),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { /* Forgot password logic */ }
+                        modifier = Modifier.clickable(enabled = !isLoading) { /* Forgot password logic */ }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
-                    onClick = onLoginSuccess,
+                    onClick = { viewModel.login(email, password) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
                         .clip(RoundedCornerShape(27.dp))
                         .background(customGradient),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
-                    elevation = null
+                    elevation = null,
+                    enabled = !isLoading
                 ) {
                     Text(
-                        text = "Log in",
+                        text = if (isLoading) "Logging in..." else "Log in",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -174,7 +216,7 @@ fun LoginScreen(
                         color = Color(0xFF2A7B9B),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { onNavigateToRegister() }
+                        modifier = Modifier.clickable(enabled = !isLoading) { onNavigateToRegister() }
                     )
                 }
 
