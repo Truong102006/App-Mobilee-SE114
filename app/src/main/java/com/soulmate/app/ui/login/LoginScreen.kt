@@ -1,0 +1,234 @@
+package com.soulmate.app.ui.login
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.soulmate.app.R
+
+@Composable
+fun LoginScreen(
+    onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var rememberMe by remember { mutableStateOf(false) }
+
+    val customGradient = Brush.horizontalGradient(
+        0.0f to Color(0xFF2A7B9B),
+        0.5f to Color(0xFF57C785),
+        1.0f to Color(0xFFEDDD53)
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+    ) {
+        // Top Blue Header (Giữ nguyên các thông số cũ)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(139.dp)
+                .clip(RoundedCornerShape(bottomStart = 0.dp, bottomEnd = 110.dp))
+                .background(customGradient)
+                .padding(top = 45.dp, start = 32.dp),
+            contentAlignment = Alignment.TopStart
+        ) {
+            Column(horizontalAlignment = Alignment.Start) {
+                Text(
+                    text = "Welcome Back !",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Log In",
+                    color = Color.White,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        // Login Card
+        Card(
+            modifier = Modifier
+                .padding(top = 180.dp, start = 24.dp, end = 24.dp, bottom = 40.dp)
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(32.dp),
+            elevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email Address") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF3fd6a7),
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = image, contentDescription = null, tint = Color.Gray)
+                        }
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF3fd6a7),
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = rememberMe,
+                            onCheckedChange = { rememberMe = it },
+                            colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2A7B9B))
+                        )
+                        Text(text = "Remember me", fontSize = 14.sp, color = Color.DarkGray)
+                    }
+                    Text(
+                        text = "Forgot password?",
+                        color = Color(0xFF2A7B9B),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.clickable { /* Forgot password logic */ }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = onLoginSuccess,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .clip(RoundedCornerShape(27.dp))
+                        .background(customGradient),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
+                    elevation = null
+                ) {
+                    Text(
+                        text = "Log in",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row {
+                    Text(text = "Don't have an account? ", fontSize = 14.sp, color = Color.DarkGray)
+                    Text(
+                        text = "Sign up",
+                        color = Color(0xFF2A7B9B),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onNavigateToRegister() }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Social Login Divider
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                    Text(
+                        text = " Or login with ",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Social Icons với ảnh thực tế
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SocialIcon(iconRes = R.drawable.google)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    SocialIcon(iconRes = R.drawable.twitter)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    SocialIcon(iconRes = R.drawable.facebook)
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun SocialIcon(iconRes: Int) {
+    Card(
+        modifier = Modifier.size(45.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = 2.dp,
+        backgroundColor = Color.White
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}

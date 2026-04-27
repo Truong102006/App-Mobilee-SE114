@@ -25,7 +25,10 @@ import androidx.compose.ui.unit.sp
 import com.soulmate.app.R
 
 @Composable
-fun SettingScreen(themeViewModel: ThemeViewModel) {
+fun SettingScreen(
+    themeViewModel: ThemeViewModel,
+    onLogout: () -> Unit = {}
+) {
     val isDarkMode by themeViewModel.isDarkMode
     var notificationEnabled by remember { mutableStateOf(true) }
 
@@ -96,7 +99,7 @@ fun SettingScreen(themeViewModel: ThemeViewModel) {
 
         // --- LOGOUT BUTTON ---
         Button(
-            onClick = { /* Xử lý đăng xuất */ },
+            onClick = onLogout,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),

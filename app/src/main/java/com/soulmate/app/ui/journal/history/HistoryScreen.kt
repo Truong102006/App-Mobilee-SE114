@@ -50,12 +50,16 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Lịch sử nhật ký", fontWeight = FontWeight.Bold) },
-                backgroundColor = MaterialTheme.colors.surface,
-                contentColor = MaterialTheme.colors.primary,
-                elevation = 0.dp
-            )
+            // Thêm margin top 15.dp cho phần TopAppBar
+            Column(modifier = Modifier.background(MaterialTheme.colors.surface)) {
+                Spacer(modifier = Modifier.height(15.dp))
+                TopAppBar(
+                    title = { Text("Lịch sử nhật ký", fontWeight = FontWeight.Bold) },
+                    backgroundColor = MaterialTheme.colors.surface,
+                    contentColor = MaterialTheme.colors.primary,
+                    elevation = 0.dp
+                )
+            }
         },
         backgroundColor = MaterialTheme.colors.background
     ) { padding ->
