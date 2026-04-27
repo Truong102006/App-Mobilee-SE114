@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,8 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import com.soulmate.app.ui.home.components.RecordingNote
 import com.soulmate.app.ui.journal.editor.Mood
 import kotlinx.coroutines.delay
@@ -82,8 +85,8 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
         EditNoteDialog(
             note = noteToEdit!!,
             onDismiss = { noteToEdit = null },
-            onConfirm = { newText ->
-                viewModel.updateNote(noteToEdit!!.id, newText)
+            onConfirm = { newHtml ->
+                viewModel.updateNote(noteToEdit!!.id, newHtml)
                 noteToEdit = null
             }
         )
@@ -126,6 +129,14 @@ fun SwipeableHistoryItem(
     val swipeLimit = with(density) { 100.dp.toPx() }
     val swipeableState = rememberSwipeableState(initialValue = 0)
     val anchors = mapOf(0f to 0, -swipeLimit to 1)
+
+    // Tự động đóng thanh chức năng sau 3 giây
+    if (swipeableState.currentValue == 1) {
+        LaunchedEffect(item.id) {
+            delay(3000)
+            swipeableState.animateTo(0)
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -275,13 +286,19 @@ fun HistoryItem(item: RecordingNote) {
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun EditNoteDialog(
     note: RecordingNote,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    var text by remember { mutableStateOf(note.text) }
+    val richTextState = rememberRichTextState()
+    
+    // Khởi tạo nội dung RichText từ mã HTML đã lưu
+    LaunchedEffect(note.text) {
+        richTextState.setHtml(note.text)
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -290,26 +307,48 @@ fun EditNoteDialog(
             modifier = Modifier.fillMaxWidth().padding(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Chỉnh sửa nhật ký", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)
-                Spacer(modifier = Modifier.height(16.dp))
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colors.primary,
-                        textColor = MaterialTheme.colors.onSurface
-                    )
+                Text(
+                    "Chỉnh sửa nhật ký", 
+                    fontSize = 18.sp, 
+                    fontWeight = FontWeight.Bold, 
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
+                
+                // Sử dụng RichTextEditor thay vì TextField để hiển thị định dạng thật
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 100.dp, max = 300.dp)
+                        .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f), RoundedCornerShape(8.dp)),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.05f)
+                ) {
+                    RichTextEditor(
+                        state = richTextState,
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        textStyle = TextStyle(
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colors.onSurface
+                        ),
+                        colors = RichTextEditorDefaults.richTextEditorColors(
+                            containerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
+                
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onDismiss) {
                         Text("Hủy", color = Color.Gray)
                     }
                     Button(
-                        onClick = { onConfirm(text) },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
+                        onClick = { onConfirm(richTextState.toHtml()) },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Text("Lưu", color = Color.White)
                     }
