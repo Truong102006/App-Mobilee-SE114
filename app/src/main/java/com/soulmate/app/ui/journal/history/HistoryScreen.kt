@@ -1,19 +1,45 @@
 package com.soulmate.app.ui.journal.history
 
 import MonthYearPickerDialog
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import com.soulmate.app.ui.home.components.RecordingNote
+import com.soulmate.app.ui.journal.editor.Mood
+import kotlinx.coroutines.delay
 import java.util.Calendar
 
 @Composable
@@ -210,11 +236,10 @@ fun HistoryItem(item: RecordingNote) {
     val isDark = isSystemInDarkTheme()
     val richTextState = rememberRichTextState()
 
-    // Đồng bộ HTML từ Diary sang RichTextState trong History
     LaunchedEffect(item.text, isDark) {
         val processedHtml = if (isDark) {
-            // Tự động chuyển màu chữ đen sang trắng trong chế độ Dark Mode để dễ đọc
-            val blackPattern = "(?i)color\\s*:\\s*(?:rgb\\(0,\\s*0,\\s*0\\)|rgba\\(0,\\s*0,\\s*0,\\s*1(?:\\.0)?\\)|#000(?:000)?|black)".toRegex()
+            val blackPattern =
+                "(?i)color\\s*:\\s*(?:rgb\\(0,\\s*0,\\s*0\\)|rgba\\(0,\\s*0,\\s*0,\\s*1(?:\\.0)?\\)|#000(?:000)?|black)".toRegex()
             item.text.replace(blackPattern, "color: #FFFFFF")
         } else {
             item.text
@@ -225,7 +250,9 @@ fun HistoryItem(item: RecordingNote) {
     val imageLoader = remember {
         ImageLoader.Builder(context)
             .components {
-                if (android.os.Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory()) else add(GifDecoder.Factory())
+                if (android.os.Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory()) else add(
+                    GifDecoder.Factory()
+                )
             }.build()
     }
 
@@ -233,7 +260,11 @@ fun HistoryItem(item: RecordingNote) {
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, MaterialTheme.colors.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
+            .border(
+                2.dp,
+                MaterialTheme.colors.primary.copy(alpha = 0.3f),
+                RoundedCornerShape(16.dp)
+            ),
         backgroundColor = if (isDark) Color(0xFFB5B5B5) else MaterialTheme.colors.surface,
         elevation = 2.dp
     ) {
@@ -252,8 +283,21 @@ fun HistoryItem(item: RecordingNote) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
-                        Text(text = item.userName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = if (isDark) Color.Black else MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
-                        Text(text = item.dateTime, fontSize = 11.sp, color = if (isDark) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
+                        Text(
+                            text = item.userName,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp,
+                            color = if (isDark) Color.Black else MaterialTheme.colors.onSurface.copy(
+                                alpha = 0.6f
+                            )
+                        )
+                        Text(
+                            text = item.dateTime,
+                            fontSize = 11.sp,
+                            color = if (isDark) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colors.onSurface.copy(
+                                alpha = 0.5f
+                            )
+                        )
                     }
                 }
 
@@ -269,85 +313,95 @@ fun HistoryItem(item: RecordingNote) {
                     }
                 }
 
-    if (showMonthPicker) {
-        MonthYearPickerDialog(
-            currentMonth = selectedMonth,
-            currentYear = selectedYear,
-            onDismiss = { showMonthPicker = false },
-            onConfirm = { newMonth, newYear ->
-                selectedMonth = newMonth
-                selectedYear = newYear
-                showMonthPicker = false
-            }
-        )
-    }
-}
-
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-@Composable
-fun EditNoteDialog(
-    note: RecordingNote,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
-) {
-    val richTextState = rememberRichTextState()
-
-    // Khởi tạo nội dung RichText từ mã HTML đã lưu
-    LaunchedEffect(note.text) {
-        richTextState.setHtml(note.text)
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colors.surface,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    "Chỉnh sửa nhật ký",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // Sử dụng RichTextEditor thay vì TextField để hiển thị định dạng thật
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 100.dp, max = 300.dp)
-                        .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f), RoundedCornerShape(8.dp)),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.05f)
-                ) {
-                    RichTextEditor(
-                        state = richTextState,
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
-                        textStyle = TextStyle(
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colors.onSurface
-                        ),
-                        colors = RichTextEditorDefaults.richTextEditorColors(
-                            containerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
+                if (showMonthPicker) {
+                    MonthYearPickerDialog(
+                        currentMonth = selectedMonth,
+                        currentYear = selectedYear,
+                        onDismiss = { showMonthPicker = false },
+                        onConfirm = { newMonth, newYear ->
+                            selectedMonth = newMonth
+                            selectedYear = newYear
+                            showMonthPicker = false
+                        }
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
+            @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+            @Composable
+            fun EditNoteDialog(
+                note: RecordingNote,
+                onDismiss: () -> Unit,
+                onConfirm: (String) -> Unit
+            ) {
+                val richTextState = rememberRichTextState()
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Hủy", color = Color.Gray)
-                    }
-                    Button(
-                        onClick = { onConfirm(richTextState.toHtml()) },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                        shape = RoundedCornerShape(8.dp)
+                // Khởi tạo nội dung RichText từ mã HTML đã lưu
+                LaunchedEffect(note.text) {
+                    richTextState.setHtml(note.text)
+                }
+
+                Dialog(onDismissRequest = onDismiss) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colors.surface,
+                        modifier = Modifier.fillMaxWidth().padding(16.dp)
                     ) {
-                        Text("Lưu", color = Color.White)
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                "Chỉnh sửa nhật ký",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.primary,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            // Sử dụng RichTextEditor thay vì TextField để hiển thị định dạng thật
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 100.dp, max = 300.dp)
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colors.onSurface.copy(alpha = 0.12f),
+                                        RoundedCornerShape(8.dp)
+                                    ),
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.05f)
+                            ) {
+                                RichTextEditor(
+                                    state = richTextState,
+                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                    textStyle = TextStyle(
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colors.onSurface
+                                    ),
+                                    colors = RichTextEditorDefaults.richTextEditorColors(
+                                        containerColor = Color.Transparent,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent
+                                    )
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                TextButton(onClick = onDismiss) {
+                                    Text("Hủy", color = Color.Gray)
+                                }
+                                Button(
+                                    onClick = { onConfirm(richTextState.toHtml()) },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("Lưu", color = Color.White)
+                                }
+                            }
+                        }
                     }
                 }
             }
