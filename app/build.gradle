@@ -129,6 +129,10 @@ dependencies {
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+    // Vico Chart - Thư viện vẽ biểu đồ xịn nhất cho Compose
+    implementation("com.patrykandpatrick.vico:compose:1.15.0")
+    implementation("com.patrykandpatrick.vico:compose-m2:1.15.0")
 }
 
 if (file("google-services.json").exists()) {
