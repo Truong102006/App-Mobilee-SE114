@@ -1,14 +1,16 @@
 package com.soulmate.app.ui.theme
 
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val White = Color(0xFFFFFFFF)
+val Black = Color(0xFF000000)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val customGradient = Brush.horizontalGradient(
+    0.0f to Color(0xFF2A7B9B),
+    0.5f to Color(0xFF57C785),
+    1.0f to Color(0xFFEDDD53)
+)
 
 val PrimaryGreen = Color(0xFF2CA148)
 val PrimaryGreenLight = Color(0xFFE5EDFF)

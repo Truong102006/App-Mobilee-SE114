@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soulmate.app.R
+import com.soulmate.app.ui.theme.customGradient
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -52,12 +53,6 @@ fun LoginScreen(
             Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
         }
     }
-
-    val customGradient = Brush.horizontalGradient(
-        0.0f to Color(0xFF2A7B9B),
-        0.5f to Color(0xFF57C785),
-        1.0f to Color(0xFFEDDD53)
-    )
 
     // Cố định màu nền trắng cho toàn màn hình và Card để không bị đổi màu khi ở DarkMode
     Box(
