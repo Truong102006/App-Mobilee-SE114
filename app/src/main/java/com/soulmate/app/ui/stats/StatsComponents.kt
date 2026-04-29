@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.stats
 
+import android.R.attr.data
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -28,10 +29,11 @@ import com.patrykandpatrick.vico.compose.chart.line.lineSpec
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.compose.component.shape.shader.fromBrush
 import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
+import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 
-
 data class DonutData(val label: String, val percentage: Float, val color: Color)
+data class DailyMoodData(val dayLabel: String, val moodScore: Float)
 
 @Composable
 fun MoodDonutChart(data: List<DonutData>) {
@@ -109,18 +111,11 @@ fun MoodDonutChart(data: List<DonutData>) {
 }
 
 @Composable
-fun MoodLineChart() {
-    // Data mẫu: Trục X là ngày, Trục Y là điểm cảm xúc (1: Giận dữ -> 5: Vui vẻ)
-    // entryModelOf( x to y, x to y... )
-    val chartEntryModel = entryModelOf(
-        1f to 3f, // Thứ 2: Neutral
-        2f to 5f, // Thứ 3: Happy
-        3f to 4f, // Thứ 4: Satisfied
-        4f to 2f, // Thứ 5: Sad
-        5f to 4f, // Thứ 6: Satisfied
-        6f to 5f, // Thứ 7: Happy
-        7f to 5f  // CN: Happy
-    )
+fun MoodLineChart(data: List<DailyMoodData>) {
+    val entries = data.mapIndexed { index, dailyMood ->
+        FloatEntry(x = index.toFloat(), y = dailyMood.moodScore)
+    }
+    val chartEntryModel = entryModelOf(entries)
 
     val primaryColor = MaterialTheme.colors.primary
 
@@ -157,7 +152,12 @@ fun MoodLineChart() {
         ),
         bottomAxis = rememberBottomAxis(
             valueFormatter = { value, _ ->
-                "T${value.toInt() + 1}"
+                val index = value.toInt()
+                if (index >= 0 && index < data.size) {
+                    data[index].dayLabel
+                } else {
+                    ""
+                }
             }
         ),
         modifier = Modifier.fillMaxWidth().height(220.dp)

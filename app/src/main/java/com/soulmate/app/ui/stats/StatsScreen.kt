@@ -120,7 +120,16 @@ fun StatsScreen() {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    MoodLineChart()
+                    val mockLineData = listOf(
+                        DailyMoodData("Mon", 3f),
+                        DailyMoodData("Tue", 5f),
+                        DailyMoodData("Wed", 4f),
+                        DailyMoodData("Thu", 2f),
+                        DailyMoodData("Fri", 4f),
+                        DailyMoodData("Sat", 5f),
+                        DailyMoodData("Sun", 5f)
+                    )
+                    MoodLineChart(data = mockLineData)
                 }
             }
 

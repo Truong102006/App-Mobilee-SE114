@@ -58,13 +58,11 @@ fun RegisterScreen(
         }
     }
 
-    // Cố định màu nền trắng cho toàn màn hình để không bị đổi màu khi ở DarkMode
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Top Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,7 +89,6 @@ fun RegisterScreen(
             }
         }
 
-        // Register Card
         Card(
             modifier = Modifier
                 .padding(top = 160.dp, start = 24.dp, end = 24.dp, bottom = 20.dp)
