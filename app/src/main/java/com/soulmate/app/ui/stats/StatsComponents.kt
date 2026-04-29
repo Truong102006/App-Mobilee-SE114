@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -23,7 +24,10 @@ import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
+import com.patrykandpatrick.vico.compose.chart.line.lineSpec
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
+import com.patrykandpatrick.vico.compose.component.shape.shader.fromBrush
+import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 
 
@@ -72,16 +76,31 @@ fun MoodDonutChart(data: List<DonutData>) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(start = 24.dp),
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
             data.forEach { item ->
                 if (item.percentage > 0) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(item.color))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "${item.label} ${item.percentage.toInt()}%", fontSize = 12.sp, color = MaterialTheme.colors.surface.copy(alpha = 0.8f))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .clip(CircleShape)
+                                .background(item.color)
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = "${item.label} ${item.percentage.toInt()}%",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
@@ -103,9 +122,25 @@ fun MoodLineChart() {
         7f to 5f  // CN: Happy
     )
 
+    val primaryColor = MaterialTheme.colors.primary
+
     Chart(
         chart = lineChart(
-            axisValuesOverrider = AxisValuesOverrider.fixed(minY = 1f, maxY = 5f)
+            axisValuesOverrider = AxisValuesOverrider.fixed(minY = 1f, maxY = 5f),
+            lines = listOf(
+                lineSpec(
+                    lineColor = primaryColor,
+                    lineThickness = 3.dp,
+                    lineBackgroundShader = DynamicShaders.fromBrush(
+                        brush = Brush.verticalGradient(
+                            listOf(
+                                primaryColor.copy(alpha = 0.4f), 
+                                primaryColor.copy(alpha = 0.0f) 
+                            )
+                        )
+                    )
+                )
+            )
         ),
         model = chartEntryModel,
         startAxis = rememberStartAxis(
@@ -128,3 +163,4 @@ fun MoodLineChart() {
         modifier = Modifier.fillMaxWidth().height(220.dp)
     )
 }
+
