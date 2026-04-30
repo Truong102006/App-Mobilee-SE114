@@ -81,6 +81,7 @@ fun LoginScreen(
                 firebaseAuthWithGoogle(idToken) { isSuccess ->
                     if (isSuccess) {
                         Log.d("GoogleLogin", "Login successfully!")
+                        onLoginSuccess()
                     } else {
                         Log.e("GoogleLogin", "Authentication error with Firebase.")
                     }
