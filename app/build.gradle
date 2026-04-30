@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -130,9 +131,16 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-    // Vico Chart - Thư viện vẽ biểu đồ xịn nhất cho Compose
+    // Vico Chart
     implementation("com.patrykandpatrick.vico:compose:1.15.0")
     implementation("com.patrykandpatrick.vico:compose-m2:1.15.0")
+
+    // Firebase Bill of Materials
+    implementation platform('com.google.firebase:firebase-bom:32.8.0')
+    // Firebase Authentication
+    implementation 'com.google.firebase:firebase-auth'
+    // Google Play Services Auth
+    implementation 'com.google.android.gms:play-services-auth:21.1.0'
 }
 
 if (file("google-services.json").exists()) {

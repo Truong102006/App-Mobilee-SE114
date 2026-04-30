@@ -299,7 +299,8 @@ fun RegisterScreen(
 @Composable
 fun RegisterSocialIcon(iconRes: Int) {
     Card(
-        modifier = Modifier.size(45.dp),
+        modifier = Modifier
+            .size(45.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = 2.dp,
         backgroundColor = Color.White
