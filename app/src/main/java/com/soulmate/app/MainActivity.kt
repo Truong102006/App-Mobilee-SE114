@@ -12,12 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.ui.Screen
 import com.soulmate.app.ui.components.CustomBottomNav // <-- Nhớ import Component này
 import com.soulmate.app.ui.home.HomeScreen
@@ -53,6 +57,13 @@ class MainActivity : ComponentActivity() {
                     it.route == Screen.Login.route || it.route == Screen.Register.route
                 } == true
 
+                val auth = FirebaseAuth.getInstance()
+                val startDest = if (auth.currentUser != null) {
+                    Screen.Home.route
+                } else {
+                    Screen.Login.route
+                }
+
                 Scaffold(
                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
                     bottomBar = {
@@ -69,7 +80,7 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.Login.route,
+                        startDestination = startDest,
                         modifier = Modifier.padding(bottom = bottomPadding)
                     ) {
                         composable(Screen.Login.route) {
@@ -116,11 +127,18 @@ class MainActivity : ComponentActivity() {
                         composable(Screen.Stats.route) { StatsScreen() }
 
                         composable(Screen.Setting.route) {
+                            val context = LocalContext.current
                             SettingScreen(
                                 themeViewModel = themeViewModel,
                                 onLogout = {
-                                    navController.navigate(Screen.Login.route) {
-                                        popUpTo(0) { inclusive = true }
+                                    FirebaseAuth.getInstance().signOut()
+                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
+                                    googleSignInClient.signOut().addOnCompleteListener {
+                                        navController.navigate(Screen.Login.route) {
+                                            popUpTo(0) { inclusive = true }
+                                        }
                                     }
                                 }
                             )

@@ -1,6 +1,9 @@
 package com.soulmate.app.ui.login
 
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -24,6 +26,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.soulmate.app.R
 import com.soulmate.app.ui.theme.customGradient
 import kotlinx.coroutines.flow.collectLatest
@@ -51,6 +58,37 @@ fun LoginScreen(
     LaunchedEffect(Unit) {
         viewModel.error.collectLatest { errorMsg ->
             Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestIdToken("17181834176-7gd70ksot6egk819h9j46fbqoroeerdq.apps.googleusercontent.com")
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val idToken = account?.idToken
+
+            if (idToken != null) {
+                firebaseAuthWithGoogle(idToken) { isSuccess ->
+                    if (isSuccess) {
+                        Log.d("GoogleLogin", "Login successfully!")
+                        onLoginSuccess()
+                    } else {
+                        Log.e("GoogleLogin", "Authentication error with Firebase.")
+                    }
+                }
+            }
+        } catch (e: ApiException) {
+            Log.e("GoogleLogin", "Error while selecting the account: ${e.message}")
         }
     }
 
@@ -85,7 +123,6 @@ fun LoginScreen(
             }
         }
 
-        // Login Card
         Card(
             modifier = Modifier
                 .padding(top = 180.dp, start = 24.dp, end = 24.dp, bottom = 40.dp)
@@ -93,7 +130,7 @@ fun LoginScreen(
                 .wrapContentHeight(),
             shape = RoundedCornerShape(32.dp),
             elevation = 8.dp,
-            backgroundColor = Color.White // Cố định nền Card màu trắng
+            backgroundColor = Color.White
         ) {
             Column(
                 modifier = Modifier
@@ -237,11 +274,13 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    SocialIcon(iconRes = R.drawable.google)
+                    SocialIcon(
+                        iconRes = R.drawable.google,
+                        onClick = { launcher.launch(googleSignInClient.signInIntent) })
                     Spacer(modifier = Modifier.width(16.dp))
-                    SocialIcon(iconRes = R.drawable.twitter)
+                    SocialIcon(iconRes = R.drawable.twitter, onClick = {})
                     Spacer(modifier = Modifier.width(16.dp))
-                    SocialIcon(iconRes = R.drawable.facebook)
+                    SocialIcon(iconRes = R.drawable.facebook, onClick = {})
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -251,9 +290,11 @@ fun LoginScreen(
 }
 
 @Composable
-fun SocialIcon(iconRes: Int) {
+fun SocialIcon(iconRes: Int, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.size(45.dp),
+        modifier = Modifier
+            .size(45.dp)
+            .clickable{onClick()},
         shape = RoundedCornerShape(12.dp),
         elevation = 2.dp,
         backgroundColor = Color.White
@@ -266,4 +307,21 @@ fun SocialIcon(iconRes: Int) {
             )
         }
     }
+}
+
+private fun firebaseAuthWithGoogle(idToken: String, onResult: (Boolean) -> Unit) {
+    val auth = FirebaseAuth.getInstance()
+    val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+    auth.signInWithCredential(credential)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val user = auth.currentUser
+                Log.d("FirebaseAuth", "Tên User: ${user?.displayName}, Email: ${user?.email}")
+                onResult(true)
+            } else {
+                Log.e("FirebaseAuth", "Lỗi: ${task.exception?.message}")
+                onResult(false)
+            }
+        }
 }
