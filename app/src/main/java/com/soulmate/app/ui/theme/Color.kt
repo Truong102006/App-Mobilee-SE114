@@ -33,3 +33,11 @@ val DarkSurface = Color(0xFF1E1E1E)
 val DarkOnSurface = Color(0xFFFFFFFF)
 val DarkOnSurfaceVariant = Color(0xFFB0B0B0)
 val DarkError = Color(0xFFFF4444)
+
+val MoodColors = listOf(
+    Color(0xFF4CAF50),
+    Color(0xFF03A9F4),
+    Color(0xFFFFC107),
+    Color(0xFF9E9E9E),
+    Color(0xFFF44336)
+)

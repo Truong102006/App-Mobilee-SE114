@@ -54,13 +54,11 @@ fun LoginScreen(
         }
     }
 
-    // Cố định màu nền trắng cho toàn màn hình và Card để không bị đổi màu khi ở DarkMode
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Top Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()

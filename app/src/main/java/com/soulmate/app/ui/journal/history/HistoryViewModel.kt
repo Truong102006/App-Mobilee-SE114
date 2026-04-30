@@ -37,7 +37,7 @@ class HistoryViewModel @Inject constructor(
                                 id = try { diary.id.hashCode().toLong() } catch (e: Exception) { System.currentTimeMillis() },
                                 text = diary.text,
                                 dateTime = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(diary.timestamp)),
-                                moodTag = diary.moodTag // Đã thêm moodTag ở đây
+                                moodTag = diary.moodTag
                             )
                         }
                         _historyNotes.addAll(notes)
