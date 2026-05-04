@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,9 +18,11 @@ import com.soulmate.app.ui.home.components.RecordingNote
 import java.util.Calendar
 
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel) {
+fun HistoryScreen(
+    viewModel: HistoryViewModel,
+    onNavigateToEdit: (String) -> Unit
+) {
     val notes = viewModel.historyNotes
-    var noteToEdit by remember { mutableStateOf<RecordingNote?>(null) }
     var noteToDelete by remember { mutableStateOf<RecordingNote?>(null) }
 
     val calendar = Calendar.getInstance()
@@ -90,22 +93,11 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
                         item = note,
                         isLastItem = isLast,
                         onDelete = { noteToDelete = note },
-                        onEdit = { noteToEdit = note }
+                        onEdit = { onNavigateToEdit(note.id.toString()) }
                     )
                 }
             }
         }
-    }
-
-    if (noteToEdit != null) {
-        EditNoteDialog(
-            note = noteToEdit!!,
-            onDismiss = { noteToEdit = null },
-            onConfirm = { newHtml ->
-                viewModel.updateNote(noteToEdit!!.id, newHtml)
-                noteToEdit = null
-            }
-        )
     }
 
     if (noteToDelete != null) {

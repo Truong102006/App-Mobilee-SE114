@@ -15,15 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.ui.Screen
-import com.soulmate.app.ui.components.CustomBottomNav // <-- Nhớ import Component này
+import com.soulmate.app.ui.components.CustomBottomNav
 import com.soulmate.app.ui.home.HomeScreen
 import com.soulmate.app.ui.home.MusicViewModel
 import com.soulmate.app.ui.journal.editor.MultimediaEditor
@@ -33,7 +35,7 @@ import com.soulmate.app.ui.login.LoginScreen
 import com.soulmate.app.ui.login.RegisterScreen
 import com.soulmate.app.ui.setting.SettingScreen
 import com.soulmate.app.ui.setting.ThemeViewModel
-import com.soulmate.app.ui.stats.StatsScreen // <-- Import StatsScreen
+import com.soulmate.app.ui.stats.StatsScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -107,22 +109,32 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable(Screen.Diary.route) {
+                        composable(
+                            route = Screen.Diary.route + "?diaryId={diaryId}",
+                            arguments = listOf(
+                                navArgument("diaryId") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                    defaultValue = null
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val diaryId = backStackEntry.arguments?.getString("diaryId")
+
                             MultimediaEditor(
+                                diaryId = diaryId,
                                 historyViewModel = historyViewModel,
                                 onBackClick = {
-                                    navController.navigate(Screen.History.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                    navController.popBackStack()
                                 }
                             )
                         }
                         composable(Screen.Home.route) { HomeScreen(musicViewModel, historyViewModel) }
-                        composable(Screen.History.route) { HistoryScreen(historyViewModel) }
+                        composable(Screen.History.route) { HistoryScreen(
+                            viewModel = historyViewModel,
+                            onNavigateToEdit = { diaryId -> navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
+                            }
+                        )}
 
                         composable(Screen.Stats.route) { StatsScreen() }
 

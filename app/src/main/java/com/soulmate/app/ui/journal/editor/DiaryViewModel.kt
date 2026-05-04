@@ -24,8 +24,8 @@ class DiaryViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(text = newText)
     }
 
-    fun onMoodSelected(mood: String) {
-        _uiState.value = _uiState.value.copy(selectedMood = mood)
+    fun onMoodSelected(mood: String?) {
+        _uiState.value = _uiState.value.copy(selectedMood = mood ?: "Neutral")
     }
 
     fun onImagesChanged(images: List<String>) {
