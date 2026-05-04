@@ -41,10 +41,12 @@ import com.soulmate.app.ui.theme.*
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MultimediaEditor(
+    diaryId: String? = null,
     viewModel: DiaryViewModel = hiltViewModel(),
     historyViewModel: HistoryViewModel? = null,
     onBackClick: () -> Unit = {}
@@ -56,16 +58,40 @@ fun MultimediaEditor(
     val richTextState = rememberRichTextState()
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var zoomedImageUri by remember { mutableStateOf<Uri?>(null) }
-    
+
     // Cập nhật ViewModel mỗi khi danh sách ảnh thay đổi
     LaunchedEffect(selectedImages) {
         viewModel.onImagesChanged(selectedImages.map { it.toString() })
+    }
+
+    LaunchedEffect(diaryId) {
+        if (diaryId != null && historyViewModel != null) {
+            val existingNote = historyViewModel.getNoteById(diaryId)
+            if (existingNote != null) {
+                val fullHtml = existingNote.text
+                if (fullHtml.startsWith("<h3>")) {
+                    val titleEndIndex = fullHtml.indexOf("</h3>")
+                    if (titleEndIndex != -1) {
+                        title = fullHtml.substring(4, titleEndIndex)
+                        val content = fullHtml.substring(titleEndIndex + 5)
+                        richTextState.setHtml(content)
+                    } else {
+                        richTextState.setHtml(fullHtml)
+                    }
+                } else {
+                    richTextState.setHtml(fullHtml)
+                }
+
+                viewModel.onMoodSelected(existingNote.moodTag)
+                selectedImages = existingNote.imageUrls.map { it.toUri() }
+            }
+        }
     }
     
     var showSaveSuccess by remember { mutableStateOf(false) }
 
     val selectedMood = remember(uiState.selectedMood) {
-        Mood.values().find { it.label == uiState.selectedMood } ?: Mood.Neutral
+        Mood.entries.find { it.label == uiState.selectedMood } ?: Mood.Neutral
     }
 
     LaunchedEffect(uiState.isSaved) {
@@ -73,14 +99,23 @@ fun MultimediaEditor(
             val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
             val contentHtml = richTextState.toHtml()
             val combinedHtml = if (title.isNotBlank()) "<h3>$title</h3>$contentHtml" else contentHtml
-            
-            val displayNote = RecordingNote(
-                text = combinedHtml,
-                dateTime = sdf.format(Date()),
-                moodTag = selectedMood.label,
-                imageUrls = selectedImages.map { it.toString() }
-            )
-            historyViewModel?.addNote(displayNote)
+
+            if (diaryId != null) {
+                historyViewModel?.updateNote(
+                    id = diaryId,
+                    newHtml = combinedHtml,
+                    newImages = selectedImages.map { it.toString() },
+                    newMood = selectedMood.label
+                )
+            } else {
+                val displayNote = RecordingNote(
+                    text = combinedHtml,
+                    dateTime = sdf.format(Date()),
+                    moodTag = selectedMood.label,
+                    imageUrls = selectedImages.map { it.toString() }
+                )
+                historyViewModel?.addNote(displayNote)
+            }
 
             showSaveSuccess = true
             viewModel.onSaveCompleteHandled()
@@ -330,14 +365,14 @@ fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
                     Canvas(modifier = Modifier.size(60.dp)) {
                         drawArc(
-                            color = Color(0xFFE0E0E0),
+                            color = BackgroundLight,
                             startAngle = 0f,
                             sweepAngle = 360f,
                             useCenter = false,
                             style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
                         )
                         drawArc(
-                            color = Color(0xFF4CAF50),
+                            color = PrimaryGreen,
                             startAngle = -90f,
                             sweepAngle = sweepAngle.value,
                             useCenter = false,
@@ -348,7 +383,7 @@ fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = Color(0xFF4CAF50),
+                            tint = PrimaryGreen,
                             modifier = Modifier
                                 .size(40.dp)
                                 .scale(tickScale.value)
@@ -360,7 +395,7 @@ fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
                     text = "Đã lưu",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color(0xFF4CAF50)
+                    color = PrimaryGreen
                 )
             }
         }
