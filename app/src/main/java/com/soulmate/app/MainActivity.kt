@@ -125,13 +125,7 @@ class MainActivity : ComponentActivity() {
                                 diaryId = diaryId,
                                 historyViewModel = historyViewModel,
                                 onBackClick = {
-                                    navController.navigate(Screen.History.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                    navController.popBackStack()
                                 }
                             )
                         }
