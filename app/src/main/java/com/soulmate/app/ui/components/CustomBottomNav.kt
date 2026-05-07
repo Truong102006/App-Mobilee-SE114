@@ -16,7 +16,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.soulmate.app.ui.Screen
 
 @Composable
 fun CustomBottomNav(navController: NavController) {
@@ -28,6 +27,7 @@ fun CustomBottomNav(navController: NavController) {
         Screen.Home,
         Screen.History,
         Screen.Stats,
+        Screen.Community,
         Screen.Setting
     )
 

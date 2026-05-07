@@ -1,5 +1,6 @@
 package com.soulmate.app
 
+import CommunityScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,7 +24,7 @@ import androidx.navigation.navArgument
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.soulmate.app.ui.Screen
+import com.soulmate.app.ui.components.Screen
 import com.soulmate.app.ui.components.CustomBottomNav
 import com.soulmate.app.ui.home.HomeScreen
 import com.soulmate.app.ui.home.MusicViewModel
@@ -137,6 +137,8 @@ class MainActivity : ComponentActivity() {
                         )}
 
                         composable(Screen.Stats.route) { StatsScreen() }
+
+                        composable(Screen.Community.route) { CommunityScreen() }
 
                         composable(Screen.Setting.route) {
                             val context = LocalContext.current
