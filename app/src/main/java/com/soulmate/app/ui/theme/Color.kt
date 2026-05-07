@@ -12,6 +12,8 @@ val customGradient = Brush.horizontalGradient(
     1.0f to Color(0xFFEDDD53)
 )
 
+val CommunityTick = Color(0xFF1DA1F2)
+
 val PrimaryGreen = Color(0xFF2CA148)
 val PrimaryGreenLight = Color(0xFFE5EDFF)
 val BackgroundMain = Color(0xFFFAF9FF)
