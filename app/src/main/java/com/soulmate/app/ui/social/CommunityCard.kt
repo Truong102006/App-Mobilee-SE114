@@ -1,9 +1,12 @@
 package com.soulmate.app.ui.social
 
+import android.text.TextUtils
 import android.widget.TextView
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -17,13 +20,18 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RemoveRedEye
-import androidx.compose.material3.*
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -52,16 +60,17 @@ data class CommunityPost(
     val viewCount: Int
 )
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ActionPillButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     text: String,
     onClick: () -> Unit
 ) {
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(50),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
+        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.1f)),
         color = Color.Transparent
     ) {
         Row(
@@ -73,13 +82,13 @@ fun ActionPillButton(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = text,
                 fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                 fontWeight = FontWeight.Medium
             )
         }
@@ -87,17 +96,39 @@ fun ActionPillButton(
 }
 
 @Composable
-fun HtmlText(html: String, textColor: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {
+fun HtmlText(
+        html: String,
+        textColor: androidx.compose.ui.graphics.Color,
+        maxLines: Int = Int.MAX_VALUE,
+        onTextOverflow: (Boolean) -> Unit = {},
+        modifier: Modifier = Modifier)
+    {
     AndroidView(
         modifier = modifier,
         factory = { context ->
             TextView(context).apply {
                 textSize = 15f
                 setTextColor(textColor.toArgb())
+                ellipsize = TextUtils.TruncateAt.END
             }
         },
         update = { textView ->
             textView.text = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT)
+            textView.maxLines = maxLines
+
+            textView.post {
+                val layout = textView.layout
+                if (layout != null) {
+                    val lines = layout.lineCount
+                    if (lines > 0 && maxLines != Int.MAX_VALUE) {
+                        val ellipsisCount = layout.getEllipsisCount(lines - 1)
+                        if (ellipsisCount > 0) {
+                            onTextOverflow(true)
+                        }
+                    }
+                }
+            }
+
         }
     )
 }
@@ -110,7 +141,7 @@ fun CommunityCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .border(1.5.dp, androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(20.dp)),
+            .border(1.5.dp, MaterialTheme.colors.primary.copy(alpha = 0.5f), RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(24.dp),
         backgroundColor = androidx.compose.material.MaterialTheme.colors.surface,
         elevation = 2.dp
@@ -130,13 +161,13 @@ fun CommunityCard(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                        .background(MaterialTheme.colors.primary.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = post.userName.take(1).uppercase(),
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colors.primary,
                         fontSize = 20.sp
                     )
                 }
@@ -150,7 +181,7 @@ fun CommunityCard(
                             text = post.userName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colors.onSurface
                         )
                         if (post.isVerified) {
                             Spacer(modifier = Modifier.width(4.dp))
@@ -179,7 +210,7 @@ fun CommunityCard(
                         }
                         append(", ${post.timeAgo}")
                     }
-                    Text(text = moodTimeText, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text(text = moodTimeText, fontSize = 13.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
                 }
 
                 // Nút 3 chấm (Options)
@@ -187,7 +218,7 @@ fun CommunityCard(
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "Options",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -195,11 +226,31 @@ fun CommunityCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // --- BODY: Text Content ---
-            HtmlText(
-                html = post.textContent,
-                textColor = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.fillMaxWidth()
-            )
+            var isExpanded by remember { mutableStateOf(false) }
+            var hasOverflow by remember { mutableStateOf(false) }
+            val htmlLength = post.textContent.length
+
+            Column(modifier = Modifier.animateContentSize()) {
+                HtmlText(
+                    html = post.textContent,
+                    textColor = MaterialTheme.colors.onSurface,
+                    maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                    onTextOverflow = { isOverflowing -> hasOverflow = isOverflowing },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (hasOverflow) {
+                    Text(
+                        text = if (isExpanded) "Show less" else "Read more...",
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                            .clickable { isExpanded = !isExpanded }
+                    )
+                }
+            }
 
             // --- BODY: Ảnh đính kèm (Hiển thị tất cả dạng cuộn ngang) ---
             if (post.imageUrls.isNotEmpty()) {
@@ -217,7 +268,7 @@ fun CommunityCard(
                                 .clip(RoundedCornerShape(12.dp))
                                 .border(
                                     1.dp,
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                                    MaterialTheme.colors.onSurface.copy(alpha = 0.05f),
                                     RoundedCornerShape(12.dp)
                                 ),
                             contentScale = ContentScale.Crop
@@ -262,7 +313,7 @@ fun CommunityCard(
                         imageVector = Icons.Outlined.Share,
                         contentDescription = "Share",
                         modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                     )
                 }
 
@@ -274,68 +325,17 @@ fun CommunityCard(
                         imageVector = Icons.Rounded.RemoveRedEye,
                         contentDescription = "Views",
                         modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                        tint = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = post.viewCount.toString(),
                         fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f),
                         fontWeight = FontWeight.Medium
                     )
                 }
             }
-        }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFF8F9FA) // Nền xám nhạt để dễ nhìn Card trắng
-@Composable
-fun PreviewCommunityCardWithImages() {
-    MaterialTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
-            CommunityCard(
-                post = CommunityPost(
-                    id = "1",
-                    userName = "Marvin McKinney",
-                    userAvatarUrl = null,
-                    isVerified = true,
-                    mood = "Happy",
-                    timeAgo = "Today at 6:41",
-                    textContent = "<h3>10 Tips for Beginners</h3> Đây là một đoạn text <b>in đậm</b> và có thể xuống dòng <br> Dùng HTMLCompat thật là tuyệt vời! 🚀",
-                    imageUrls = listOf(
-                        "https://dummyimage.com/400x400/e0e0e0/000000.png&text=Image+1",
-                        "https://dummyimage.com/400x400/e0e0e0/000000.png&text=Image+2"
-                    ),
-                    likeCount = 2321,
-                    commentCount = 5321,
-                    viewCount = 5321
-                )
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFF8F9FA)
-@Composable
-fun PreviewCommunityCardTextOnly() {
-    MaterialTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
-            CommunityCard(
-                post = CommunityPost(
-                    id = "2",
-                    userName = "Nguyễn Khánh",
-                    userAvatarUrl = null,
-                    isVerified = false,
-                    mood = "Satisfied",
-                    timeAgo = "Yesterday at 14:30",
-                    textContent = "Hôm nay thời tiết thật đẹp, mình đã hoàn thành xong đồ án môn học. Một ngày thật năng suất và ý nghĩa! ✨",
-                    imageUrls = emptyList(),
-                    likeCount = 128,
-                    commentCount = 12,
-                    viewCount = 450
-                )
-            )
         }
     }
 }

@@ -2,7 +2,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -12,38 +12,29 @@ import androidx.compose.ui.unit.sp
 import com.soulmate.app.ui.social.CommunityCard
 import com.soulmate.app.ui.social.CommunityPost
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityScreen() {
     val feedPosts = remember { getMockCommunityPosts() }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Feeds",
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 26.sp
-                        )
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+            Column(modifier = Modifier.background(MaterialTheme.colors.surface)) {
+                Spacer(modifier = Modifier.height(30.dp))
+                TopAppBar(
+                    title = { Text("Feeds", fontWeight = FontWeight.Bold, fontSize = 24.sp) },
+                    backgroundColor = MaterialTheme.colors.surface,
+                    contentColor = MaterialTheme.colors.primary,
+                    elevation = 0.dp
                 )
-            )
-        }
+            }
+        },
+        backgroundColor = MaterialTheme.colors.background
     ) { paddingValues ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 60.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             items(feedPosts, key = { it.id }) { post ->
