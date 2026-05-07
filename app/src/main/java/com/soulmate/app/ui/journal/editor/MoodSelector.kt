@@ -35,7 +35,7 @@ fun MoodSelector(
     selectedMood: Mood,
     onMoodChange: (Mood) -> Unit
 ) {
-    val moods = Mood.values()
+    val moods = Mood.entries.toTypedArray()
     val itemWidth = 80.dp
 
     val listState = rememberLazyListState()
