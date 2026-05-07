@@ -9,6 +9,8 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.soulmate.app.data.repository.UserRepositoryImpl
+import com.soulmate.app.domain.repository.IUserRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindAIRepository(
         aiRepositoryImpl: AIRepositoryImpl
     ): IAIRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(
+        userRepositoryImpl: UserRepositoryImpl
+    ): IUserRepository
 }
