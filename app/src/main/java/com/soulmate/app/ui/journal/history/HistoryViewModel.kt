@@ -31,28 +31,34 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                Log.d("HistoryViewModel", "Checking diaries for UID: $currentUid")
 
                 diaryRepository.getDiaries(currentUid)
                     .catch { e ->
                         Log.e("HistoryViewModel", "Error fetching diaries: ${e.message}")
                     }
                     .collectLatest { diaries ->
+                        Log.d("HistoryViewModel", "Received ${diaries.size} diaries from Firestore")
                         _historyNotes.clear()
                         val notes = diaries.map { diary ->
+                            // Log chi tiết từng diary để kiểm tra xem content có bị null/empty không
+                            Log.d("HistoryViewModel", "Diary Item -> ID: ${diary.diaryId}, Content: ${diary.content}, CreatedAt: ${diary.createdAt}")
+                            
                             RecordingNote(
-                                id = try { diary.id.hashCode().toLong() } catch (e: Exception) { System.currentTimeMillis() },
-                                text = diary.text,
+                                id = try { diary.diaryId.hashCode().toLong() } catch (e: Exception) { System.currentTimeMillis() },
+                                text = if (diary.content.isEmpty()) "(Không có nội dung)" else diary.content,
                                 dateTime = SimpleDateFormat(
                                     "dd/MM/yyyy HH:mm",
                                     Locale.getDefault()
-                                ).format(Date(diary.timestamp)),
+                                ).format(Date(diary.createdAt)),
                                 moodTag = diary.moodTag,
+                                imageUrls = diary.imageUrls
                             )
                         }
                         _historyNotes.addAll(notes)
                     }
             } catch (e: Exception) {
-                Log.e("HistoryViewModel", "Firebase initialization error: ${e.message}")
+                Log.e("HistoryViewModel", "Firebase error: ${e.message}")
             }
         }
     }
