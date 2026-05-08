@@ -28,22 +28,30 @@ class HistoryViewModel @Inject constructor(
     }
 
     private fun observeDiaries() {
+        // Xóa sạch list cũ ngay khi bắt đầu để tránh hiện dữ liệu của User trước đó
+        _historyNotes.clear()
+
         viewModelScope.launch {
             try {
-                val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                Log.d("HistoryViewModel", "Checking diaries for UID: $currentUid")
+                val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+                
+                if (currentUid.isNullOrEmpty()) {
+                    Log.w("HistoryViewModel", "No user logged in")
+                    _historyNotes.clear()
+                    return@launch
+                }
+
+                Log.d("HistoryViewModel", "Observing diaries for UID: $currentUid")
 
                 diaryRepository.getDiaries(currentUid)
                     .catch { e ->
-                        Log.e("HistoryViewModel", "Error fetching diaries: ${e.message}")
+                        Log.e("HistoryViewModel", "Error: ${e.message}")
+                        _historyNotes.clear()
                     }
                     .collectLatest { diaries ->
-                        Log.d("HistoryViewModel", "Received ${diaries.size} diaries from Firestore")
+                        Log.d("HistoryViewModel", "Received ${diaries.size} diaries for $currentUid")
                         _historyNotes.clear()
                         val notes = diaries.map { diary ->
-                            // Log chi tiết từng diary để kiểm tra xem content có bị null/empty không
-                            Log.d("HistoryViewModel", "Diary Item -> ID: ${diary.diaryId}, Content: ${diary.content}, CreatedAt: ${diary.createdAt}")
-                            
                             RecordingNote(
                                 id = try { diary.diaryId.hashCode().toLong() } catch (e: Exception) { System.currentTimeMillis() },
                                 text = if (diary.content.isEmpty()) "(Không có nội dung)" else diary.content,
@@ -58,7 +66,8 @@ class HistoryViewModel @Inject constructor(
                         _historyNotes.addAll(notes)
                     }
             } catch (e: Exception) {
-                Log.e("HistoryViewModel", "Firebase error: ${e.message}")
+                Log.e("HistoryViewModel", "Critical error: ${e.message}")
+                _historyNotes.clear()
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.soulmate.app
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,7 +13,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.lifecycleScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,9 +24,6 @@ import androidx.navigation.navArgument
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.soulmate.app.domain.model.Diary
-import com.soulmate.app.domain.repository.IAuthRepository
-import com.soulmate.app.domain.repository.IDiaryRepository
 import com.soulmate.app.ui.Screen
 import com.soulmate.app.ui.components.CustomBottomNav
 import com.soulmate.app.ui.home.HomeScreen
@@ -42,26 +38,15 @@ import com.soulmate.app.ui.setting.ThemeViewModel
 import com.soulmate.app.ui.stats.StatsScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var authRepository: IAuthRepository
-
-    @Inject
-    lateinit var diaryRepository: IDiaryRepository
-
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
-    private val historyViewModel: HistoryViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // ĐÃ XÓA ĐOẠN CODE TEST TỰ ĐỘNG REGISTER TẠI ĐÂY
 
         enableEdgeToEdge()
 
@@ -105,7 +90,7 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 onLoginSuccess = {
                                     navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                        popUpTo(0) { inclusive = true }
                                     }
                                 },
                                 onNavigateToRegister = {
@@ -117,7 +102,7 @@ class MainActivity : ComponentActivity() {
                             RegisterScreen(
                                 onRegisterSuccess = {
                                     navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                        popUpTo(0) { inclusive = true }
                                     }
                                 },
                                 onNavigateToLogin = {
@@ -136,22 +121,29 @@ class MainActivity : ComponentActivity() {
                             )
                         ) { backStackEntry ->
                             val diaryId = backStackEntry.arguments?.getString("diaryId")
+                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho Editor
 
                             MultimediaEditor(
                                 diaryId = diaryId,
-                                historyViewModel = historyViewModel,
+                                historyViewModel = hvm,
                                 onBackClick = {
                                     navController.popBackStack()
                                 }
                             )
                         }
-                        composable(Screen.Home.route) { HomeScreen(musicViewModel, historyViewModel) }
-                        composable(Screen.History.route) { HistoryScreen(
-                            viewModel = historyViewModel,
-                            onNavigateToEdit = { diaryId -> 
-                                navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
-                            }
-                        )}
+                        composable(Screen.Home.route) { 
+                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho Home
+                            HomeScreen(musicViewModel, hvm) 
+                        }
+                        composable(Screen.History.route) { 
+                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho History
+                            HistoryScreen(
+                                viewModel = hvm,
+                                onNavigateToEdit = { diaryId -> 
+                                    navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
+                                }
+                            )
+                        }
 
                         composable(Screen.Stats.route) { StatsScreen() }
 
