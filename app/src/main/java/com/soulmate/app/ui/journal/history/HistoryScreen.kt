@@ -30,11 +30,13 @@ fun HistoryScreen(
     var selectedYear by remember { mutableIntStateOf(calendar.get(Calendar.YEAR)) }
     var showMonthPicker by remember { mutableStateOf(false) }
 
-    val filteredNotes = remember(notes, selectedMonth, selectedYear) {
-        val monthStr = selectedMonth.toString().padStart(2, '0')
-        val targetPattern = "/$monthStr/$selectedYear"
-
-        notes.filter { it.dateTime.contains(targetPattern) }
+    // Sử dụng derivedStateOf để tự động cập nhật khi list 'notes' thay đổi
+    val filteredNotes by remember(selectedMonth, selectedYear) {
+        derivedStateOf {
+            val monthStr = selectedMonth.toString().padStart(2, '0')
+            val targetPattern = "/$monthStr/$selectedYear"
+            notes.filter { it.dateTime.contains(targetPattern) }
+        }
     }
 
     Scaffold(

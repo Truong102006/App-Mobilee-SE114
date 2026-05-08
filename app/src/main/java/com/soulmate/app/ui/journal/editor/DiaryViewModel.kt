@@ -2,6 +2,7 @@ package com.soulmate.app.ui.journal.editor
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.domain.model.Diary
 import com.soulmate.app.domain.usecase.AnalyzeMoodUseCase
 import com.soulmate.app.domain.usecase.SaveDiaryUseCase
@@ -55,13 +56,16 @@ class DiaryViewModel @Inject constructor(
                 return@launch
             }
 
+            // Lấy UID thực tế của user đang đăng nhập
+            val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
             val diary = Diary(
-                id = "", 
-                userId = "current_user_id", 
-                text = currentState.text,
+                diaryId = "", 
+                userId = currentUid, // Đã sửa từ "current_user_id" thành UID thật
+                content = currentState.text,
                 moodTag = currentState.selectedMood,
-                imageUrls = emptyList(), // Không lưu danh sách ảnh vào Firebase nữa
-                timestamp = System.currentTimeMillis()
+                imageUrls = emptyList(),
+                createdAt = System.currentTimeMillis()
             )
             
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)

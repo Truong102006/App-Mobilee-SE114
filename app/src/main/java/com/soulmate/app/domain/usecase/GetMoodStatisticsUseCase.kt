@@ -22,8 +22,8 @@ class GetMoodStatisticsUseCase @Inject constructor(
         }
     }
 
-    private fun normalizeMood(mood: String): String {
-        val normalizedMood = mood.trim()
+    private fun normalizeMood(mood: String?): String {
+        val normalizedMood = mood?.trim() ?: ""
         if (normalizedMood.isEmpty()) return UNKNOWN_MOOD
 
         return normalizedMood

@@ -16,11 +16,11 @@ class GetMoodStatisticsUseCaseTest {
     fun `groups moods case insensitively and sorts by count descending`() = runBlocking {
         val fakeRepository = FakeDiaryRepository(
             diaries = listOf(
-                Diary(id = "1", userId = "u1", moodTag = "happy"),
-                Diary(id = "2", userId = "u1", moodTag = "Happy"),
-                Diary(id = "3", userId = "u1", moodTag = "stress"),
-                Diary(id = "4", userId = "u1", moodTag = ""),
-                Diary(id = "5", userId = "u1", moodTag = "stress")
+                Diary(diaryId = "1", userId = "u1", moodTag = "happy"),
+                Diary(diaryId = "2", userId = "u1", moodTag = "Happy"),
+                Diary(diaryId = "3", userId = "u1", moodTag = "stress"),
+                Diary(diaryId = "4", userId = "u1", moodTag = ""),
+                Diary(diaryId = "5", userId = "u1", moodTag = "stress")
             )
         )
         val useCase = GetMoodStatisticsUseCase(fakeRepository)
@@ -49,10 +49,18 @@ class GetMoodStatisticsUseCaseTest {
     private class FakeDiaryRepository(
         private val diaries: List<Diary>
     ) : IDiaryRepository {
-        override suspend fun saveDiary(diary: Diary): Result<Unit> = Result.success(Unit)
-
         override fun getDiaries(userId: String): Flow<List<Diary>> = flowOf(
             diaries.filter { it.userId == userId }
         )
+
+        override suspend fun saveDiary(diary: Diary): Result<Unit> = Result.success(Unit)
+
+        override suspend fun loadDiaries(): Result<List<Diary>> = Result.success(diaries)
+
+        override suspend fun loadDiaryById(diaryId: String): Result<Diary?> = 
+            Result.success(diaries.find { it.diaryId == diaryId })
+
+        override suspend fun patchDiary(diaryId: String, updates: Map<String, Any?>): Result<Unit> = 
+            Result.success(Unit)
     }
 }

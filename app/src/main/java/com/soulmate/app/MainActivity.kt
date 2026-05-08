@@ -14,6 +14,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -41,12 +42,13 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
-    private val historyViewModel: HistoryViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
 
         setContent {
@@ -89,7 +91,7 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 onLoginSuccess = {
                                     navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                        popUpTo(0) { inclusive = true }
                                     }
                                 },
                                 onNavigateToRegister = {
@@ -101,7 +103,7 @@ class MainActivity : ComponentActivity() {
                             RegisterScreen(
                                 onRegisterSuccess = {
                                     navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                        popUpTo(0) { inclusive = true }
                                     }
                                 },
                                 onNavigateToLogin = {
@@ -120,21 +122,29 @@ class MainActivity : ComponentActivity() {
                             )
                         ) { backStackEntry ->
                             val diaryId = backStackEntry.arguments?.getString("diaryId")
+                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho Editor
 
                             MultimediaEditor(
                                 diaryId = diaryId,
-                                historyViewModel = historyViewModel,
+                                historyViewModel = hvm,
                                 onBackClick = {
                                     navController.popBackStack()
                                 }
                             )
                         }
-                        composable(Screen.Home.route) { HomeScreen(musicViewModel, historyViewModel) }
-                        composable(Screen.History.route) { HistoryScreen(
-                            viewModel = historyViewModel,
-                            onNavigateToEdit = { diaryId -> navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
-                            }
-                        )}
+                        composable(Screen.Home.route) { 
+                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho Home
+                            HomeScreen(musicViewModel, hvm) 
+                        }
+                        composable(Screen.History.route) { 
+                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho History
+                            HistoryScreen(
+                                viewModel = hvm,
+                                onNavigateToEdit = { diaryId -> 
+                                    navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
+                                }
+                            )
+                        }
 
                         composable(Screen.Stats.route) { StatsScreen() }
 

@@ -4,17 +4,16 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.domain.repository.IAuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val authRepository: IAuthRepository // Đã đổi từ FirebaseAuth sang IAuthRepository
 ) : ViewModel() {
 
     private val _isLoading = mutableStateOf(false)
@@ -34,14 +33,15 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                auth.signInWithEmailAndPassword(email, password).await()
-                _authSuccess.emit(Unit)
-            } catch (e: Exception) {
-                _error.emit(e.localizedMessage ?: "Đăng nhập thất bại")
-            } finally {
-                _isLoading.value = false
-            }
+            // Sử dụng repository để đảm bảo có cập nhật lastLoginAt
+            authRepository.login(email, password)
+                .onSuccess {
+                    _authSuccess.emit(Unit)
+                }
+                .onFailure {
+                    _error.emit(it.localizedMessage ?: "Đăng nhập thất bại")
+                }
+            _isLoading.value = false
         }
     }
 
@@ -57,15 +57,15 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                auth.createUserWithEmailAndPassword(email, password).await()
-                // Lưu tên người dùng vào profile nếu cần
-                _authSuccess.emit(Unit)
-            } catch (e: Exception) {
-                _error.emit(e.localizedMessage ?: "Đăng ký thất bại")
-            } finally {
-                _isLoading.value = false
-            }
+            // Sử dụng repository.register để lưu cả vào Auth và Firestore
+            authRepository.register(email, password)
+                .onSuccess {
+                    _authSuccess.emit(Unit)
+                }
+                .onFailure {
+                    _error.emit(it.localizedMessage ?: "Đăng ký thất bại")
+                }
+            _isLoading.value = false
         }
     }
 }
