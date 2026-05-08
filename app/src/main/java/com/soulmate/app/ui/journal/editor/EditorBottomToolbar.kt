@@ -6,19 +6,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
-import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.richeditor.model.RichTextState
 import com.soulmate.app.ui.theme.PrimaryGreen
 
 @Composable
 fun EditorBottomToolbar(
-    onAddImageClick: () -> Unit,
-    onRecordAudioClick: () -> Unit,
+    richTextState: RichTextState,
+    onPhotoClick: () -> Unit,
+    onMoodClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -28,7 +30,7 @@ fun EditorBottomToolbar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onAddImageClick) {
+        IconButton(onClick = onPhotoClick) {
             Icon(
                 imageVector = Icons.Default.AddPhotoAlternate,
                 contentDescription = "Thêm ảnh",
@@ -36,10 +38,10 @@ fun EditorBottomToolbar(
             )
         }
 
-        IconButton(onClick = onRecordAudioClick) {
+        IconButton(onClick = onMoodClick) {
             Icon(
-                imageVector = Icons.Default.Mic,
-                contentDescription = "Ghi âm",
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = "Phân tích tâm trạng",
                 tint = PrimaryGreen
             )
         }

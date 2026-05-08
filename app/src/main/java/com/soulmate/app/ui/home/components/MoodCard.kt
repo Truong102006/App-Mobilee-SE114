@@ -49,6 +49,7 @@ import java.util.*
 // Model dữ liệu cập nhật
 data class RecordingNote(
     val id: Long = System.currentTimeMillis(),
+    val diaryId: String = "",
     val dateTime: String,
     val text: String, // Đây sẽ chứa mã HTML
     val userName: String = "Dmanhz",
