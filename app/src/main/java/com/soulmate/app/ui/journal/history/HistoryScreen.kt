@@ -95,7 +95,8 @@ fun HistoryScreen(
                         item = note,
                         isLastItem = isLast,
                         onDelete = { noteToDelete = note },
-                        onEdit = { onNavigateToEdit(note.id.toString()) }
+                        // Trong HistoryScreen.kt, khi nhấn Edit:
+                        onEdit = { onNavigateToEdit(note.diaryId) } // Truyền diaryId thật thay vì id hash
                     )
                 }
             }

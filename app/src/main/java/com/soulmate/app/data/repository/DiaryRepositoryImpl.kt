@@ -157,4 +157,22 @@ class DiaryRepositoryImpl @Inject constructor(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    override suspend fun deleteDiary(diaryId: String): Result<Unit> = try {
+        val uid = auth.currentUser?.uid ?: throw Exception("User not logged in")
+        val docRef = diariesCollection.document(diaryId)
+
+        // Kiểm tra quyền sở hữu trước khi xóa (bảo mật)
+        val snapshot = docRef.get().await()
+        val diary = snapshot.toObject(Diary::class.java)
+
+        if (diary?.userId != uid) {
+            throw Exception("Permission denied")
+        }
+
+        docRef.delete().await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }

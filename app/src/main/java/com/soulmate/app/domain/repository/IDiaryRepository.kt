@@ -18,4 +18,6 @@ interface IDiaryRepository {
 
     // Cập nhật một phần nội dung bài nhật ký (ví dụ: chỉ sửa title hoặc mood)
     suspend fun patchDiary(diaryId: String, updates: Map<String, Any?>): Result<Unit>
+
+    suspend fun deleteDiary(diaryId: String): Result<Unit>
 }

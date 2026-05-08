@@ -52,8 +52,8 @@ class HistoryViewModel @Inject constructor(
                         Log.d("HistoryViewModel", "Received ${diaries.size} diaries for $currentUid")
                         _historyNotes.clear()
                         val notes = diaries.map { diary ->
-                            RecordingNote(
-                                id = try { diary.diaryId.hashCode().toLong() } catch (e: Exception) { System.currentTimeMillis() },
+                            RecordingNote(id = diary.diaryId.hashCode().toLong(),
+                                diaryId = diary.diaryId,
                                 text = if (diary.content.isEmpty()) "(Không có nội dung)" else diary.content,
                                 dateTime = SimpleDateFormat(
                                     "dd/MM/yyyy HH:mm",
@@ -79,25 +79,34 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun deleteNote(note: RecordingNote) {
-        _historyNotes.remove(note)
+        viewModelScope.launch {
+            // 1. Xóa trên Firestore (dùng note.id.toString() hoặc nếu bạn lưu ID gốc thì dùng nó)
+            diaryRepository.deleteDiary(note.diaryId)
+                .onSuccess {
+                    // 2. Nếu xóa server thành công thì mới xóa trên UI
+                    _historyNotes.remove(note)
+                }
+                .onFailure {
+                    Log.e("HistoryViewModel", "Xóa thất bại: ${it.message}")
+                }
+        }
     }
 
-    fun updateNote(id: String, newHtml: String, newImages: List<String>, newMood: String) {
-        val index = _historyNotes.indexOfFirst { it.id.toString() == id }
+    fun updateNote(diaryId: String, newHtml: String, newImages: List<String>, newMood: String) {
+        // So sánh trực tiếp với diaryId (String)
+        val index = _historyNotes.indexOfFirst { it.diaryId == diaryId }
         if (index != -1) {
             val oldNote = _historyNotes[index]
-
             val updatedNote = oldNote.copy(
                 text = newHtml,
                 imageUrls = newImages,
                 moodTag = newMood
             )
-
             _historyNotes[index] = updatedNote
         }
     }
 
-    fun getNoteById(id: String): RecordingNote? {
-        return _historyNotes.find { it.id.toString() == id }
+    fun getNoteById(diaryId: String): RecordingNote? {
+        return _historyNotes.find { it.diaryId == diaryId }
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -103,14 +102,17 @@ fun MultimediaEditor(
             val combinedHtml = if (title.isNotBlank()) "<h3>$title</h3>$contentHtml" else contentHtml
 
             if (diaryId != null) {
+                // Đã sửa: dùng diaryId = diaryId thay vì id = diaryId
                 historyViewModel?.updateNote(
-                    id = diaryId,
+                    diaryId = diaryId,
                     newHtml = combinedHtml,
                     newImages = selectedImages.map { it.toString() },
                     newMood = selectedMood.label
                 )
             } else {
+                // Đã sửa: truyền thêm diaryId = "" để đảm bảo không lỗi tham số
                 val displayNote = RecordingNote(
+                    diaryId = "",
                     text = combinedHtml,
                     dateTime = sdf.format(Date()),
                     moodTag = selectedMood.label,
@@ -301,17 +303,14 @@ fun MultimediaEditor(
 
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                         EditorBottomToolbar(
-                            onAddImageClick = {
+                            richTextState = richTextState,
+                            onPhotoClick = {
                                 photoPickerLauncher.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                 )
                             },
-                            onRecordAudioClick = { 
-                                val currentText = richTextState.annotatedString.text
-                                if (currentText.isNotBlank()) {
-                                    viewModel.analyzeMoodFromText(currentText)
-                                    Toast.makeText(context, "Gemini đang phân tích...", Toast.LENGTH_SHORT).show()
-                                }
+                            onMoodClick = {
+                                viewModel.analyzeMoodFromText(richTextState.toHtml())
                             }
                         )
                     }
@@ -319,8 +318,15 @@ fun MultimediaEditor(
             }
         }
 
+        if (zoomedImageUri != null) {
+            FullScreenImageOverlay(
+                uri = zoomedImageUri!!,
+                onDismiss = { zoomedImageUri = null }
+            )
+        }
+
         if (showSaveSuccess) {
-            SaveSuccessNotification(
+            SaveSuccessOverlay(
                 onAnimationFinish = {
                     showSaveSuccess = false
                     onBackClick()
@@ -328,38 +334,54 @@ fun MultimediaEditor(
             )
         }
     }
+}
 
-    zoomedImageUri?.let { uri ->
-        ImageZoomDialog(
-            uri = uri,
-            onDismiss = { zoomedImageUri = null }
-        )
+@Composable
+fun FullScreenImageOverlay(uri: Uri, onDismiss: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            AsyncImage(
+                model = uri,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
+            ) {
+                Icon(Icons.Default.Close, null, tint = Color.White, modifier = Modifier.size(32.dp))
+            }
+        }
     }
 }
 
 @Composable
-fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
+fun SaveSuccessOverlay(onAnimationFinish: () -> Unit) {
     var startTickAnimation by remember { mutableStateOf(false) }
     val sweepAngle = animateFloatAsState(
         targetValue = if (startTickAnimation) 360f else 0f,
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
+        label = ""
     )
     
     val tickScale = animateFloatAsState(
         targetValue = if (sweepAngle.value >= 360f) 1.5f else 0f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = ""
     )
 
     LaunchedEffect(Unit) {
         startTickAnimation = true
-        delay(2500)
+        delay(2000)
         onAnimationFinish()
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.4f)),
+        modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)),
         contentAlignment = Alignment.Center
     ) {
         Surface(
@@ -376,14 +398,14 @@ fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
                     Canvas(modifier = Modifier.size(60.dp)) {
                         drawArc(
-                            color = BackgroundLight,
+                            color = Color(0xFFE0E0E0),
                             startAngle = 0f,
                             sweepAngle = 360f,
                             useCenter = false,
                             style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
                         )
                         drawArc(
-                            color = PrimaryGreen,
+                            color = Color(0xFF4CAF50),
                             startAngle = -90f,
                             sweepAngle = sweepAngle.value,
                             useCenter = false,
@@ -394,7 +416,7 @@ fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = PrimaryGreen,
+                            tint = Color(0xFF4CAF50),
                             modifier = Modifier
                                 .size(40.dp)
                                 .scale(tickScale.value)
@@ -404,9 +426,10 @@ fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Đã lưu",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = PrimaryGreen
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4CAF50)
+                    )
                 )
             }
         }
