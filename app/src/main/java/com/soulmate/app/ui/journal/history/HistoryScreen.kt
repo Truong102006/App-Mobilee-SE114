@@ -43,13 +43,18 @@ fun HistoryScreen(
             val monthStr = selectedMonth.toString().padStart(2, '0')
             val targetPattern = "/$monthStr/$selectedYear"
             notes.filter { it.dateTime.contains(targetPattern) }
+                .sortedByDescending { it.dateTime }
         }
     }
 
+    val groupedNotes = remember(filteredNotes) {
+        filteredNotes.groupBy { it.dateTime.split(" ").firstOrNull() ?: "" }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        // 1. Background Image
+        // 1. Background Image - Updated to bg_journal
         Image(
-            painter = painterResource(id = R.drawable.img_3),
+            painter = painterResource(id = R.drawable.bg_journal),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -77,17 +82,18 @@ fun HistoryScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 3. Main White Container
+            // 3. Main White Container with Margin on both sides
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)),
+                    .padding(horizontal = 16.dp) // Thêm margin 2 bên trái phải
+                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomStart = 32.dp, bottomEnd = 32.dp)), // Bo góc cả 4 cạnh để tạo hiệu ứng thẻ
                 color = Color.White
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // 4. Date Selector (Pill design)
+                    // Monthly Selector Pill
                     Surface(
                         modifier = Modifier
                             .wrapContentWidth()
@@ -118,7 +124,7 @@ fun HistoryScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // 5. Timeline List
-                    if (filteredNotes.isEmpty()) {
+                    if (groupedNotes.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -130,18 +136,49 @@ fun HistoryScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 100.dp)
                         ) {
-                            itemsIndexed(filteredNotes, key = { _, note -> note.id }) { index, note ->
-                                Timeline(
-                                    item = note,
-                                    isLastItem = index == filteredNotes.lastIndex,
-                                    onDelete = { noteToDelete = note },
-                                    onEdit = { onNavigateToEdit(note.diaryId) }
-                                )
+                            groupedNotes.forEach { (date, notesInDate) ->
+                                item {
+                                    Surface(
+                                        modifier = Modifier.padding(vertical = 12.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color(0xFFE8F1FF)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.CalendarToday,
+                                                contentDescription = null,
+                                                tint = Color(0xFF5B9DFF),
+                                                modifier = Modifier.size(12.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = date,
+                                                color = Color(0xFF5B9DFF),
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp
+                                            )
+                                        }
+                                    }
+                                }
+
+                                itemsIndexed(notesInDate) { index, note ->
+                                    Timeline(
+                                        item = note,
+                                        isLastItem = index == notesInDate.lastIndex && date == groupedNotes.keys.last(),
+                                        onDelete = { noteToDelete = note },
+                                        onEdit = { onNavigateToEdit(note.diaryId) }
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+            // Thêm spacer ở dưới để card không sát đáy nếu cần
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
