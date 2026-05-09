@@ -54,26 +54,37 @@ fun EditDiaryScreen(
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var zoomedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showSaveSuccess by remember { mutableStateOf(false) }
+    var originalDate by remember { mutableStateOf("") }
+    var isInitialized by remember { mutableStateOf(false) }
 
-    // Khởi tạo dữ liệu từ diaryId
-    LaunchedEffect(diaryId) {
-        viewModel.setDiaryId(diaryId)
-        val existingNote = historyViewModel.getNoteById(diaryId)
-        if (existingNote != null) {
-            val fullHtml = existingNote.text
-            if (fullHtml.startsWith("<h3>")) {
-                val titleEndIndex = fullHtml.indexOf("</h3>")
-                if (titleEndIndex != -1) {
-                    title = fullHtml.substring(4, titleEndIndex)
-                    richTextState.setHtml(fullHtml.substring(titleEndIndex + 5))
+    // Quan sát danh sách notes để lấy dữ liệu ngay khi nó load xong
+    val historyNotes = historyViewModel.historyNotes
+    
+    LaunchedEffect(historyNotes, diaryId) {
+        if (!isInitialized) {
+            val existingNote = historyViewModel.getNoteById(diaryId)
+            if (existingNote != null) {
+                viewModel.setDiaryId(diaryId)
+                originalDate = existingNote.dateTime // Giữ nguyên ngày giờ gốc
+                
+                val fullHtml = existingNote.text
+                if (fullHtml.startsWith("<h3>")) {
+                    val titleEndIndex = fullHtml.indexOf("</h3>")
+                    if (titleEndIndex != -1) {
+                        title = fullHtml.substring(4, titleEndIndex)
+                        richTextState.setHtml(fullHtml.substring(titleEndIndex + 5))
+                    } else {
+                        richTextState.setHtml(fullHtml)
+                    }
                 } else {
                     richTextState.setHtml(fullHtml)
                 }
-            } else {
-                richTextState.setHtml(fullHtml)
+                
+                viewModel.onMoodSelected(existingNote.moodTag)
+                selectedImages = existingNote.imageUrls.map { it.toUri() }
+                viewModel.onTextChanged(fullHtml) // Đồng bộ dữ liệu cũ vào ViewModel
+                isInitialized = true
             }
-            viewModel.onMoodSelected(existingNote.moodTag)
-            selectedImages = existingNote.imageUrls.map { it.toUri() }
         }
     }
 
@@ -123,7 +134,7 @@ fun EditDiaryScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            "Sửa Nhật Ký",
+                            "Chỉnh Sửa Nhật Ký",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
@@ -169,9 +180,20 @@ fun EditDiaryScreen(
                 ) {
                     Column(modifier = Modifier.fillMaxSize().padding(top = 16.dp)) {
                         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                            // Hiển thị ngày giờ gốc
+                            Text(
+                                text = if (originalDate.isNotEmpty()) "Ngày viết: $originalDate" else "Đang tải...",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            
                             DiaryTitleField(title = title, onTitleChange = { title = it }, modifier = Modifier.fillMaxWidth())
                         }
+                        
                         Spacer(modifier = Modifier.height(12.dp))
+                        
                         Surface(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
@@ -179,6 +201,7 @@ fun EditDiaryScreen(
                         ) {
                             RichTextToolbar(state = richTextState)
                         }
+                        
                         DiaryContentField(state = richTextState, modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 24.dp, vertical = 12.dp))
                         
                         if (selectedImages.isNotEmpty()) {
@@ -197,7 +220,9 @@ fun EditDiaryScreen(
                                 }
                             }
                         }
+                        
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+
                         EditorBottomToolbar(
                             richTextState = richTextState,
                             onPhotoClick = { photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },

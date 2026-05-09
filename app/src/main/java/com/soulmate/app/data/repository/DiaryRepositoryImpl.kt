@@ -95,18 +95,25 @@ class DiaryRepositoryImpl @Inject constructor(
         
         val now = System.currentTimeMillis()
         
-        val diaryData = hashMapOf(
+        val diaryData = mutableMapOf<String, Any?>(
             "diary_id" to docRef.id,
             "user_id" to currentUserUid,
             "text" to diary.content,
             "mood_tag" to (diary.moodTag ?: "Neutral"),
             "image_urls" to firebaseImageUrls,
             "audio_url" to diary.audioUrl,
-            "timestamp" to Timestamp.now(),
             "updated_at" to now
         )
         
-        docRef.set(diaryData).await()
+        if (diary.diaryId.isEmpty()) {
+            // New diary: set timestamp
+            diaryData["timestamp"] = Timestamp.now()
+            docRef.set(diaryData).await()
+        } else {
+            // Existing diary: use update to preserve original timestamp
+            docRef.update(diaryData).await()
+        }
+
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)

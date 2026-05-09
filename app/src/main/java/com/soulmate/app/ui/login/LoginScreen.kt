@@ -45,7 +45,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
-    
+
     val context = LocalContext.current
     val isLoading by viewModel.isLoading
 
@@ -144,7 +144,7 @@ fun LoginScreen(
                         color = Color(0xFF2A7B9B)
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
@@ -282,7 +282,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     SocialIcon(iconRes = R.drawable.facebook, onClick = {})
                 }
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
