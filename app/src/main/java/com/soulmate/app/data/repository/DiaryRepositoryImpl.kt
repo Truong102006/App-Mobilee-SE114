@@ -1,5 +1,6 @@
 package com.soulmate.app.data.repository
 
+import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.soulmate.app.domain.model.Diary
@@ -9,14 +10,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import com.google.firebase.firestore.Query
 import com.google.firebase.Timestamp
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.util.UUID
 
 @Singleton
 class DiaryRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val storage: FirebaseStorage
 ) : IDiaryRepository {
 
     private val diariesCollection = firestore.collection("diaries")
@@ -37,7 +41,6 @@ class DiaryRepositoryImpl @Inject constructor(
                     val diaries = snapshot.documents.mapNotNull { doc ->
                         try {
                             val diary = doc.toObject(Diary::class.java)
-                            // Xử lý thủ công trường timestamp vì Firestore trả về đối tượng Timestamp
                             val firebaseTimestamp = doc.get(FIELD_TIMESTAMP) as? Timestamp
                             diary?.copy(
                                 diaryId = doc.id,
@@ -53,8 +56,36 @@ class DiaryRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
+    private suspend fun uploadImages(imageUrls: List<String>): List<String> {
+        val currentUserUid = auth.currentUser?.uid ?: return imageUrls
+        val uploadedUrls = mutableListOf<String>()
+
+        for (url in imageUrls) {
+            if (url.startsWith("http")) {
+                uploadedUrls.add(url)
+                continue
+            }
+
+            try {
+                val uri = Uri.parse(url)
+                val fileName = UUID.randomUUID().toString()
+                val storageRef = storage.reference.child("diaries/$currentUserUid/$fileName")
+                
+                storageRef.putFile(uri).await()
+                val downloadUrl = storageRef.downloadUrl.await().toString()
+                uploadedUrls.add(downloadUrl)
+            } catch (e: Exception) {
+                // If upload fails, we might want to skip or handle it. For now, skip.
+            }
+        }
+        return uploadedUrls
+    }
+
     override suspend fun saveDiary(diary: Diary): Result<Unit> = try {
         val currentUserUid = auth.currentUser?.uid ?: throw Exception("User not logged in")
+        
+        // 1. Upload images to Firebase Storage first
+        val firebaseImageUrls = uploadImages(diary.imageUrls)
         
         val docRef = if (diary.diaryId.isEmpty()) {
             diariesCollection.document()
@@ -64,15 +95,14 @@ class DiaryRepositoryImpl @Inject constructor(
         
         val now = System.currentTimeMillis()
         
-        // Tạo map để lưu để kiểm soát chính xác tên trường
         val diaryData = hashMapOf(
             "diary_id" to docRef.id,
             "user_id" to currentUserUid,
             "text" to diary.content,
             "mood_tag" to (diary.moodTag ?: "Neutral"),
-            "image_urls" to diary.imageUrls,
+            "image_urls" to firebaseImageUrls,
             "audio_url" to diary.audioUrl,
-            "timestamp" to Timestamp.now(), // Lưu dạng Timestamp của Firebase
+            "timestamp" to Timestamp.now(),
             "updated_at" to now
         )
         
@@ -162,7 +192,6 @@ class DiaryRepositoryImpl @Inject constructor(
         val uid = auth.currentUser?.uid ?: throw Exception("User not logged in")
         val docRef = diariesCollection.document(diaryId)
 
-        // Kiểm tra quyền sở hữu trước khi xóa (bảo mật)
         val snapshot = docRef.get().await()
         val diary = snapshot.toObject(Diary::class.java)
 

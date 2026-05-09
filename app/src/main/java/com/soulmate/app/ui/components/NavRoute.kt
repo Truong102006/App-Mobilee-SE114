@@ -7,8 +7,7 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int) {
     object Register : Screen("register", "Register", 0)
     object Home : Screen("home", "Home", R.drawable.ic_home)
     object Diary : Screen("diary", "Diary", R.drawable.ic_diary)
-    object History : Screen("history", "History", R.drawable.ic_history)
+    object History : Screen("history", "Journal", R.drawable.ic_history)
     object Stats: Screen("stats", "Stats", R.drawable.ic_stats)
-    object Community: Screen("community", "Community", R.drawable.ic_community)
-    object Setting : Screen("setting", "Setting", R.drawable.ic_setting)
+    object Setting : Screen("setting", "Settings", R.drawable.ic_setting)
 }

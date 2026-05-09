@@ -20,6 +20,12 @@ class DiaryViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(DiaryUiState())
     val uiState = _uiState.asStateFlow()
+    
+    private var currentDiaryId: String? = null
+
+    fun setDiaryId(id: String?) {
+        currentDiaryId = id
+    }
 
     fun onTextChanged(newText: String) {
         _uiState.value = _uiState.value.copy(text = newText)
@@ -56,15 +62,14 @@ class DiaryViewModel @Inject constructor(
                 return@launch
             }
 
-            // Lấy UID thực tế của user đang đăng nhập
             val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
             val diary = Diary(
-                diaryId = "", 
-                userId = currentUid, // Đã sửa từ "current_user_id" thành UID thật
+                diaryId = currentDiaryId ?: "", 
+                userId = currentUid,
                 content = currentState.text,
                 moodTag = currentState.selectedMood,
-                imageUrls = emptyList(),
+                imageUrls = currentState.imageUrls,
                 createdAt = System.currentTimeMillis()
             )
             
