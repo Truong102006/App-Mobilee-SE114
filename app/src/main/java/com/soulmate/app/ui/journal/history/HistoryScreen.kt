@@ -12,6 +12,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +54,7 @@ fun HistoryScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // 1. Background Image - Updated to bg_journal
+        // 1. Nền mây xanh
         Image(
             painter = painterResource(id = R.drawable.bg_journal),
             contentDescription = null,
@@ -61,148 +63,137 @@ fun HistoryScreen(
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            // 2. Greeting Header
+            // 2. Header (Chữ xanh đậm)
+            val headerColor = Color(0xFF004BA0)
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(
-                    text = "Chào buổi sáng! 🌸",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A5BAF)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Chào buổi sáng!",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = headerColor
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "🌸", fontSize = 28.sp)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Hôm nay là một ngày tuyệt vời để ghi lại những khoảnh khắc đáng nhớ",
+                    text = "Hôm nay là một ngày tuyệt vời để\nghi lại những khoảnh khắc đáng nhớ",
                     fontSize = 16.sp,
-                    color = Color(0xFF1A5BAF).copy(alpha = 0.8f),
-                    lineHeight = 22.sp
+                    color = headerColor.copy(alpha = 0.7f),
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // 3. Main White Container with Margin on both sides
+            // 3. Khung trắng chính
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp) // Thêm margin 2 bên trái phải
-                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomStart = 32.dp, bottomEnd = 32.dp)), // Bo góc cả 4 cạnh để tạo hiệu ứng thẻ
-                color = Color.White
+                    .padding(horizontal = 12.dp)
+                    .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)),
+                color = Color.White,
+                elevation = 0.dp
             ) {
                 Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    // Monthly Selector Pill
+                    // Monthly Selector Pill (Xanh nhạt)
                     Surface(
                         modifier = Modifier
                             .wrapContentWidth()
                             .clickable { showMonthPicker = true },
                         shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFFE8F1FF)
+                        color = Color(0xFFE3F2FD)
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CalendarToday,
                                 contentDescription = null,
-                                tint = Color(0xFF5B9DFF),
-                                modifier = Modifier.size(16.dp)
+                                tint = Color(0xFF1E88E5),
+                                modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "Tháng $selectedMonth, $selectedYear",
-                                color = Color(0xFF5B9DFF),
+                                color = Color(0xFF1E88E5),
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
+                                fontSize = 15.sp
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 5. Timeline List
-                    if (groupedNotes.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Không có nhật ký nào", color = Color.Gray)
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 100.dp)
-                        ) {
-                            groupedNotes.forEach { (date, notesInDate) ->
-                                item {
-                                    Surface(
-                                        modifier = Modifier.padding(vertical = 12.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = Color(0xFFE8F1FF)
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 100.dp)
+                    ) {
+                        groupedNotes.forEach { (date, notesInDate) ->
+                            item {
+                                // Ngày hiện tại (Pill xanh nhạt hơn)
+                                Surface(
+                                    modifier = Modifier.padding(vertical = 12.dp),
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = Color(0xFFF1F8FE)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Row(
-                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.CalendarToday,
-                                                contentDescription = null,
-                                                tint = Color(0xFF5B9DFF),
-                                                modifier = Modifier.size(12.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = date,
-                                                color = Color(0xFF5B9DFF),
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 12.sp
-                                            )
-                                        }
+                                        Icon(
+                                            imageVector = Icons.Default.CalendarToday,
+                                            contentDescription = null,
+                                            tint = Color(0xFF42A5F5),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = date,
+                                            color = Color(0xFF42A5F5),
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
                                     }
                                 }
+                            }
 
-                                itemsIndexed(notesInDate) { index, note ->
-                                    Timeline(
-                                        item = note,
-                                        isLastItem = index == notesInDate.lastIndex && date == groupedNotes.keys.last(),
-                                        onDelete = { noteToDelete = note },
-                                        onEdit = { onNavigateToEdit(note.diaryId) }
-                                    )
-                                }
+                            itemsIndexed(notesInDate) { index, note ->
+                                Timeline(
+                                    item = note,
+                                    isLastItem = index == notesInDate.lastIndex,
+                                    onDelete = { noteToDelete = note },
+                                    onEdit = { onNavigateToEdit(note.diaryId) }
+                                )
                             }
                         }
                     }
                 }
             }
-            // Thêm spacer ở dưới để card không sát đáy nếu cần
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
+    // Các Dialog giữ nguyên logic cũ
     if (noteToDelete != null) {
         AlertDialog(
             onDismissRequest = { noteToDelete = null },
-            title = { Text("Xác nhận xóa", fontWeight = FontWeight.Bold) },
-            text = { Text("Bạn có chắc chắn muốn xóa mục nhật ký này không?") },
+            title = { Text("Xác nhận xóa") },
+            text = { Text("Bạn có chắc chắn muốn xóa nhật ký này không?") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteNote(noteToDelete!!)
-                        noteToDelete = null
-                    }
-                ) {
-                    Text("Xóa", color = Color.Red, fontWeight = FontWeight.Bold)
+                TextButton(onClick = { viewModel.deleteNote(noteToDelete!!); noteToDelete = null }) {
+                    Text("Xóa", color = Color.Red)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { noteToDelete = null }) {
-                    Text("Hủy", color = Color.Gray)
-                }
-            },
-            shape = RoundedCornerShape(16.dp)
+                TextButton(onClick = { noteToDelete = null }) { Text("Hủy") }
+            }
         )
     }
 
@@ -211,11 +202,7 @@ fun HistoryScreen(
             currentMonth = selectedMonth,
             currentYear = selectedYear,
             onDismiss = { showMonthPicker = false },
-            onConfirm = { newMonth, newYear ->
-                selectedMonth = newMonth
-                selectedYear = newYear
-                showMonthPicker = false
-            }
+            onConfirm = { m, y -> selectedMonth = m; selectedYear = y; showMonthPicker = false }
         )
     }
 }

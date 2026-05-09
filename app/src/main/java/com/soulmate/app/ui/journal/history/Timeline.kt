@@ -2,7 +2,6 @@ package com.soulmate.app.ui.journal.history
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -22,7 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
+import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.RecordingNote
 import com.soulmate.app.ui.journal.editor.Mood
 import kotlinx.coroutines.delay
@@ -46,16 +48,9 @@ fun Timeline(
     onEdit: () -> Unit
 ) {
     val density = LocalDensity.current
-    val swipeLimit = with(density) { 100.dp.toPx() }
+    val swipeLimit = with(density) { 80.dp.toPx() }
     val swipeableState = rememberSwipeableState(initialValue = 0)
     val anchors = mapOf(0f to 0, -swipeLimit to 1)
-
-    if (swipeableState.currentValue == 1) {
-        LaunchedEffect(item.id) {
-            delay(3000)
-            swipeableState.animateTo(0)
-        }
-    }
 
     Box(
         modifier = Modifier
@@ -67,60 +62,53 @@ fun Timeline(
                 orientation = Orientation.Horizontal
             )
     ) {
-        // Swipe Actions (Behind)
+        // Nút Edit/Delete ẩn bên dưới khi vuốt sang trái
         Row(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 8.dp),
+            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = onEdit,
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colors.primary.copy(alpha = 0.1f))
+                modifier = Modifier.size(38.dp).clip(CircleShape).background(Color(0xFFE3F2FD))
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colors.primary)
+                Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFF1E88E5), modifier = Modifier.size(20.dp))
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.Red.copy(alpha = 0.1f))
+                modifier = Modifier.size(38.dp).clip(CircleShape).background(Color(0xFFFFEBEE))
             ) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(20.dp))
             }
         }
 
-        // Main Content (Foreground)
+        // Nội dung hiển thị chính
         Surface(
-            modifier = Modifier
-                .offset { IntOffset(swipeableState.offset.value.toInt(), 0) }
-                .fillMaxWidth(),
-            color = Color.White
+            modifier = Modifier.offset { IntOffset(swipeableState.offset.value.toInt(), 0) }.fillMaxWidth(),
+            color = Color.Transparent // Để hiện màu của container cha
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
-                    .padding(vertical = 12.dp)
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.Top
             ) {
-                // 1. Time
-                val timePart = item.dateTime.split(" ").lastOrNull() ?: ""
+                // 1. Giờ (màu xanh blue)
                 Text(
-                    text = timePart,
+                    text = item.dateTime.split(" ").lastOrNull() ?: "",
                     color = Color(0xFF5B9DFF),
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.width(50.dp).padding(top = 16.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    modifier = Modifier.width(55.dp).padding(top = 18.dp),
+                    textAlign = TextAlign.Center
                 )
 
-                // 2. Timeline Line and Dot
-                TimelineIndicator(
-                    isLastItem = isLastItem,
-                    modifier = Modifier.width(24.dp)
-                )
+                // 2. Đường kẻ và dấu chấm
+                TimelineIndicator(isLastItem = isLastItem, modifier = Modifier.width(20.dp))
 
-                // 3. Mood Icon and Content Card
-                DiaryContentArea(item)
+                // 3. Nội dung chính: Icon tâm trạng + Chữ + Ảnh bên phải
+                DiaryContentArea(item, modifier = Modifier.weight(1f))
             }
         }
     }
@@ -128,42 +116,39 @@ fun Timeline(
 
 @Composable
 private fun TimelineIndicator(isLastItem: Boolean, modifier: Modifier = Modifier) {
-    val lineColor = Color(0xFFE8F1FF)
+    val isDark = isSystemInDarkTheme()
+    val lineColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFE8F1FF)
     val dotColor = Color(0xFF5B9DFF)
 
     Box(
-        modifier = modifier
-            .fillMaxHeight()
-            .drawBehind {
-                val centerX = size.width / 2
-                // Draw vertical line
-                if (!isLastItem) {
-                    drawLine(
-                        color = lineColor,
-                        start = Offset(centerX, 0f),
-                        end = Offset(centerX, size.height),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                } else {
-                    drawLine(
-                        color = lineColor,
-                        start = Offset(centerX, 0f),
-                        end = Offset(centerX, 24.dp.toPx()),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-                // Draw dot
-                drawCircle(
-                    color = dotColor,
-                    radius = 4.dp.toPx(),
-                    center = Offset(centerX, 20.dp.toPx())
+        modifier = modifier.fillMaxHeight().drawBehind {
+            val centerX = size.width / 2
+            if (!isLastItem) {
+                drawLine(
+                    color = lineColor,
+                    start = Offset(centerX, 0f),
+                    end = Offset(centerX, size.height),
+                    strokeWidth = 2.dp.toPx()
+                )
+            } else {
+                drawLine(
+                    color = lineColor,
+                    start = Offset(centerX, 0f),
+                    end = Offset(centerX, 20.dp.toPx()),
+                    strokeWidth = 2.dp.toPx()
                 )
             }
+            drawCircle(
+                color = dotColor,
+                radius = 4.5.dp.toPx(),
+                center = Offset(centerX, 20.dp.toPx())
+            )
+        }
     )
 }
 
 @Composable
-private fun DiaryContentArea(item: RecordingNote) {
+private fun DiaryContentArea(item: RecordingNote, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val isDark = isSystemInDarkTheme()
     val richTextState = rememberRichTextState()
@@ -175,31 +160,32 @@ private fun DiaryContentArea(item: RecordingNote) {
 
     LaunchedEffect(item.text, isDark) {
         val processedHtml = if (isDark) {
-            val blackPattern = "(?i)color\\s*:\\s*(?:rgb\\(0,\\s*0,\\s*0\\)|rgba\\(0,\\s*0,\\s*0,\\s*1(?:\\.0)?\\)|#000(?:000)?|black)".toRegex()
-            item.text.replace(blackPattern, "color: #000000") // Force black for the white journal surface
-        } else item.text
+            val blackPattern = "(?i)color\\s*:\\s*(?:rgb\\(0,\\s*0,\\s*0\\)|#000000|black)".toRegex()
+            item.text.replace(blackPattern, "color: #FFFFFF")
+        } else {
+            val whitePattern = "(?i)color\\s*:\\s*(?:rgb\\(255,\\s*255,\\s*255\\)|#FFFFFF|white)".toRegex()
+            item.text.replace(whitePattern, "color: #000000")
+        }
         richTextState.setHtml(processedHtml)
     }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 8.dp, end = 16.dp),
+        modifier = modifier.fillMaxWidth().padding(start = 6.dp, end = 8.dp),
         verticalAlignment = Alignment.Top
     ) {
-        // Mood Icon
+        // Icon tâm trạng (Vòng tròn vàng nhạt)
         Box(
             modifier = Modifier
                 .padding(top = 8.dp)
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFFFFAEB)), // Light yellowish background like in image
+                .background(if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFFFFAEB)),
             contentAlignment = Alignment.Center
         ) {
             Mood.entries.find { it.label == item.moodTag }?.let { mood ->
                 AsyncImage(
                     model = mood.iconRes,
-                    contentDescription = mood.label,
+                    contentDescription = null,
                     imageLoader = imageLoader,
                     modifier = Modifier.size(24.dp)
                 )
@@ -208,26 +194,30 @@ private fun DiaryContentArea(item: RecordingNote) {
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Text Content
-        Column(modifier = Modifier.weight(1f).padding(top = 12.dp)) {
+        // Nội dung văn bản
+        Column(modifier = Modifier.weight(1f).padding(top = 14.dp)) {
             RichText(
                 state = richTextState,
                 modifier = Modifier.fillMaxWidth(),
-                maxLines = 3,
+                maxLines = 4,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        // Image (on the right)
+        // Ảnh nhật ký bên phải
         if (item.imageUrls.isNotEmpty()) {
             Spacer(modifier = Modifier.width(12.dp))
             AsyncImage(
                 model = item.imageUrls.first(),
-                contentDescription = null,
+                contentDescription = "Diary Image",
                 modifier = Modifier
-                    .size(width = 100.dp, height = 70.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+                    .padding(top = 8.dp)
+                    .size(width = 100.dp, height = 75.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(0.5.dp, Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.img_3),
+                error = painterResource(id = R.drawable.img_3)
             )
         }
     }
