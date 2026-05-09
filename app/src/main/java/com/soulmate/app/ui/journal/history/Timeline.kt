@@ -43,7 +43,6 @@ fun Timeline(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min) // Cần thiết để đường kẻ dọc chiếm hết chiều cao nội dung
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.Top
     ) {

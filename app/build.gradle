@@ -108,7 +108,7 @@ dependencies {
     kapt "androidx.room:room-compiler:2.6.1"
 
     // Firebase
-    implementation platform('com.google.firebase:firebase-bom:32.7.1')
+    implementation platform('com.google.firebase:firebase-bom:32.8.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
@@ -135,10 +135,6 @@ dependencies {
     implementation("com.patrykandpatrick.vico:compose:1.15.0")
     implementation("com.patrykandpatrick.vico:compose-m2:1.15.0")
 
-    // Firebase Bill of Materials
-    implementation platform('com.google.firebase:firebase-bom:32.8.0')
-    // Firebase Authentication
-    implementation 'com.google.firebase:firebase-auth'
     // Google Play Services Auth
     implementation 'com.google.android.gms:play-services-auth:21.1.0'
 }

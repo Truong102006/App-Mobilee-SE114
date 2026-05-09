@@ -1,12 +1,9 @@
 package com.soulmate.app.di
 
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.ktx.storage
-import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,13 +16,20 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseAuth(): FirebaseAuth = Firebase.auth
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
     @Provides
     @Singleton
-    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
     @Provides
     @Singleton
-    fun provideFirebaseStorage(): FirebaseStorage = Firebase.storage
+    fun provideFirebaseStorage(): FirebaseStorage {
+        val bucket = FirebaseApp.getInstance().options.storageBucket
+        return if (!bucket.isNullOrBlank()) {
+            FirebaseStorage.getInstance("gs://$bucket")
+        } else {
+            FirebaseStorage.getInstance()
+        }
+    }
 }

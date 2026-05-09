@@ -20,7 +20,7 @@ class DiaryViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(DiaryUiState())
     val uiState = _uiState.asStateFlow()
-    
+
     private var currentDiaryId: String? = null
 
     fun setDiaryId(id: String?) {
@@ -53,19 +53,20 @@ class DiaryViewModel @Inject constructor(
         }
     }
 
-    fun saveDiary() {
+    fun saveDiary(diaryId: String? = null) {
         viewModelScope.launch {
             val currentState = _uiState.value
             
             if (currentState.text.isBlank()) {
-                _uiState.value = _uiState.value.copy(error = "Nội dung nhật ký không được để trống")
+                _uiState.value = _uiState.value.copy(error = "N\u1ED9i dung nh\u1EADt k\u00FD kh\u00F4ng \u0111\u01B0\u1EE3c \u0111\u1EC3 tr\u1ED1ng")
                 return@launch
             }
 
+            // Get UID of current signed-in user
             val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
             val diary = Diary(
-                diaryId = currentDiaryId ?: "", 
+                diaryId = diaryId ?: currentDiaryId ?: "",
                 userId = currentUid,
                 content = currentState.text,
                 moodTag = currentState.selectedMood,

@@ -1,6 +1,8 @@
 package com.soulmate.app.ui.journal.editor
 
+import android.content.Context
 import android.net.Uri
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -36,10 +38,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
-import com.soulmate.app.ui.home.components.RecordingNote
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.theme.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.core.net.toUri
@@ -59,8 +65,9 @@ fun MultimediaEditor(
     val richTextState = rememberRichTextState()
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var zoomedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val scope = rememberCoroutineScope()
 
-    // Cập nhật ViewModel mỗi khi danh sách ảnh thay đổi
+    // Update ViewModel whenever selected image list changes
     LaunchedEffect(selectedImages) {
         viewModel.onImagesChanged(selectedImages.map { it.toString() })
     }
@@ -97,30 +104,6 @@ fun MultimediaEditor(
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
-            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-            val contentHtml = richTextState.toHtml()
-            val combinedHtml = if (title.isNotBlank()) "<h3>$title</h3>$contentHtml" else contentHtml
-
-            if (diaryId != null) {
-                // Đã sửa: dùng diaryId = diaryId thay vì id = diaryId
-                historyViewModel?.updateNote(
-                    diaryId = diaryId,
-                    newHtml = combinedHtml,
-                    newImages = selectedImages.map { it.toString() },
-                    newMood = selectedMood.label
-                )
-            } else {
-                // Đã sửa: truyền thêm diaryId = "" để đảm bảo không lỗi tham số
-                val displayNote = RecordingNote(
-                    diaryId = "",
-                    text = combinedHtml,
-                    dateTime = sdf.format(Date()),
-                    moodTag = selectedMood.label,
-                    imageUrls = selectedImages.map { it.toString() }
-                )
-                historyViewModel?.addNote(displayNote)
-            }
-
             showSaveSuccess = true
             viewModel.onSaveCompleteHandled()
         }
@@ -141,7 +124,15 @@ fun MultimediaEditor(
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
     ) { uris ->
-        selectedImages = selectedImages + uris
+        scope.launch {
+            val copiedUris = withContext(Dispatchers.IO) {
+                uris.map { uri ->
+                    runCatching { copyImageToInternalStorage(context, uri) }
+                        .getOrElse { uri }
+                }
+            }
+            selectedImages = selectedImages + copiedUris
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -152,7 +143,7 @@ fun MultimediaEditor(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            "Nhật Ký",
+                            "Nh\u1EADt K\u00FD",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
@@ -186,7 +177,7 @@ fun MultimediaEditor(
                                     val combinedHtml = if (title.isNotBlank()) "<h3>$title</h3>$contentHtml" else contentHtml
                                     
                                     viewModel.onTextChanged(combinedHtml)
-                                    viewModel.saveDiary()
+                                    viewModel.saveDiary(diaryId)
                                 },
                                 modifier = Modifier.padding(end = 12.dp),
                                 shape = CircleShape,
@@ -336,6 +327,26 @@ fun MultimediaEditor(
     }
 }
 
+private fun copyImageToInternalStorage(context: Context, sourceUri: Uri): Uri {
+    val resolver = context.contentResolver
+    val mimeType = resolver.getType(sourceUri)
+    val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)?.ifBlank { null } ?: "jpg"
+
+    val imageDir = File(context.filesDir, "diary_images")
+    if (!imageDir.exists()) {
+        imageDir.mkdirs()
+    }
+
+    val outputFile = File(imageDir, "diary_${System.currentTimeMillis()}_${UUID.randomUUID()}.$extension")
+    resolver.openInputStream(sourceUri)?.use { input ->
+        FileOutputStream(outputFile).use { output ->
+            input.copyTo(output)
+        }
+    } ?: return sourceUri
+
+    return Uri.fromFile(outputFile)
+}
+
 @Composable
 fun FullScreenImageOverlay(uri: Uri, onDismiss: () -> Unit) {
     Surface(
@@ -425,7 +436,7 @@ fun SaveSuccessOverlay(onAnimationFinish: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Đã lưu",
+                    text = "\u0110\u00E3 l\u01B0u",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF4CAF50)
