@@ -28,6 +28,7 @@ import com.soulmate.app.ui.components.Screen
 import com.soulmate.app.ui.components.CustomBottomNav
 import com.soulmate.app.ui.home.HomeScreen
 import com.soulmate.app.ui.home.MusicViewModel
+import com.soulmate.app.ui.journal.editor.EditDiaryScreen
 import com.soulmate.app.ui.journal.editor.MultimediaEditor
 import com.soulmate.app.ui.journal.history.HistoryScreen
 import com.soulmate.app.ui.journal.history.HistoryViewModel
@@ -110,20 +111,26 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+                        composable(Screen.Diary.route) {
+                            val hvm: HistoryViewModel = hiltViewModel()
+                            MultimediaEditor(
+                                historyViewModel = hvm,
+                                onBackClick = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
                         composable(
-                            route = Screen.Diary.route + "?diaryId={diaryId}",
+                            route = Screen.EditDiary.route + "/{diaryId}",
                             arguments = listOf(
                                 navArgument("diaryId") {
                                     type = NavType.StringType
-                                    nullable = true
-                                    defaultValue = null
                                 }
                             )
                         ) { backStackEntry ->
-                            val diaryId = backStackEntry.arguments?.getString("diaryId")
+                            val diaryId = backStackEntry.arguments?.getString("diaryId") ?: ""
                             val hvm: HistoryViewModel = hiltViewModel()
-
-                            MultimediaEditor(
+                            EditDiaryScreen(
                                 diaryId = diaryId,
                                 historyViewModel = hvm,
                                 onBackClick = {
@@ -140,7 +147,7 @@ class MainActivity : ComponentActivity() {
                             HistoryScreen(
                                 viewModel = hvm,
                                 onNavigateToEdit = { diaryId -> 
-                                    navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
+                                    navController.navigate(Screen.EditDiary.route + "/$diaryId")
                                 }
                             )
                         }

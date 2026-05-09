@@ -168,6 +168,7 @@ fun HistoryScreen(
                             itemsIndexed(notesInDate) { index, note ->
                                 Timeline(
                                     item = note,
+                                    isFirstItem = index == 0,
                                     isLastItem = index == notesInDate.lastIndex,
                                     onDelete = { noteToDelete = note },
                                     onEdit = { onNavigateToEdit(note.diaryId) }
