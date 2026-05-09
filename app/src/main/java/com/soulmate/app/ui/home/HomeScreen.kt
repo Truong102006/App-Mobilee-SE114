@@ -13,6 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
+import com.soulmate.app.ui.social.CommunityCard
+import com.soulmate.app.ui.social.getMockCommunityPosts
 
 @Composable
 fun HomeScreen(musicViewModel: MusicViewModel, historyViewModel: HistoryViewModel) {
@@ -90,6 +92,8 @@ fun HomeScreenContent(
     historyViewModel: HistoryViewModel? = null
 ) {
     val virtualCount = 50000
+    val communityPosts = remember { getMockCommunityPosts() }
+
     // --- GIAO DIỆN ---
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -111,12 +115,16 @@ fun HomeScreenContent(
             backgroundColor = MaterialTheme.colors.background
         ) { paddingValues ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState())
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
             ) {
                 HeaderSection()
                 Spacer(modifier = Modifier.height(16.dp))
                 MoodCard(historyViewModel)
                 Spacer(modifier = Modifier.height(18.dp))
+                
                 Text(
                     text = "Your Favourite Songs",
                     fontSize = 22.sp,
@@ -143,7 +151,28 @@ fun HomeScreenContent(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(60.dp))
+
+                // --- PHẦN COMMUNITY FEEDS ĐƯỢC CHUYỂN TỪ COMMUNITYSCREEN ---
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Community Feeds",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colors.onBackground,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    communityPosts.forEach { post ->
+                        CommunityCard(post = post)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(100.dp))
             }
         }
 

@@ -1,6 +1,5 @@
 package com.soulmate.app
 
-import CommunityScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -122,7 +121,7 @@ class MainActivity : ComponentActivity() {
                             )
                         ) { backStackEntry ->
                             val diaryId = backStackEntry.arguments?.getString("diaryId")
-                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho Editor
+                            val hvm: HistoryViewModel = hiltViewModel()
 
                             MultimediaEditor(
                                 diaryId = diaryId,
@@ -133,11 +132,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Screen.Home.route) { 
-                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho Home
+                            val hvm: HistoryViewModel = hiltViewModel()
                             HomeScreen(musicViewModel, hvm) 
                         }
                         composable(Screen.History.route) { 
-                            val hvm: HistoryViewModel = hiltViewModel() // Lấy ViewModel riêng cho History
+                            val hvm: HistoryViewModel = hiltViewModel()
                             HistoryScreen(
                                 viewModel = hvm,
                                 onNavigateToEdit = { diaryId -> 
@@ -147,8 +146,6 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Screen.Stats.route) { StatsScreen() }
-
-                        composable(Screen.Community.route) { CommunityScreen() }
 
                         composable(Screen.Setting.route) {
                             val context = LocalContext.current
