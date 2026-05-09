@@ -47,7 +47,7 @@ class DiaryViewModel @Inject constructor(
         }
     }
 
-    fun saveDiary() {
+    fun saveDiary(diaryId: String? = null) {
         viewModelScope.launch {
             val currentState = _uiState.value
             
@@ -60,11 +60,11 @@ class DiaryViewModel @Inject constructor(
             val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
             val diary = Diary(
-                diaryId = "", 
-                userId = currentUid, // Đã sửa từ "current_user_id" thành UID thật
+                diaryId = diaryId ?: "", 
+                userId = currentUid,
                 content = currentState.text,
                 moodTag = currentState.selectedMood,
-                imageUrls = emptyList(),
+                imageUrls = currentState.imageUrls,
                 createdAt = System.currentTimeMillis()
             )
             

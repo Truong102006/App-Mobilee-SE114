@@ -52,7 +52,6 @@ fun Timeline(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
             .padding(end = 16.dp)
     ) {
         TimelineIndicator(
