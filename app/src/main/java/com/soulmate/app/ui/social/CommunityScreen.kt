@@ -1,3 +1,5 @@
+package com.soulmate.app.ui.social
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,8 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.soulmate.app.ui.social.CommunityCard
-import com.soulmate.app.ui.social.CommunityPost
 
 @Composable
 fun CommunityScreen() {
@@ -47,7 +47,7 @@ fun CommunityScreen() {
 // ==========================================
 // HÀM TẠO DỮ LIỆU ẢO (MOCK DATA)
 // ==========================================
-private fun getMockCommunityPosts(): List<CommunityPost> {
+fun getMockCommunityPosts(): List<CommunityPost> {
     return listOf(
         CommunityPost(
             id = "post_1",
