@@ -125,11 +125,13 @@ fun HtmlText(
 @Composable
 fun CommunityCard(
     post: CommunityPost,
+    comments: List<Comment>,
     onLikeClick: () -> Unit,
     onCommentClick: (String) -> Unit,
     onLikeComment: (String) -> Unit,
     onDeleteClick: () -> Unit,
     onEditClick: (String) -> Unit,
+    onOpenComments: () -> Unit,
     currentUserAvatarUrl: String?,
     currentUserName: String,
     modifier: Modifier = Modifier
@@ -326,7 +328,10 @@ fun CommunityCard(
                 ActionPillButton(
                     icon = Icons.Outlined.ChatBubbleOutline,
                     text = post.commentCount.toString(),
-                    onClick = { showCommentsModal = true }
+                    onClick = { 
+                        onOpenComments()
+                        showCommentsModal = true 
+                    }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -366,7 +371,7 @@ fun CommunityCard(
         }
     }
 
-    // --- COMMENTS MODAL (As shown in image) ---
+    // --- COMMENTS MODAL ---
     if (showCommentsModal) {
         Dialog(
             onDismissRequest = { showCommentsModal = false },
@@ -401,7 +406,7 @@ fun CommunityCard(
                         .background(Color(0xFF18191A))
                 ) {
                     CommentSection(
-                        comments = post.comments,
+                        comments = comments,
                         onAddComment = onCommentClick,
                         onLikeComment = onLikeComment,
                         currentUserAvatarUrl = currentUserAvatarUrl,

@@ -1,12 +1,15 @@
 package com.soulmate.app.ui.social
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.domain.repository.ICommunityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -20,6 +23,12 @@ class CommunityViewModel @Inject constructor(
     private val _posts = mutableStateOf<List<CommunityPost>>(emptyList())
     val posts: State<List<CommunityPost>> = _posts
 
+    // Lưu trữ bình luận theo postId: Map<PostId, List<Comment>>
+    private val _commentsMap = mutableStateMapOf<String, List<Comment>>()
+    val commentsMap: Map<String, List<Comment>> = _commentsMap
+
+    private val commentJobs = mutableMapOf<String, Job>()
+
     private val currentUserId: String?
         get() = auth.currentUser?.uid
 
@@ -32,12 +41,25 @@ class CommunityViewModel @Inject constructor(
             repository.getPosts().collectLatest { allPosts ->
                 val userId = currentUserId
                 _posts.value = allPosts.map { post ->
-                    // In a real scenario, 'liked_by' would be checked here or handled in Repo
-                    // For now, Repo doesn't return liked_by in CommunityPost, but let's assume we handle it
-                    post.copy(isLiked = false) // Logic for isLiked can be added if liked_by is exposed
+                    post.copy(isLiked = post.likedBy.contains(userId))
                 }
             }
         }
+    }
+
+    // Quan sát bình luận của một bài viết cụ thể
+    fun observeCommentsForPost(postId: String) {
+        if (commentJobs.containsKey(postId)) return
+
+        val job = viewModelScope.launch {
+            repository.getComments(postId).collectLatest { comments ->
+                val userId = currentUserId
+                _commentsMap[postId] = comments.map { comment ->
+                    comment.copy(isLiked = comment.likedBy.contains(userId))
+                }
+            }
+        }
+        commentJobs[postId] = job
     }
 
     fun addPost(post: CommunityPost) {
@@ -83,5 +105,10 @@ class CommunityViewModel @Inject constructor(
         viewModelScope.launch {
             repository.updatePostContent(postId, newContent)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        commentJobs.values.forEach { it.cancel() }
     }
 }

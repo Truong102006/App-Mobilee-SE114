@@ -3,6 +3,8 @@ package com.soulmate.app.ui.social
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -36,18 +38,19 @@ fun CommentSection(
     var commentText by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Danh sách bình luận chiếm phần trên
-        Column(
+        // Danh sách bình luận dùng LazyColumn để hỗ trợ cuộn
+        LazyColumn(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            comments.forEach { comment ->
+            items(comments, key = { it.id }) { comment ->
                 CommentItem(
                     comment = comment,
                     onLikeClick = { onLikeComment(comment.id) }
                 )
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
 
@@ -100,7 +103,7 @@ fun CommentSection(
                     }
                 }
 
-                // Hàng icon tiện ích dưới ô nhập liệu
+                // Hàng icon tiện ích
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 44.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,

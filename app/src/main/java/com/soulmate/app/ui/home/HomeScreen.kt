@@ -34,6 +34,7 @@ fun HomeScreen(
     val isFullScreen by musicViewModel.isFullScreen
     val currentUser by authViewModel.currentUser
     val communityPosts by communityViewModel.posts
+    val commentsMap = communityViewModel.commentsMap
 
     // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
@@ -81,6 +82,7 @@ fun HomeScreen(
         historyViewModel = historyViewModel,
         currentUser = currentUser,
         communityPosts = communityPosts,
+        commentsMap = commentsMap,
         onLikeClick = { postId -> communityViewModel.toggleLike(postId) },
         onCommentClick = { postId, comment -> 
             val user = authViewModel.currentUser.value
@@ -88,7 +90,8 @@ fun HomeScreen(
         },
         onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
         onDeleteClick = { postId -> communityViewModel.deletePost(postId) },
-        onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) }
+        onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) },
+        onOpenComments = { postId -> communityViewModel.observeCommentsForPost(postId) }
     )
 }
 
@@ -112,11 +115,13 @@ fun HomeScreenContent(
     historyViewModel: HistoryViewModel? = null,
     currentUser: com.soulmate.app.domain.model.User? = null,
     communityPosts: List<com.soulmate.app.ui.social.CommunityPost>,
+    commentsMap: Map<String, List<com.soulmate.app.ui.social.Comment>>,
     onLikeClick: (String) -> Unit,
     onCommentClick: (String, String) -> Unit,
     onLikeComment: (String, String) -> Unit,
     onDeleteClick: (String) -> Unit,
-    onEditClick: (String, String) -> Unit
+    onEditClick: (String, String) -> Unit,
+    onOpenComments: (String) -> Unit
 ) {
     val virtualCount = 50000
 
@@ -196,11 +201,13 @@ fun HomeScreenContent(
                     communityPosts.forEach { post ->
                         CommunityCard(
                             post = post,
+                            comments = commentsMap[post.id] ?: emptyList(),
                             onLikeClick = { onLikeClick(post.id) },
                             onCommentClick = { comment -> onCommentClick(post.id, comment) },
                             onLikeComment = { commentId -> onLikeComment(post.id, commentId) },
                             onDeleteClick = { onDeleteClick(post.id) },
                             onEditClick = { newContent -> onEditClick(post.id, newContent) },
+                            onOpenComments = { onOpenComments(post.id) },
                             currentUserAvatarUrl = currentUser?.avatarUrl,
                             currentUserName = currentUser?.anonymousName ?: "User"
                         )
