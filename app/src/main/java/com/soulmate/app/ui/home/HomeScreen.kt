@@ -16,14 +16,16 @@ import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.AuthViewModel
 import com.soulmate.app.ui.social.CommunityCard
-import com.soulmate.app.ui.social.getMockCommunityPosts
+import com.soulmate.app.ui.social.CommunityViewModel
 
 @Composable
 fun HomeScreen(
     musicViewModel: MusicViewModel, 
     historyViewModel: HistoryViewModel,
-    authViewModel: AuthViewModel = hiltViewModel()
+    communityViewModel: CommunityViewModel = hiltViewModel()
 ) {
+    val authViewModel: AuthViewModel = hiltViewModel()
+
     val songs = musicViewModel.songs
     val currentPlayingSong by musicViewModel.currentPlayingSong
     val isPlaying by musicViewModel.isPlaying
@@ -31,6 +33,7 @@ fun HomeScreen(
     val duration by musicViewModel.duration
     val isFullScreen by musicViewModel.isFullScreen
     val currentUser by authViewModel.currentUser
+    val communityPosts by communityViewModel.posts
 
     // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
@@ -76,7 +79,16 @@ fun HomeScreen(
         onBackClick = { musicViewModel.toggleFullScreen(false) },
         onSeek = { musicViewModel.seekTo(it) },
         historyViewModel = historyViewModel,
-        currentUser = currentUser
+        currentUser = currentUser,
+        communityPosts = communityPosts,
+        onLikeClick = { postId -> communityViewModel.toggleLike(postId) },
+        onCommentClick = { postId, comment -> 
+            val user = authViewModel.currentUser.value
+            communityViewModel.addComment(postId, user?.anonymousName ?: "User", user?.avatarUrl, comment) 
+        },
+        onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
+        onDeleteClick = { postId -> communityViewModel.deletePost(postId) },
+        onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) }
     )
 }
 
@@ -98,10 +110,15 @@ fun HomeScreenContent(
     onBackClick: () -> Unit,
     onSeek: (Long) -> Unit,
     historyViewModel: HistoryViewModel? = null,
-    currentUser: com.soulmate.app.domain.model.User? = null
+    currentUser: com.soulmate.app.domain.model.User? = null,
+    communityPosts: List<com.soulmate.app.ui.social.CommunityPost>,
+    onLikeClick: (String) -> Unit,
+    onCommentClick: (String, String) -> Unit,
+    onLikeComment: (String, String) -> Unit,
+    onDeleteClick: (String) -> Unit,
+    onEditClick: (String, String) -> Unit
 ) {
     val virtualCount = 50000
-    val communityPosts = remember { getMockCommunityPosts() }
 
     // --- GIAO DIỆN ---
     Box(modifier = Modifier.fillMaxSize()) {
@@ -161,7 +178,7 @@ fun HomeScreenContent(
                     }
                 }
 
-                // --- PHẦN COMMUNITY FEEDS ĐƯỢC CHUYỂN TỪ COMMUNITYSCREEN ---
+                // --- PHẦN COMMUNITY FEEDS ---
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Community Feeds",
@@ -177,7 +194,16 @@ fun HomeScreenContent(
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     communityPosts.forEach { post ->
-                        CommunityCard(post = post)
+                        CommunityCard(
+                            post = post,
+                            onLikeClick = { onLikeClick(post.id) },
+                            onCommentClick = { comment -> onCommentClick(post.id, comment) },
+                            onLikeComment = { commentId -> onLikeComment(post.id, commentId) },
+                            onDeleteClick = { onDeleteClick(post.id) },
+                            onEditClick = { newContent -> onEditClick(post.id, newContent) },
+                            currentUserAvatarUrl = currentUser?.avatarUrl,
+                            currentUserName = currentUser?.anonymousName ?: "User"
+                        )
                     }
                 }
 
@@ -185,7 +211,7 @@ fun HomeScreenContent(
             }
         }
 
-        // Màn hình chi tiết với thanh thời lượng thực tế
+        // Màn hình chi tiết
         if (isFullScreen && currentPlayingSong != null) {
             MusicPlayerDetailScreen(
                 title = currentPlayingSong.title,

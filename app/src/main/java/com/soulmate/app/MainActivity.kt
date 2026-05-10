@@ -29,12 +29,14 @@ import com.soulmate.app.ui.components.CustomBottomNav
 import com.soulmate.app.ui.home.HomeScreen
 import com.soulmate.app.ui.home.MusicViewModel
 import com.soulmate.app.ui.journal.editor.MultimediaEditor
+import com.soulmate.app.ui.journal.history.DiaryDetailScreen
 import com.soulmate.app.ui.journal.history.HistoryScreen
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.LoginScreen
 import com.soulmate.app.ui.login.RegisterScreen
 import com.soulmate.app.ui.setting.SettingScreen
 import com.soulmate.app.ui.setting.ThemeViewModel
+import com.soulmate.app.ui.social.CommunityViewModel
 import com.soulmate.app.ui.stats.StatsScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,6 +46,8 @@ class MainActivity : ComponentActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
+    // Khởi tạo CommunityViewModel tại đây để chia sẻ giữa các màn hình
+    private val communityViewModel: CommunityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,14 +137,46 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Screen.Home.route) { 
                             val hvm: HistoryViewModel = hiltViewModel()
-                            HomeScreen(musicViewModel, hvm) 
+                            HomeScreen(
+                                musicViewModel = musicViewModel, 
+                                historyViewModel = hvm,
+                                communityViewModel = communityViewModel // Truyền shared VM
+                            ) 
                         }
                         composable(Screen.History.route) { 
                             val hvm: HistoryViewModel = hiltViewModel()
                             HistoryScreen(
                                 viewModel = hvm,
-                                onNavigateToEdit = { diaryId -> 
+                                onNavigateToEdit = { diaryId: String -> 
                                     navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
+                                },
+                                onNavigateToDetail = { diaryId: String ->
+                                    navController.navigate(Screen.DiaryDetail.route + "/$diaryId")
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = Screen.DiaryDetail.route + "/{diaryId}",
+                            arguments = listOf(
+                                navArgument("diaryId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val diaryId = backStackEntry.arguments?.getString("diaryId") ?: ""
+                            val hvm: HistoryViewModel = hiltViewModel()
+                            DiaryDetailScreen(
+                                diaryId = diaryId,
+                                viewModel = hvm,
+                                communityViewModel = communityViewModel, // Truyền shared VM
+                                onBackClick = { navController.popBackStack() },
+                                onEditClick = { id: String ->
+                                    navController.navigate(Screen.Diary.route + "?diaryId=$id")
+                                },
+                                onShareSuccess = {
+                                    navController.navigate(Screen.Home.route) {
+                                        // Xoá stack để tránh quay lại trang detail khi nhấn back từ Home
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
                                 }
                             )
                         }
