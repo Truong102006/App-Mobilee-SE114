@@ -36,6 +36,7 @@ import com.soulmate.app.ui.login.LoginScreen
 import com.soulmate.app.ui.login.RegisterScreen
 import com.soulmate.app.ui.setting.SettingScreen
 import com.soulmate.app.ui.setting.ThemeViewModel
+import com.soulmate.app.ui.social.CommunityViewModel
 import com.soulmate.app.ui.stats.StatsScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +46,8 @@ class MainActivity : ComponentActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
+    // Khởi tạo CommunityViewModel tại đây để chia sẻ giữa các màn hình
+    private val communityViewModel: CommunityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -134,7 +137,11 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Screen.Home.route) { 
                             val hvm: HistoryViewModel = hiltViewModel()
-                            HomeScreen(musicViewModel, hvm) 
+                            HomeScreen(
+                                musicViewModel = musicViewModel, 
+                                historyViewModel = hvm,
+                                communityViewModel = communityViewModel // Truyền shared VM
+                            ) 
                         }
                         composable(Screen.History.route) { 
                             val hvm: HistoryViewModel = hiltViewModel()
@@ -160,6 +167,7 @@ class MainActivity : ComponentActivity() {
                             DiaryDetailScreen(
                                 diaryId = diaryId,
                                 viewModel = hvm,
+                                communityViewModel = communityViewModel, // Truyền shared VM
                                 onBackClick = { navController.popBackStack() },
                                 onEditClick = { id: String ->
                                     navController.navigate(Screen.Diary.route + "?diaryId=$id")

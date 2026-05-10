@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.journal.history
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -18,23 +20,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import com.soulmate.app.ui.journal.editor.Mood
+import com.soulmate.app.ui.login.AuthViewModel
+import com.soulmate.app.ui.social.CommunityPost
+import com.soulmate.app.ui.social.CommunityViewModel
+import java.util.UUID
 
 @Composable
 fun DiaryDetailScreen(
     diaryId: String,
     viewModel: HistoryViewModel,
+    communityViewModel: CommunityViewModel,
     onBackClick: () -> Unit,
     onEditClick: (String) -> Unit
 ) {
+    val authViewModel: AuthViewModel = hiltViewModel()
     val note = viewModel.getNoteById(diaryId)
     val richTextState = rememberRichTextState()
+    val context = LocalContext.current
+    val currentUser = authViewModel.currentUser.value
 
     LaunchedEffect(note) {
         note?.let {
@@ -45,7 +57,7 @@ fun DiaryDetailScreen(
     Scaffold(
         topBar = {
             Column(modifier = Modifier.background(Color.White)) {
-                Spacer(modifier = Modifier.height(48.dp)) // Thêm margin top cho toàn bộ thanh tiêu đề và nút
+                Spacer(modifier = Modifier.height(48.dp))
                 TopAppBar(
                     title = { Text("Chi tiết nhật ký", fontWeight = FontWeight.Bold) },
                     backgroundColor = Color.White,
@@ -77,10 +89,9 @@ fun DiaryDetailScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp)) // Thêm khoảng cách phía trên nội dung
-
+                Spacer(modifier = Modifier.height(16.dp))
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Mood Icon
                     Mood.entries.find { it.label == note.moodTag }?.let { mood ->
                         AsyncImage(
                             model = mood.iconRes,
@@ -140,6 +151,40 @@ fun DiaryDetailScreen(
                     }
                 }
                 
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        val newPost = CommunityPost(
+                            id = UUID.randomUUID().toString(),
+                            userName = currentUser?.anonymousName ?: "SoulMate User",
+                            userAvatarUrl = currentUser?.avatarUrl,
+                            isVerified = currentUser?.role == "admin",
+                            mood = note.moodTag ?: "Neutral",
+                            timeAgo = "Vừa xong",
+                            textContent = note.text,
+                            imageUrls = note.imageUrls,
+                            likeCount = 0,
+                            commentCount = 0,
+                            viewCount = 0
+                        )
+                        communityViewModel.addPost(newPost)
+                        Toast.makeText(context, "Đã chia sẻ lên cộng đồng!", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Color(0xFF1E88E5),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(Icons.Default.Send, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Chia sẻ lên cộng đồng", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+
                 Spacer(modifier = Modifier.height(40.dp))
             }
         }

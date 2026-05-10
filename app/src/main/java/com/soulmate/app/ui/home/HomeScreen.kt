@@ -16,14 +16,17 @@ import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.AuthViewModel
 import com.soulmate.app.ui.social.CommunityCard
-import com.soulmate.app.ui.social.getMockCommunityPosts
+import com.soulmate.app.ui.social.CommunityViewModel
 
 @Composable
 fun HomeScreen(
     musicViewModel: MusicViewModel, 
     historyViewModel: HistoryViewModel,
-    authViewModel: AuthViewModel = hiltViewModel()
+    communityViewModel: CommunityViewModel = hiltViewModel()
 ) {
+    // authViewModel vẫn có thể dùng hiltViewModel() vì nó thường lấy dữ liệu từ Repo Singleton
+    val authViewModel: AuthViewModel = hiltViewModel()
+
     val songs = musicViewModel.songs
     val currentPlayingSong by musicViewModel.currentPlayingSong
     val isPlaying by musicViewModel.isPlaying
@@ -31,6 +34,7 @@ fun HomeScreen(
     val duration by musicViewModel.duration
     val isFullScreen by musicViewModel.isFullScreen
     val currentUser by authViewModel.currentUser
+    val communityPosts by communityViewModel.posts
 
     // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
@@ -76,7 +80,8 @@ fun HomeScreen(
         onBackClick = { musicViewModel.toggleFullScreen(false) },
         onSeek = { musicViewModel.seekTo(it) },
         historyViewModel = historyViewModel,
-        currentUser = currentUser
+        currentUser = currentUser,
+        communityPosts = communityPosts
     )
 }
 
@@ -98,10 +103,10 @@ fun HomeScreenContent(
     onBackClick: () -> Unit,
     onSeek: (Long) -> Unit,
     historyViewModel: HistoryViewModel? = null,
-    currentUser: com.soulmate.app.domain.model.User? = null
+    currentUser: com.soulmate.app.domain.model.User? = null,
+    communityPosts: List<com.soulmate.app.ui.social.CommunityPost>
 ) {
     val virtualCount = 50000
-    val communityPosts = remember { getMockCommunityPosts() }
 
     // --- GIAO DIỆN ---
     Box(modifier = Modifier.fillMaxSize()) {
@@ -161,7 +166,7 @@ fun HomeScreenContent(
                     }
                 }
 
-                // --- PHẦN COMMUNITY FEEDS ĐƯỢC CHUYỂN TỪ COMMUNITYSCREEN ---
+                // --- PHẦN COMMUNITY FEEDS ---
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Community Feeds",
@@ -185,7 +190,7 @@ fun HomeScreenContent(
             }
         }
 
-        // Màn hình chi tiết với thanh thời lượng thực tế
+        // Màn hình chi tiết
         if (isFullScreen && currentPlayingSong != null) {
             MusicPlayerDetailScreen(
                 title = currentPlayingSong.title,
