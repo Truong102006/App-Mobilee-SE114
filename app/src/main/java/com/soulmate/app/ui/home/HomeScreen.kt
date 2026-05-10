@@ -11,19 +11,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
+import com.soulmate.app.ui.login.AuthViewModel
 import com.soulmate.app.ui.social.CommunityCard
 import com.soulmate.app.ui.social.getMockCommunityPosts
 
 @Composable
-fun HomeScreen(musicViewModel: MusicViewModel, historyViewModel: HistoryViewModel) {
+fun HomeScreen(
+    musicViewModel: MusicViewModel, 
+    historyViewModel: HistoryViewModel,
+    authViewModel: AuthViewModel = hiltViewModel()
+) {
     val songs = musicViewModel.songs
     val currentPlayingSong by musicViewModel.currentPlayingSong
     val isPlaying by musicViewModel.isPlaying
     val currentPosition by musicViewModel.currentPosition
     val duration by musicViewModel.duration
     val isFullScreen by musicViewModel.isFullScreen
+    val currentUser by authViewModel.currentUser
 
     // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
@@ -68,7 +75,8 @@ fun HomeScreen(musicViewModel: MusicViewModel, historyViewModel: HistoryViewMode
         onPlayerClick = { musicViewModel.toggleFullScreen(true) },
         onBackClick = { musicViewModel.toggleFullScreen(false) },
         onSeek = { musicViewModel.seekTo(it) },
-        historyViewModel = historyViewModel
+        historyViewModel = historyViewModel,
+        currentUser = currentUser
     )
 }
 
@@ -89,7 +97,8 @@ fun HomeScreenContent(
     onPlayerClick: () -> Unit,
     onBackClick: () -> Unit,
     onSeek: (Long) -> Unit,
-    historyViewModel: HistoryViewModel? = null
+    historyViewModel: HistoryViewModel? = null,
+    currentUser: com.soulmate.app.domain.model.User? = null
 ) {
     val virtualCount = 50000
     val communityPosts = remember { getMockCommunityPosts() }
@@ -120,7 +129,7 @@ fun HomeScreenContent(
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
-                HeaderSection()
+                HeaderSection(user = currentUser)
                 Spacer(modifier = Modifier.height(16.dp))
                 MoodCard(historyViewModel)
                 Spacer(modifier = Modifier.height(18.dp))

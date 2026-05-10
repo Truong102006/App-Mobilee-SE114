@@ -54,7 +54,6 @@ fun HistoryScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // 1. Nền mây xanh
         Image(
             painter = painterResource(id = R.drawable.bg_journal),
             contentDescription = null,
@@ -65,7 +64,6 @@ fun HistoryScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 2. Header (Chữ xanh đậm)
             val headerColor = Color(0xFF004BA0)
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -90,7 +88,6 @@ fun HistoryScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 3. Khung trắng chính
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
@@ -102,7 +99,6 @@ fun HistoryScreen(
                 Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Monthly Selector Pill (Xanh nhạt)
                     Surface(
                         modifier = Modifier
                             .wrapContentWidth()
@@ -138,7 +134,6 @@ fun HistoryScreen(
                     ) {
                         groupedNotes.forEach { (date, notesInDate) ->
                             item {
-                                // Ngày hiện tại (Pill xanh nhạt hơn)
                                 Surface(
                                     modifier = Modifier.padding(vertical = 12.dp),
                                     shape = RoundedCornerShape(10.dp),
@@ -168,6 +163,7 @@ fun HistoryScreen(
                             itemsIndexed(notesInDate) { index, note ->
                                 Timeline(
                                     item = note,
+                                    isFirstItem = index == 0,
                                     isLastItem = index == notesInDate.lastIndex,
                                     onDelete = { noteToDelete = note },
                                     onEdit = { onNavigateToEdit(note.diaryId) }
@@ -180,7 +176,6 @@ fun HistoryScreen(
         }
     }
 
-    // Các Dialog giữ nguyên logic cũ
     if (noteToDelete != null) {
         AlertDialog(
             onDismissRequest = { noteToDelete = null },

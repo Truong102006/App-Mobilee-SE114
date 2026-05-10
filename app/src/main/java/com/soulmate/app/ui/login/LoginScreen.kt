@@ -29,8 +29,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import com.soulmate.app.R
 import com.soulmate.app.ui.theme.customGradient
 import kotlinx.coroutines.flow.collectLatest
@@ -62,7 +60,6 @@ fun LoginScreen(
     }
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//        .requestIdToken(context.getString(R.string.default_web_client_id))
         .requestIdToken("17181834176-7gd70ksot6egk819h9j46fbqoroeerdq.apps.googleusercontent.com")
         .requestEmail()
         .build()
@@ -78,14 +75,7 @@ fun LoginScreen(
             val idToken = account?.idToken
 
             if (idToken != null) {
-                firebaseAuthWithGoogle(idToken) { isSuccess ->
-                    if (isSuccess) {
-                        Log.d("GoogleLogin", "Login successfully!")
-                        onLoginSuccess()
-                    } else {
-                        Log.e("GoogleLogin", "Authentication error with Firebase.")
-                    }
-                }
+                viewModel.signInWithGoogle(idToken)
             }
         } catch (e: ApiException) {
             Log.e("GoogleLogin", "Error while selecting the account: ${e.message}")
@@ -154,7 +144,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     enabled = !isLoading,
-                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black), // Cố định màu chữ đen
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color(0xFF3fd6a7),
                         unfocusedBorderColor = Color.LightGray,
@@ -307,21 +297,4 @@ fun SocialIcon(iconRes: Int, onClick: () -> Unit) {
             )
         }
     }
-}
-
-private fun firebaseAuthWithGoogle(idToken: String, onResult: (Boolean) -> Unit) {
-    val auth = FirebaseAuth.getInstance()
-    val credential = GoogleAuthProvider.getCredential(idToken, null)
-
-    auth.signInWithCredential(credential)
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val user = auth.currentUser
-                Log.d("FirebaseAuth", "Tên User: ${user?.displayName}, Email: ${user?.email}")
-                onResult(true)
-            } else {
-                Log.e("FirebaseAuth", "Lỗi: ${task.exception?.message}")
-                onResult(false)
-            }
-        }
 }

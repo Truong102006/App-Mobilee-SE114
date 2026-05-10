@@ -35,45 +35,75 @@ import com.soulmate.app.ui.journal.editor.Mood
 @Composable
 fun Timeline(
     item: RecordingNote,
+    isFirstItem: Boolean = false,
     isLastItem: Boolean = false,
     onDelete: () -> Unit,
     onEdit: () -> Unit
 ) {
-    // Đã ẩn nút Edit/Delete và bỏ swipe theo yêu cầu thiết kế mới
+    val timelineColor = Color(0xFF42A5F5)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .height(IntrinsicSize.Min), // Cố định chiều cao theo nội dung bên phải
         verticalAlignment = Alignment.Top
     ) {
         // --- CỘT TRÁI: GIỜ & TIMELINE DỌC ---
-        Column(
-            modifier = Modifier.width(65.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .width(65.dp)
+                .fillMaxHeight()
+                .drawBehind {
+                    val centerX = size.width / 2
+                    val dotY = 36.dp.toPx() // Vị trí dấu chấm xanh
+
+                    // 1. Đường kẻ nối từ phía trên (màu mờ) để tạo sự liên kết
+                    if (!isFirstItem) {
+                        drawLine(
+                            color = timelineColor.copy(alpha = 0.1f),
+                            start = Offset(centerX, 0f),
+                            end = Offset(centerX, dotY),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
+
+                    // 2. Đường kẻ xanh đậm kéo dài xuống (Chỉ dài tới cuối nội dung của item này)
+                    // Trừ đi 24.dp padding bottom của nội dung để không bị lố sang item khác
+                    drawLine(
+                        color = timelineColor,
+                        start = Offset(centerX, dotY),
+                        end = Offset(centerX, size.height - 24.dp.toPx()),
+                        strokeWidth = 2.dp.toPx()
+                    )
+
+                    // 3. Vẽ dấu chấm tròn xanh
+                    drawCircle(
+                        color = timelineColor,
+                        radius = 4.5.dp.toPx(),
+                        center = Offset(centerX, dotY)
+                    )
+                }
         ) {
             val timePart = item.dateTime.split(" ").lastOrNull() ?: ""
             Text(
                 text = timePart,
-                color = Color(0xFF1E88E5),
+                color = timelineColor,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(top = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
                 textAlign = TextAlign.Center
             )
-            
-            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                TimelineIndicatorVertical(isLastItem = isLastItem)
-            }
         }
 
-        // --- CỘT PHẢI: ICON + CHỮ + ẢNH ---
+        // --- CỘT PHẢI: ICON + NỘI DUNG ---
         Row(
             modifier = Modifier
                 .weight(1f)
-                .padding(start = 4.dp, end = 16.dp, bottom = 20.dp),
+                .padding(start = 4.dp, end = 16.dp, bottom = 24.dp), // Padding bottom này quyết định điểm dừng của line
             verticalAlignment = Alignment.Top
         ) {
-            // Spacer và căn chỉnh nội dung để Icon ngang hàng với dấu chấm tròn
             Column(modifier = Modifier.weight(1f)) {
                 Spacer(modifier = Modifier.height(26.dp)) 
                 Row(verticalAlignment = Alignment.Top) {
@@ -85,7 +115,7 @@ fun Timeline(
                 }
             }
 
-            // Ảnh bên phải ngoài cùng (Hiển thị từ Firebase URL)
+            // Ảnh bên phải ngoài cùng
             if (item.imageUrls.isNotEmpty()) {
                 Spacer(modifier = Modifier.width(12.dp))
                 AsyncImage(
@@ -103,44 +133,6 @@ fun Timeline(
             }
         }
     }
-}
-
-@Composable
-private fun TimelineIndicatorVertical(isLastItem: Boolean) {
-    val isDark = isSystemInDarkTheme()
-    val lineColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFE3F2FD)
-    val dotColor = Color(0xFF42A5F5)
-
-    Box(
-        modifier = Modifier.fillMaxSize().drawBehind {
-            val centerX = size.width / 2
-            val dotY = 16.dp.toPx() // Vị trí dấu chấm ngay bên dưới giờ
-
-            // Vẽ đường kẻ dọc
-            if (!isLastItem) {
-                drawLine(
-                    color = lineColor,
-                    start = Offset(centerX, 0f),
-                    end = Offset(centerX, size.height),
-                    strokeWidth = 2.dp.toPx()
-                )
-            } else {
-                drawLine(
-                    color = lineColor,
-                    start = Offset(centerX, 0f),
-                    end = Offset(centerX, dotY),
-                    strokeWidth = 2.dp.toPx()
-                )
-            }
-
-            // Vẽ dấu chấm tròn
-            drawCircle(
-                color = dotColor,
-                radius = 4.5.dp.toPx(),
-                center = Offset(centerX, dotY)
-            )
-        }
-    )
 }
 
 @Composable

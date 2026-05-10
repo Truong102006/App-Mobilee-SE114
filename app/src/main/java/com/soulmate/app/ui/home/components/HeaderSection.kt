@@ -20,16 +20,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.soulmate.app.R
+import com.soulmate.app.domain.model.User
 
 @Composable
-fun HeaderSection() {
-    val hasAvatar = true
-
-    // Giảm chiều cao Box tổng xuống (ví dụ 280.dp thay vì 358.dp) để ảnh nền ngắn lại
+fun HeaderSection(user: User?) {
+    // Giảm chiều cao Box tổng xuống để ảnh nền ngắn lại
     Box(modifier = Modifier.fillMaxWidth().height(310.dp)) {
 
-        // 1. Background Image - Nằm trọn trong Box đã thu ngắn
+        // 1. Background Image
         Image(
             painter = painterResource(id = R.drawable.img_3),
             contentDescription = null,
@@ -37,31 +37,38 @@ fun HeaderSection() {
             modifier = Modifier.fillMaxSize()
         )
 
-        // 2. Text Greeting - Giữ nguyên vị trí bên trái
+        // 2. Text Greeting
         Column(
             modifier = Modifier.padding(start = 16.dp, top = 40.dp)
         ) {
             Text("Hello There !", fontSize = 16.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
-            Text("Dmanhz", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colors.onSurface)
+            Text(
+                text = user?.anonymousName ?: "SoulMate User",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.onSurface
+            )
         }
 
-        // 3. Avatar Box - Thay đổi từ offset sang Alignment
+        // 3. Avatar Box
         Box(
             modifier = Modifier
-                .align(Alignment.TopEnd) // Đưa box về phía góc trên bên phải
-                .padding(top = 40.dp, end = 10.dp) // Margin Top 40dp và Margin Right 10dp
+                .align(Alignment.TopEnd)
+                .padding(top = 40.dp, end = 10.dp)
                 .size(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colors.surface),
             contentAlignment = Alignment.Center
         ) {
-            if (hasAvatar) {
-                Image(
-                    painter = painterResource(id = R.drawable.ava1),
-                    contentDescription = null,
+            if (user?.avatarUrl != null) {
+                AsyncImage(
+                    model = user.avatarUrl,
+                    contentDescription = "User Avatar",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    placeholder = painterResource(id = R.drawable.ava1),
+                    error = painterResource(id = R.drawable.ava1)
                 )
             } else {
                 Icon(
