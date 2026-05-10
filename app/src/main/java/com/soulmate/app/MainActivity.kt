@@ -29,6 +29,7 @@ import com.soulmate.app.ui.components.CustomBottomNav
 import com.soulmate.app.ui.home.HomeScreen
 import com.soulmate.app.ui.home.MusicViewModel
 import com.soulmate.app.ui.journal.editor.MultimediaEditor
+import com.soulmate.app.ui.journal.history.DiaryDetailScreen
 import com.soulmate.app.ui.journal.history.HistoryScreen
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.LoginScreen
@@ -139,8 +140,29 @@ class MainActivity : ComponentActivity() {
                             val hvm: HistoryViewModel = hiltViewModel()
                             HistoryScreen(
                                 viewModel = hvm,
-                                onNavigateToEdit = { diaryId -> 
+                                onNavigateToEdit = { diaryId: String -> 
                                     navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
+                                },
+                                onNavigateToDetail = { diaryId: String ->
+                                    navController.navigate(Screen.DiaryDetail.route + "/$diaryId")
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = Screen.DiaryDetail.route + "/{diaryId}",
+                            arguments = listOf(
+                                navArgument("diaryId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val diaryId = backStackEntry.arguments?.getString("diaryId") ?: ""
+                            val hvm: HistoryViewModel = hiltViewModel()
+                            DiaryDetailScreen(
+                                diaryId = diaryId,
+                                viewModel = hvm,
+                                onBackClick = { navController.popBackStack() },
+                                onEditClick = { id: String ->
+                                    navController.navigate(Screen.Diary.route + "?diaryId=$id")
                                 }
                             )
                         }

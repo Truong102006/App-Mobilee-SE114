@@ -2,6 +2,7 @@ package com.soulmate.app.ui.journal.history
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -46,7 +47,8 @@ fun Timeline(
     isFirstItem: Boolean = false,
     isLastItem: Boolean = false,
     onDelete: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onClick: () -> Unit
 ) {
     val timelineColor = Color(0xFF42A5F5)
 
@@ -170,6 +172,7 @@ fun Timeline(
                     .offset { IntOffset(swipeableState.offset.value.toInt(), 0) }
                     .background(Color.White) // Cần background để che đi các nút ở dưới
                     .fillMaxWidth()
+                    .clickable { onClick() }
                     .padding(start = 4.dp, end = 16.dp, bottom = 24.dp),
                 verticalAlignment = Alignment.Top
             ) {

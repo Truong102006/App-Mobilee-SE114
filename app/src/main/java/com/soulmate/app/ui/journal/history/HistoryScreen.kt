@@ -30,7 +30,8 @@ import java.util.Calendar
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
-    onNavigateToEdit: (String) -> Unit
+    onNavigateToEdit: (String) -> Unit,
+    onNavigateToDetail: (String) -> Unit
 ) {
     val notes = viewModel.historyNotes
     var noteToDelete by remember { mutableStateOf<RecordingNote?>(null) }
@@ -166,7 +167,8 @@ fun HistoryScreen(
                                     isFirstItem = index == 0,
                                     isLastItem = index == notesInDate.lastIndex,
                                     onDelete = { noteToDelete = note },
-                                    onEdit = { onNavigateToEdit(note.diaryId) }
+                                    onEdit = { onNavigateToEdit(note.diaryId) },
+                                    onClick = { onNavigateToDetail(note.diaryId) }
                                 )
                             }
                         }
