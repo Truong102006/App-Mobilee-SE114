@@ -24,7 +24,6 @@ fun HomeScreen(
     historyViewModel: HistoryViewModel,
     communityViewModel: CommunityViewModel = hiltViewModel()
 ) {
-    // authViewModel vẫn có thể dùng hiltViewModel() vì nó thường lấy dữ liệu từ Repo Singleton
     val authViewModel: AuthViewModel = hiltViewModel()
 
     val songs = musicViewModel.songs
@@ -81,7 +80,15 @@ fun HomeScreen(
         onSeek = { musicViewModel.seekTo(it) },
         historyViewModel = historyViewModel,
         currentUser = currentUser,
-        communityPosts = communityPosts
+        communityPosts = communityPosts,
+        onLikeClick = { postId -> communityViewModel.toggleLike(postId) },
+        onCommentClick = { postId, comment -> 
+            val user = authViewModel.currentUser.value
+            communityViewModel.addComment(postId, user?.anonymousName ?: "User", user?.avatarUrl, comment) 
+        },
+        onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
+        onDeleteClick = { postId -> communityViewModel.deletePost(postId) },
+        onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) }
     )
 }
 
@@ -104,7 +111,12 @@ fun HomeScreenContent(
     onSeek: (Long) -> Unit,
     historyViewModel: HistoryViewModel? = null,
     currentUser: com.soulmate.app.domain.model.User? = null,
-    communityPosts: List<com.soulmate.app.ui.social.CommunityPost>
+    communityPosts: List<com.soulmate.app.ui.social.CommunityPost>,
+    onLikeClick: (String) -> Unit,
+    onCommentClick: (String, String) -> Unit,
+    onLikeComment: (String, String) -> Unit,
+    onDeleteClick: (String) -> Unit,
+    onEditClick: (String, String) -> Unit
 ) {
     val virtualCount = 50000
 
@@ -182,7 +194,16 @@ fun HomeScreenContent(
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     communityPosts.forEach { post ->
-                        CommunityCard(post = post)
+                        CommunityCard(
+                            post = post,
+                            onLikeClick = { onLikeClick(post.id) },
+                            onCommentClick = { comment -> onCommentClick(post.id, comment) },
+                            onLikeComment = { commentId -> onLikeComment(post.id, commentId) },
+                            onDeleteClick = { onDeleteClick(post.id) },
+                            onEditClick = { newContent -> onEditClick(post.id, newContent) },
+                            currentUserAvatarUrl = currentUser?.avatarUrl,
+                            currentUserName = currentUser?.anonymousName ?: "User"
+                        )
                     }
                 }
 

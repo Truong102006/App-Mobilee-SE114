@@ -16,16 +16,16 @@ import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RemoveRedEye
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,38 +37,27 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.text.HtmlCompat
 import coil.compose.AsyncImage
 import com.soulmate.app.ui.journal.editor.Mood
 import com.soulmate.app.ui.theme.CommunityTick
 
-data class CommunityPost(
-    val id: String,
-    val userName: String,
-    val userAvatarUrl: String?,
-    val isVerified: Boolean,
-    val mood: String,
-    val timeAgo: String,
-    val textContent: String,
-    val imageUrls: List<String>,
-    val likeCount: Int,
-    val commentCount: Int,
-    val viewCount: Int
-)
-
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ActionPillButton(
     icon: ImageVector,
     text: String,
+    iconTint: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
     onClick: () -> Unit
 ) {
     Surface(
-        onClick = onClick,
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .clickable { onClick() },
         shape = RoundedCornerShape(50),
         border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.1f)),
         color = Color.Transparent
@@ -82,7 +71,7 @@ fun ActionPillButton(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                tint = iconTint
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
@@ -97,12 +86,12 @@ fun ActionPillButton(
 
 @Composable
 fun HtmlText(
-        html: String,
-        textColor: androidx.compose.ui.graphics.Color,
-        maxLines: Int = Int.MAX_VALUE,
-        onTextOverflow: (Boolean) -> Unit = {},
-        modifier: Modifier = Modifier)
-    {
+    html: String,
+    textColor: androidx.compose.ui.graphics.Color,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextOverflow: (Boolean) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     AndroidView(
         modifier = modifier,
         factory = { context ->
@@ -128,22 +117,35 @@ fun HtmlText(
                     }
                 }
             }
-
         }
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CommunityCard(
     post: CommunityPost,
+    onLikeClick: () -> Unit,
+    onCommentClick: (String) -> Unit,
+    onLikeComment: (String) -> Unit,
+    onDeleteClick: () -> Unit,
+    onEditClick: (String) -> Unit,
+    currentUserAvatarUrl: String?,
+    currentUserName: String,
     modifier: Modifier = Modifier
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCommentsModal by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editedText by remember { mutableStateOf(post.textContent) }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .border(1.5.dp, MaterialTheme.colors.primary.copy(alpha = 0.5f), RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(24.dp),
-        backgroundColor = androidx.compose.material.MaterialTheme.colors.surface,
+        backgroundColor = MaterialTheme.colors.surface,
         elevation = 2.dp
     ) {
         Column(
@@ -156,26 +158,35 @@ fun CommunityCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar (Dùng Box nền xám làm Placeholder tạm)
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colors.primary.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = post.userName.take(1).uppercase(),
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.primary,
-                        fontSize = 20.sp
+                if (post.userAvatarUrl != null) {
+                    AsyncImage(
+                        model = post.userAvatarUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colors.primary.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = post.userName.take(1).uppercase(),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.primary,
+                            fontSize = 20.sp
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    // Tên + Tích xanh
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = post.userName,
@@ -194,7 +205,6 @@ fun CommunityCard(
                         }
                     }
 
-                    // Cảm xúc + Thời gian (Theo đúng yêu cầu của bạn)
                     val moodEnum = Mood.entries.find { it.label == post.mood } ?: Mood.Neutral
                     val moodColor = moodEnum.displayColor
 
@@ -213,13 +223,35 @@ fun CommunityCard(
                     Text(text = moodTimeText, fontSize = 13.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
                 }
 
-                // Nút 3 chấm (Options)
-                IconButton(onClick = { /* TODO: Mở menu */ }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Options",
-                        tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                    )
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Options",
+                            tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(onClick = {
+                            showMenu = false
+                            showEditDialog = true
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Edit")
+                        }
+                        DropdownMenuItem(onClick = {
+                            showMenu = false
+                            showDeleteDialog = true
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Delete", color = Color.Red)
+                        }
+                    }
                 }
             }
 
@@ -228,7 +260,6 @@ fun CommunityCard(
             // --- BODY: Text Content ---
             var isExpanded by remember { mutableStateOf(false) }
             var hasOverflow by remember { mutableStateOf(false) }
-            val htmlLength = post.textContent.length
 
             Column(modifier = Modifier.animateContentSize()) {
                 HtmlText(
@@ -252,7 +283,6 @@ fun CommunityCard(
                 }
             }
 
-            // --- BODY: Ảnh đính kèm (Hiển thị tất cả dạng cuộn ngang) ---
             if (post.imageUrls.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyRow(
@@ -284,25 +314,23 @@ fun CommunityCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Like Pill
                 ActionPillButton(
-                    icon = Icons.Outlined.FavoriteBorder,
+                    icon = if (post.isLiked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     text = post.likeCount.toString(),
-                    onClick = { /* TODO */ }
+                    iconTint = if (post.isLiked) Color.Red else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                    onClick = onLikeClick
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Comment Pill
                 ActionPillButton(
                     icon = Icons.Outlined.ChatBubbleOutline,
                     text = post.commentCount.toString(),
-                    onClick = { /* TODO */ }
+                    onClick = { showCommentsModal = true }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Share Icon Button (Không viền, dạng tròn nhỏ)
                 IconButton(
                     onClick = { /* TODO */ },
                     modifier = Modifier
@@ -319,7 +347,6 @@ fun CommunityCard(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // View Count (Chỉ hiển thị, không bấm được)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Rounded.RemoveRedEye,
@@ -337,5 +364,108 @@ fun CommunityCard(
                 }
             }
         }
+    }
+
+    // --- COMMENTS MODAL (As shown in image) ---
+    if (showCommentsModal) {
+        Dialog(
+            onDismissRequest = { showCommentsModal = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                "Bài viết của ${post.userName}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        },
+                        actions = {
+                            IconButton(onClick = { showCommentsModal = false }) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                            }
+                        },
+                        backgroundColor = Color(0xFF242526),
+                        elevation = 0.dp
+                    )
+                },
+                backgroundColor = Color(0xFF18191A)
+            ) { padding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .background(Color(0xFF18191A))
+                ) {
+                    CommentSection(
+                        comments = post.comments,
+                        onAddComment = onCommentClick,
+                        onLikeComment = onLikeComment,
+                        currentUserAvatarUrl = currentUserAvatarUrl,
+                        currentUserName = currentUserName
+                    )
+                }
+            }
+        }
+    }
+
+    // Delete Confirmation Dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Post", fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to delete this post?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    onDeleteClick()
+                }) {
+                    Text("Delete", color = Color.Red, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // Edit Post Dialog
+    if (showEditDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = { Text("Edit Post", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = editedText,
+                        onValueChange = { editedText = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp),
+                        placeholder = { Text("Edit your content...") }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showEditDialog = false
+                    onEditClick(editedText)
+                }) {
+                    Text("Save", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 }
