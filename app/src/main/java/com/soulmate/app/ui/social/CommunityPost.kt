@@ -1,27 +1,29 @@
 package com.soulmate.app.ui.social
 
 data class Comment(
-    val id: String,
-    val userName: String,
-    val userAvatarUrl: String?,
-    val content: String,
-    val timeAgo: String,
+    val id: String = "",
+    val userName: String = "",
+    val userAvatarUrl: String? = null,
+    val content: String = "",
+    val timeAgo: String = "",
     val likeCount: Int = 0,
-    val isLiked: Boolean = false
+    val isLiked: Boolean = false,
+    val likedBy: List<String> = emptyList()
 )
 
 data class CommunityPost(
-    val id: String,
-    val userName: String,
-    val userAvatarUrl: String?,
-    val isVerified: Boolean,
-    val mood: String,
-    val timeAgo: String,
-    val textContent: String,
-    val imageUrls: List<String>,
-    val likeCount: Int,
-    val commentCount: Int,
-    val viewCount: Int,
+    val id: String = "",
+    val userName: String = "",
+    val userAvatarUrl: String? = null,
+    val isVerified: Boolean = false,
+    val mood: String = "",
+    val timeAgo: String = "",
+    val textContent: String = "",
+    val imageUrls: List<String> = emptyList(),
+    val likeCount: Int = 0,
+    val commentCount: Int = 0,
+    val viewCount: Int = 0,
     val isLiked: Boolean = false,
+    val likedBy: List<String> = emptyList(),
     val comments: List<Comment> = emptyList()
 )
