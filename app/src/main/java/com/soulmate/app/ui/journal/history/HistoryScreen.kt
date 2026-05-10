@@ -179,16 +179,19 @@ fun HistoryScreen(
     if (noteToDelete != null) {
         AlertDialog(
             onDismissRequest = { noteToDelete = null },
-            title = { Text("Xác nhận xóa") },
-            text = { Text("Bạn có chắc chắn muốn xóa nhật ký này không?") },
+            title = { Text("Xác nhận xóa", fontWeight = FontWeight.Bold) },
+            text = { Text("Bạn có muốn xóa nhật kí này không?") },
             confirmButton = {
                 TextButton(onClick = { viewModel.deleteNote(noteToDelete!!); noteToDelete = null }) {
-                    Text("Xóa", color = Color.Red)
+                    Text("Xóa", color = Color.Red, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { noteToDelete = null }) { Text("Hủy") }
-            }
+                TextButton(onClick = { noteToDelete = null }) { 
+                    Text("Hủy", color = Color.Gray) 
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
         )
     }
 
