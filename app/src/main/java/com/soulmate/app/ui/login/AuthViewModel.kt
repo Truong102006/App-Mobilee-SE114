@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soulmate.app.domain.model.User
 import com.soulmate.app.domain.repository.IAuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -13,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: IAuthRepository // Đã đổi từ FirebaseAuth sang IAuthRepository
+    private val authRepository: IAuthRepository
 ) : ViewModel() {
 
     private val _isLoading = mutableStateOf(false)
@@ -24,6 +25,13 @@ class AuthViewModel @Inject constructor(
 
     private val _authSuccess = MutableSharedFlow<Unit>()
     val authSuccess = _authSuccess.asSharedFlow()
+    
+    private val _currentUser = mutableStateOf<User?>(null)
+    val currentUser: State<User?> = _currentUser
+
+    init {
+        _currentUser.value = authRepository.getCurrentUser()
+    }
 
     fun login(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
@@ -33,9 +41,9 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isLoading.value = true
-            // Sử dụng repository để đảm bảo có cập nhật lastLoginAt
             authRepository.login(email, password)
                 .onSuccess {
+                    _currentUser.value = it
                     _authSuccess.emit(Unit)
                 }
                 .onFailure {
@@ -57,9 +65,9 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isLoading.value = true
-            // Sử dụng repository.register để lưu cả vào Auth và Firestore
             authRepository.register(email, password)
                 .onSuccess {
+                    _currentUser.value = it
                     _authSuccess.emit(Unit)
                 }
                 .onFailure {
@@ -67,5 +75,25 @@ class AuthViewModel @Inject constructor(
                 }
             _isLoading.value = false
         }
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            authRepository.signInWithGoogle(idToken)
+                .onSuccess {
+                    _currentUser.value = it
+                    _authSuccess.emit(Unit)
+                }
+                .onFailure {
+                    _error.emit(it.localizedMessage ?: "Đăng nhập Google thất bại")
+                }
+            _isLoading.value = false
+        }
+    }
+    
+    fun logout() {
+        authRepository.logout()
+        _currentUser.value = null
     }
 }

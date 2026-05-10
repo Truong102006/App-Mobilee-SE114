@@ -22,14 +22,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.soulmate.app.R
+import com.soulmate.app.domain.model.User
+import com.soulmate.app.ui.login.AuthViewModel
 
 @Composable
 fun SettingScreen(
     themeViewModel: ThemeViewModel,
+    authViewModel: AuthViewModel = hiltViewModel(),
     onLogout: () -> Unit = {}
 ) {
     val isDarkMode by themeViewModel.isDarkMode
+    val currentUser by authViewModel.currentUser
     var notificationEnabled by remember { mutableStateOf(true) }
 
     Column(
@@ -48,7 +54,7 @@ fun SettingScreen(
         )
 
         // --- SECTION: PROFILE ---
-        ProfileSection()
+        ProfileSection(user = currentUser)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -99,7 +105,10 @@ fun SettingScreen(
 
         // --- LOGOUT BUTTON ---
         Button(
-            onClick = onLogout,
+            onClick = {
+                authViewModel.logout()
+                onLogout()
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -114,7 +123,7 @@ fun SettingScreen(
 }
 
 @Composable
-fun ProfileSection() {
+fun ProfileSection(user: User?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -123,27 +132,41 @@ fun ProfileSection() {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ava1),
-            contentDescription = "Avatar",
-            modifier = Modifier
-                .size(65.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray),
-            contentScale = ContentScale.Crop
-        )
+        if (user?.avatarUrl != null) {
+            AsyncImage(
+                model = user.avatarUrl,
+                contentDescription = "Avatar",
+                modifier = Modifier
+                    .size(65.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.ava1),
+                error = painterResource(id = R.drawable.ava1)
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.ava1),
+                contentDescription = "Avatar",
+                modifier = Modifier
+                    .size(65.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentScale = ContentScale.Crop
+            )
+        }
 
         Spacer(modifier = Modifier.width(16.dp))
 
         Column {
             Text(
-                text = "Dmanhz",
+                text = user?.anonymousName ?: "SoulMate User",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 color = MaterialTheme.colors.onSurface
             )
             Text(
-                text = "dmanhz@gmail.com",
+                text = user?.email ?: "user@example.com",
                 color = Color.Gray,
                 fontSize = 14.sp
             )

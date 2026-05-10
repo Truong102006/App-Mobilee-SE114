@@ -9,6 +9,9 @@ interface IAuthRepository {
     // Đăng nhập vào hệ thống
     suspend fun login(email: String, password: String): Result<User>
 
+    // Đăng nhập bằng Google
+    suspend fun signInWithGoogle(idToken: String): Result<User>
+
     // Đăng xuất khỏi hệ thống
     fun logout(): Result<Unit>
 
@@ -17,4 +20,7 @@ interface IAuthRepository {
 
     // Lấy UID của User hiện tại đang đăng nhập
     fun getCurrentUserId(): String?
+    
+    // Lấy thông tin chi tiết User từ Firestore
+    suspend fun getUserProfile(uid: String): Result<User>
 }
