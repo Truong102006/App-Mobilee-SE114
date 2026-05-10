@@ -40,7 +40,8 @@ fun DiaryDetailScreen(
     viewModel: HistoryViewModel,
     communityViewModel: CommunityViewModel,
     onBackClick: () -> Unit,
-    onEditClick: (String) -> Unit
+    onEditClick: (String) -> Unit,
+    onShareSuccess: () -> Unit = {}
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val note = viewModel.getNoteById(diaryId)
@@ -170,6 +171,7 @@ fun DiaryDetailScreen(
                         )
                         communityViewModel.addPost(newPost)
                         Toast.makeText(context, "Đã chia sẻ lên cộng đồng!", Toast.LENGTH_SHORT).show()
+                        onShareSuccess()
                     },
                     modifier = Modifier
                         .fillMaxWidth()

@@ -171,6 +171,12 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = { navController.popBackStack() },
                                 onEditClick = { id: String ->
                                     navController.navigate(Screen.Diary.route + "?diaryId=$id")
+                                },
+                                onShareSuccess = {
+                                    navController.navigate(Screen.Home.route) {
+                                        // Xoá stack để tránh quay lại trang detail khi nhấn back từ Home
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
                                 }
                             )
                         }
