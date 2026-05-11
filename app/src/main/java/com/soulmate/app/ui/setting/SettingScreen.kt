@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.setting
 
+import EditProfileDialog
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -40,6 +41,7 @@ fun SettingScreen(
     val isDarkMode by themeViewModel.isDarkMode
     val currentUser by authViewModel.currentUser
     var notificationEnabled by remember { mutableStateOf(true) }
+    var showEditProfileDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -93,7 +95,15 @@ fun SettingScreen(
 
         // --- SECTION: ACCOUNT & SECURITY ---
         SettingSectionTitle("Account")
-        SettingItem(icon = Icons.Default.Person, title = "Edit Profile")
+        SettingItem(
+            icon = Icons.Default.Person,
+            title = "Edit Profile",
+            onClick = {
+                if (currentUser != null) {
+                    showEditProfileDialog = true
+                }
+            }
+        )
         SettingItem(icon = Icons.Default.Lock, title = "Privacy & Security")
         SettingItem(icon = Icons.Default.Language, title = "Language", subtitle = "Vietnamese")
 
@@ -147,6 +157,19 @@ fun SettingScreen(
         }
 
         Spacer(modifier = Modifier.height(40.dp))
+    }
+
+    // Hiển thị Dialog Edit Profile
+    if (showEditProfileDialog && currentUser != null) {
+        EditProfileDialog(
+            user = currentUser!!,
+            onDismiss = { showEditProfileDialog = false },
+//            onSave = { updatedUser ->
+//                authViewModel.updateProfile(updatedUser)
+//                showEditProfileDialog = false
+//            }
+            onSave = {}
+        )
     }
 }
 
