@@ -3,6 +3,8 @@ package com.soulmate.app.ui.social
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -21,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -36,18 +39,35 @@ fun CommentSection(
     var commentText by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Danh sách bình luận chiếm phần trên
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            comments.forEach { comment ->
-                CommentItem(
-                    comment = comment,
-                    onLikeClick = { onLikeComment(comment.id) }
+        // Danh sách bình luận
+        if (comments.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Chưa có bình luận nào.\nHãy là người đầu tiên bình luận!",
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(comments) { comment ->
+                    CommentItem(
+                        comment = comment,
+                        onLikeClick = { onLikeComment(comment.id) }
+                    )
+                }
             }
         }
 
@@ -58,7 +78,6 @@ fun CommentSection(
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Avatar người dùng hiện tại
                     if (currentUserAvatarUrl != null) {
                         AsyncImage(
                             model = currentUserAvatarUrl,
@@ -77,7 +96,6 @@ fun CommentSection(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Ô nhập liệu
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -100,7 +118,6 @@ fun CommentSection(
                     }
                 }
 
-                // Hàng icon tiện ích dưới ô nhập liệu
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 44.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,

@@ -15,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.AuthViewModel
+import com.soulmate.app.ui.social.Comment
 import com.soulmate.app.ui.social.CommunityCard
 import com.soulmate.app.ui.social.CommunityViewModel
 
@@ -34,6 +35,7 @@ fun HomeScreen(
     val isFullScreen by musicViewModel.isFullScreen
     val currentUser by authViewModel.currentUser
     val communityPosts by communityViewModel.posts
+    val postComments = communityViewModel.postComments
 
     // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
@@ -81,12 +83,14 @@ fun HomeScreen(
         historyViewModel = historyViewModel,
         currentUser = currentUser,
         communityPosts = communityPosts,
+        postComments = postComments,
         onLikeClick = { postId -> communityViewModel.toggleLike(postId) },
         onCommentClick = { postId, comment -> 
             val user = authViewModel.currentUser.value
             communityViewModel.addComment(postId, user?.anonymousName ?: "User", user?.avatarUrl, comment) 
         },
         onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
+        onOpenComments = { postId -> communityViewModel.loadComments(postId) },
         onDeleteClick = { postId -> communityViewModel.deletePost(postId) },
         onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) }
     )
@@ -112,9 +116,11 @@ fun HomeScreenContent(
     historyViewModel: HistoryViewModel? = null,
     currentUser: com.soulmate.app.domain.model.User? = null,
     communityPosts: List<com.soulmate.app.ui.social.CommunityPost>,
+    postComments: Map<String, List<Comment>>,
     onLikeClick: (String) -> Unit,
     onCommentClick: (String, String) -> Unit,
     onLikeComment: (String, String) -> Unit,
+    onOpenComments: (String) -> Unit,
     onDeleteClick: (String) -> Unit,
     onEditClick: (String, String) -> Unit
 ) {
@@ -196,9 +202,11 @@ fun HomeScreenContent(
                     communityPosts.forEach { post ->
                         CommunityCard(
                             post = post,
+                            comments = postComments[post.id] ?: emptyList(),
                             onLikeClick = { onLikeClick(post.id) },
                             onCommentClick = { comment -> onCommentClick(post.id, comment) },
                             onLikeComment = { commentId -> onLikeComment(post.id, commentId) },
+                            onOpenComments = { onOpenComments(post.id) },
                             onDeleteClick = { onDeleteClick(post.id) },
                             onEditClick = { newContent -> onEditClick(post.id, newContent) },
                             currentUserAvatarUrl = currentUser?.avatarUrl,
