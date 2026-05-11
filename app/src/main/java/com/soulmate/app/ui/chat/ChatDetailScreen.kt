@@ -138,8 +138,8 @@ fun ChatDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(Color.White)
-                .navigationBarsPadding()
-                .imePadding()
+                // Sửa lỗi UI: Sử dụng safeDrawing để ô nhập liệu bám sát bàn phím mà không để lại khoảng trắng
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -207,6 +207,9 @@ fun ChatDetailScreen(
                         chatViewModel.sendMessage(currentUserId, receiverId, messageText)
                         messageText = ""
                     }
+                },
+                onLikeClick = {
+                    chatViewModel.sendMessage(currentUserId, receiverId, "👍")
                 }
             )
         }
@@ -272,7 +275,7 @@ fun MessageBubble(
                             bottomEnd = if (isMine) (if (showTime) 4.dp else 18.dp) else 18.dp
                         )
                     )
-                    .background(if (isMine) Color(0xFF0000AA) else Color(0xFFF0F2F5))
+                    .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F2F5))
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Text(
@@ -302,7 +305,8 @@ fun MessageBubble(
 fun ChatBottomBar(
     messageText: String,
     onMessageChange: (String) -> Unit,
-    onSendClick: () -> Unit
+    onSendClick: () -> Unit,
+    onLikeClick: () -> Unit
 ) {
     Surface(
         elevation = 4.dp,
@@ -349,7 +353,7 @@ fun ChatBottomBar(
             )
 
             if (messageText.isBlank()) {
-                IconButton(onClick = {}) {
+                IconButton(onClick = onLikeClick) {
                     Icon(Icons.Default.ThumbUp, contentDescription = null, tint = Color(0xFF0084FF))
                 }
             } else {

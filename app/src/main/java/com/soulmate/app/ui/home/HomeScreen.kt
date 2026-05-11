@@ -13,9 +13,12 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.AuthViewModel
@@ -234,15 +237,15 @@ fun HomeScreenContent(
                 .size(60.dp)
                 .shadow(elevation = 8.dp, shape = CircleShape)
                 .clip(CircleShape)
-                .background(Color(0xFF0084FF))
+                .background(Color.White)
                 .clickable { onChatBubbleClick() },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Chat,
+            Image(
+                painter = painterResource(id = R.drawable.messenger),
                 contentDescription = "Chat",
-                tint = Color.White,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
             )
         }
 
