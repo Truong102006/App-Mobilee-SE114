@@ -144,6 +144,8 @@ dependencies {
 
     // Google Play Services Auth
     implementation 'com.google.android.gms:play-services-auth:21.1.0'
+
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
 }
 
 if (file("google-services.json").exists()) {

@@ -35,12 +35,13 @@ import androidx.core.net.toUri
 fun SettingScreen(
     themeViewModel: ThemeViewModel,
     authViewModel: AuthViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val isDarkMode by themeViewModel.isDarkMode
     val currentUser by authViewModel.currentUser
-    var notificationEnabled by remember { mutableStateOf(true) }
+    val notificationEnabled by settingsViewModel.notificationEnabled.collectAsState()
     var showEditProfileDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -85,7 +86,7 @@ fun SettingScreen(
             trailing = {
                 Switch(
                     checked = notificationEnabled,
-                    onCheckedChange = { notificationEnabled = it },
+                    onCheckedChange = { isChecked -> settingsViewModel.toggleNotification(isChecked) },
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary)
                 )
             }
