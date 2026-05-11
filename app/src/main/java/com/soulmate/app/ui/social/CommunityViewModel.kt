@@ -1,6 +1,7 @@
 package com.soulmate.app.ui.social
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,6 +21,9 @@ class CommunityViewModel @Inject constructor(
     private val _posts = mutableStateOf<List<CommunityPost>>(emptyList())
     val posts: State<List<CommunityPost>> = _posts
 
+    private val _postComments = mutableStateMapOf<String, List<Comment>>()
+    val postComments: Map<String, List<Comment>> = _postComments
+
     private val currentUserId: String?
         get() = auth.currentUser?.uid
 
@@ -30,11 +34,20 @@ class CommunityViewModel @Inject constructor(
     private fun observePosts() {
         viewModelScope.launch {
             repository.getPosts().collectLatest { allPosts ->
-                val userId = currentUserId
                 _posts.value = allPosts.map { post ->
-                    // In a real scenario, 'liked_by' would be checked here or handled in Repo
-                    // For now, Repo doesn't return liked_by in CommunityPost, but let's assume we handle it
-                    post.copy(isLiked = false) // Logic for isLiked can be added if liked_by is exposed
+                    val isLiked = currentUserId?.let { post.likedBy.contains(it) } ?: false
+                    post.copy(isLiked = isLiked)
+                }
+            }
+        }
+    }
+
+    fun loadComments(postId: String) {
+        viewModelScope.launch {
+            repository.getComments(postId).collectLatest { comments ->
+                val userId = currentUserId
+                _postComments[postId] = comments.map { comment ->
+                    comment.copy(isLiked = userId?.let { comment.likedBy.contains(it) } ?: false)
                 }
             }
         }

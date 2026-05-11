@@ -125,9 +125,11 @@ fun HtmlText(
 @Composable
 fun CommunityCard(
     post: CommunityPost,
+    comments: List<Comment> = emptyList(),
     onLikeClick: () -> Unit,
     onCommentClick: (String) -> Unit,
     onLikeComment: (String) -> Unit,
+    onOpenComments: () -> Unit = {},
     onDeleteClick: () -> Unit,
     onEditClick: (String) -> Unit,
     currentUserAvatarUrl: String?,
@@ -153,7 +155,7 @@ fun CommunityCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // --- HEADER: Avatar, Tên, Tích xanh, Cảm xúc & Thời gian ---
+            // --- HEADER ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -210,12 +212,7 @@ fun CommunityCard(
 
                     val moodTimeText = buildAnnotatedString {
                         append("Feeling ")
-                        withStyle(
-                            style = SpanStyle(
-                                color = moodColor,
-                                fontWeight = FontWeight.Bold
-                            )
-                        ) {
+                        withStyle(style = SpanStyle(color = moodColor, fontWeight = FontWeight.Bold)) {
                             append(post.mood)
                         }
                         append(", ${post.timeAgo}")
@@ -257,7 +254,7 @@ fun CommunityCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // --- BODY: Text Content ---
+            // --- BODY ---
             var isExpanded by remember { mutableStateOf(false) }
             var hasOverflow by remember { mutableStateOf(false) }
 
@@ -296,11 +293,7 @@ fun CommunityCard(
                             modifier = Modifier
                                 .size(120.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colors.onSurface.copy(alpha = 0.05f),
-                                    RoundedCornerShape(12.dp)
-                                ),
+                                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.05f), RoundedCornerShape(12.dp)),
                             contentScale = ContentScale.Crop
                         )
                     }
@@ -309,7 +302,7 @@ fun CommunityCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- FOOTER: Các nút tương tác ---
+            // --- FOOTER ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -326,17 +319,15 @@ fun CommunityCard(
                 ActionPillButton(
                     icon = Icons.Outlined.ChatBubbleOutline,
                     text = post.commentCount.toString(),
-                    onClick = { showCommentsModal = true }
+                    onClick = { 
+                        onOpenComments()
+                        showCommentsModal = true 
+                    }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                IconButton(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                ) {
+                IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(32.dp).clip(CircleShape)) {
                     Icon(
                         imageVector = Icons.Outlined.Share,
                         contentDescription = "Share",
@@ -366,7 +357,7 @@ fun CommunityCard(
         }
     }
 
-    // --- COMMENTS MODAL (As shown in image) ---
+    // --- COMMENTS MODAL ---
     if (showCommentsModal) {
         Dialog(
             onDismissRequest = { showCommentsModal = false },
@@ -376,12 +367,7 @@ fun CommunityCard(
                 topBar = {
                     TopAppBar(
                         title = {
-                            Text(
-                                "Bài viết của ${post.userName}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Text("Bài viết của ${post.userName}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         },
                         actions = {
                             IconButton(onClick = { showCommentsModal = false }) {
@@ -394,14 +380,9 @@ fun CommunityCard(
                 },
                 backgroundColor = Color(0xFF18191A)
             ) { padding ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .background(Color(0xFF18191A))
-                ) {
+                Box(modifier = Modifier.fillMaxSize().padding(padding).background(Color(0xFF18191A))) {
                     CommentSection(
-                        comments = post.comments,
+                        comments = comments,
                         onAddComment = onCommentClick,
                         onLikeComment = onLikeComment,
                         currentUserAvatarUrl = currentUserAvatarUrl,
@@ -412,7 +393,7 @@ fun CommunityCard(
         }
     }
 
-    // Delete Confirmation Dialog
+    // Dialogs...
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -435,7 +416,6 @@ fun CommunityCard(
         )
     }
 
-    // Edit Post Dialog
     if (showEditDialog) {
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
@@ -445,9 +425,7 @@ fun CommunityCard(
                     OutlinedTextField(
                         value = editedText,
                         onValueChange = { editedText = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp),
+                        modifier = Modifier.fillMaxWidth().height(150.dp),
                         placeholder = { Text("Edit your content...") }
                     )
                 }
