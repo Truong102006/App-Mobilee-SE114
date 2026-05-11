@@ -234,7 +234,7 @@ fun HomeScreenContent(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 20.dp, bottom = 120.dp)
-                .size(60.dp)
+                .size(76.dp) 
                 .shadow(elevation = 8.dp, shape = CircleShape)
                 .clip(CircleShape)
                 .background(Color.White)
@@ -244,7 +244,9 @@ fun HomeScreenContent(
             Image(
                 painter = painterResource(id = R.drawable.messenger),
                 contentDescription = "Chat",
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(14.dp),
                 contentScale = ContentScale.Fit
             )
         }

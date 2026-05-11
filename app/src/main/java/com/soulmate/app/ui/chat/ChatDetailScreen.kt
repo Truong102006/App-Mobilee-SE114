@@ -253,7 +253,7 @@ fun MessageBubble(
                         model = userAvatarUrl ?: R.drawable.ava1,
                         contentDescription = null,
                         modifier = Modifier
-                            .size(28.dp)
+                            .size(20.dp)
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop,
                         error = painterResource(R.drawable.ava1)
@@ -332,7 +332,7 @@ fun ChatBottomBar(
                     .weight(1f)
                     .heightIn(min = 40.dp)
                     .clip(RoundedCornerShape(20.dp)),
-                placeholder = { Text("Nhắn tin", color = Color.Gray, fontSize = 15.sp) },
+                placeholder = { Text("Aa", color = Color.Gray, fontSize = 16.sp) },
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color(0xFFF0F2F5),
                     focusedIndicatorColor = Color.Transparent,
