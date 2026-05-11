@@ -1,5 +1,6 @@
 package com.soulmate.app
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -40,6 +41,7 @@ import com.soulmate.app.ui.social.CommunityViewModel
 import com.soulmate.app.ui.stats.StatsScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
 import com.soulmate.app.ui.chat.ChatListScreen
+import com.soulmate.app.ui.chat.ChatDetailScreen
 import com.soulmate.app.ui.chat.ChatViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -48,12 +50,10 @@ class MainActivity : ComponentActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
-    // Khởi tạo CommunityViewModel tại đây để chia sẻ giữa các màn hình
     private val communityViewModel: CommunityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
 
         setContent {
@@ -67,16 +67,14 @@ class MainActivity : ComponentActivity() {
                 } == true
 
                 val auth = FirebaseAuth.getInstance()
-                val startDest = if (auth.currentUser != null) {
-                    Screen.Home.route
-                } else {
-                    Screen.Login.route
-                }
+                val startDest = if (auth.currentUser != null) Screen.Home.route else Screen.Login.route
 
                 Scaffold(
                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
                     bottomBar = {
-                        if (!isAuthScreen && currentDestination?.route != Screen.ChatList.route && currentDestination?.route != Screen.ChatDetail.route) {
+                        val route = currentDestination?.route
+                        val isChatDetail = route?.startsWith(Screen.ChatDetail.route) == true
+                        if (!isAuthScreen && route != Screen.ChatList.route && !isChatDetail) {
                             CustomBottomNav(navController = navController)
                         }
                     }
@@ -94,126 +92,92 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable(Screen.Login.route) {
                             LoginScreen(
-                                onLoginSuccess = {
-                                    navController.navigate(Screen.Home.route) {
-                                        popUpTo(0) { inclusive = true }
-                                    }
-                                },
-                                onNavigateToRegister = {
-                                    navController.navigate(Screen.Register.route)
-                                }
+                                onLoginSuccess = { navController.navigate(Screen.Home.route) { popUpTo(0) { inclusive = true } } },
+                                onNavigateToRegister = { navController.navigate(Screen.Register.route) }
                             )
                         }
                         composable(Screen.Register.route) {
                             RegisterScreen(
-                                onRegisterSuccess = {
-                                    navController.navigate(Screen.Home.route) {
-                                        popUpTo(0) { inclusive = true }
-                                    }
-                                },
-                                onNavigateToLogin = {
-                                    navController.navigate(Screen.Login.route)
-                                }
-                            )
-                        }
-                        composable(
-                            route = Screen.Diary.route + "?diaryId={diaryId}",
-                            arguments = listOf(
-                                navArgument("diaryId") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                    defaultValue = null
-                                }
-                            )
-                        ) { backStackEntry ->
-                            val diaryId = backStackEntry.arguments?.getString("diaryId")
-                            val hvm: HistoryViewModel = hiltViewModel()
-
-                            MultimediaEditor(
-                                diaryId = diaryId,
-                                historyViewModel = hvm,
-                                onBackClick = {
-                                    navController.popBackStack()
-                                }
+                                onRegisterSuccess = { navController.navigate(Screen.Home.route) { popUpTo(0) { inclusive = true } } },
+                                onNavigateToLogin = { navController.navigate(Screen.Login.route) }
                             )
                         }
                         composable(Screen.Home.route) { 
-                            val hvm: HistoryViewModel = hiltViewModel()
                             HomeScreen(
                                 musicViewModel = musicViewModel, 
-                                historyViewModel = hvm,
-                                communityViewModel = communityViewModel, // Truyền shared VM
-                                onChatBubbleClick = {
-                                    navController.navigate(Screen.ChatList.route)
-                                }
+                                historyViewModel = hiltViewModel(),
+                                communityViewModel = communityViewModel,
+                                onChatBubbleClick = { navController.navigate(Screen.ChatList.route) }
                             ) 
                         }
+                        composable(
+                            route = Screen.Diary.route + "?diaryId={diaryId}",
+                            arguments = listOf(navArgument("diaryId") { type = NavType.StringType; nullable = true; defaultValue = null })
+                        ) { backStackEntry ->
+                            val diaryId = backStackEntry.arguments?.getString("diaryId")
+                            MultimediaEditor(diaryId = diaryId, historyViewModel = hiltViewModel(), onBackClick = { navController.popBackStack() })
+                        }
                         composable(Screen.History.route) { 
-                            val hvm: HistoryViewModel = hiltViewModel()
                             HistoryScreen(
-                                viewModel = hvm,
-                                onNavigateToEdit = { diaryId: String -> 
-                                    navController.navigate(Screen.Diary.route + "?diaryId=$diaryId")
-                                },
-                                onNavigateToDetail = { diaryId: String ->
-                                    navController.navigate(Screen.DiaryDetail.route + "/$diaryId")
-                                }
+                                viewModel = hiltViewModel(),
+                                onNavigateToEdit = { id -> navController.navigate(Screen.Diary.route + "?diaryId=$id") },
+                                onNavigateToDetail = { id -> navController.navigate(Screen.DiaryDetail.route + "/$id") }
+                            )
+                        }
+                        composable(
+                            route = Screen.DiaryDetail.route + "/{diaryId}",
+                            arguments = listOf(navArgument("diaryId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val diaryId = backStackEntry.arguments?.getString("diaryId") ?: ""
+                            DiaryDetailScreen(
+                                diaryId = diaryId,
+                                viewModel = hiltViewModel(),
+                                communityViewModel = communityViewModel,
+                                onBackClick = { navController.popBackStack() },
+                                onEditClick = { id -> navController.navigate(Screen.Diary.route + "?diaryId=$id") },
+                                onShareSuccess = { navController.navigate(Screen.Home.route) { popUpTo(Screen.Home.route) { inclusive = true } } }
                             )
                         }
 
+                        // Chat Routes
+                        composable(Screen.ChatList.route) {
+                            ChatListScreen(
+                                communityViewModel = communityViewModel,
+                                onChatClick = { name, avatarUrl ->
+                                    val encodedName = Uri.encode(name)
+                                    val encodedUrl = if (avatarUrl != null) Uri.encode(avatarUrl) else "none"
+                                    navController.navigate("${Screen.ChatDetail.route}?userName=$encodedName&avatarUrl=$encodedUrl")
+                                },
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
                         composable(
-                            route = Screen.DiaryDetail.route + "/{diaryId}",
+                            route = Screen.ChatDetail.route + "?userName={userName}&avatarUrl={avatarUrl}",
                             arguments = listOf(
-                                navArgument("diaryId") { type = NavType.StringType }
+                                navArgument("userName") { type = NavType.StringType; defaultValue = "" },
+                                navArgument("avatarUrl") { type = NavType.StringType; defaultValue = "none" }
                             )
                         ) { backStackEntry ->
-                            val diaryId = backStackEntry.arguments?.getString("diaryId") ?: ""
-                            val hvm: HistoryViewModel = hiltViewModel()
-                            DiaryDetailScreen(
-                                diaryId = diaryId,
-                                viewModel = hvm,
-                                communityViewModel = communityViewModel, // Truyền shared VM
-                                onBackClick = { navController.popBackStack() },
-                                onEditClick = { id: String ->
-                                    navController.navigate(Screen.Diary.route + "?diaryId=$id")
-                                },
-                                onShareSuccess = {
-                                    navController.navigate(Screen.Home.route) {
-                                        // Xoá stack để tránh quay lại trang detail khi nhấn back từ Home
-                                        popUpTo(Screen.Home.route) { inclusive = true }
-                                    }
-                                }
+                            val userName = backStackEntry.arguments?.getString("userName") ?: ""
+                            val rawUrl = backStackEntry.arguments?.getString("avatarUrl")
+                            val avatarUrl = if (rawUrl == "none" || rawUrl.isNullOrEmpty()) null else rawUrl
+
+                            ChatDetailScreen(
+                                userName = userName,
+                                userAvatarUrl = avatarUrl,
+                                chatViewModel = hiltViewModel(),
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
 
                         composable(Screen.Stats.route) { StatsScreen() }
-
                         composable(Screen.Setting.route) {
                             val context = LocalContext.current
-                            SettingScreen(
-                                themeViewModel = themeViewModel,
-                                onLogout = {
-                                    FirebaseAuth.getInstance().signOut()
-                                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-                                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
-
-                                    googleSignInClient.signOut().addOnCompleteListener {
-                                        navController.navigate(Screen.Login.route) {
-                                            popUpTo(0) { inclusive = true }
-                                        }
-                                    }
-                                }
-                            )
-                        }
-
-                        composable(Screen.ChatList.route) {
-                            ChatListScreen(
-                                communityViewModel = communityViewModel,
-                                onChatClick = { name, userId, avatarUrl ->
-                                    // Navigate to detail if needed
-                                },
-                                onBackClick = { navController.popBackStack() }
-                            )
+                            SettingScreen(themeViewModel = themeViewModel, onLogout = {
+                                FirebaseAuth.getInstance().signOut()
+                                GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
+                                navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                            })
                         }
                     }
                 }

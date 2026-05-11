@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.chat
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,19 +35,29 @@ import com.soulmate.app.ui.social.CommunityViewModel
 @Composable
 fun ChatListScreen(
     communityViewModel: CommunityViewModel,
-    onChatClick: (String, String, String?) -> Unit,
+    onChatClick: (String, String?) -> Unit,
     onBackClick: () -> Unit
 ) {
     val posts by communityViewModel.posts
-    // Lấy danh sách user duy nhất từ các bài đăng community để không bị lặp lại
-    var chatUsers by remember(posts) {
-        mutableStateOf(posts.distinctBy { it.userName }.map {
+    var searchQuery by remember { mutableStateOf("") }
+    
+    // Lấy danh sách user duy nhất từ các bài đăng community
+    val allUsers = remember(posts) {
+        posts.distinctBy { it.userName }.map {
             ChatUser(it.userName, it.userAvatarUrl)
-        })
+        }
+    }
+
+    val filteredUsers = remember(allUsers, searchQuery) {
+        if (searchQuery.isEmpty()) {
+            allUsers
+        } else {
+            allUsers.filter { it.name.contains(searchQuery, ignoreCase = true) }
+        }
     }
 
     Scaffold(
-        modifier = Modifier.statusBarsPadding(), // Thêm margin top cho chat screen
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
                 backgroundColor = Color.White,
@@ -71,7 +83,6 @@ fun ChatListScreen(
                     IconButton(onClick = {}) {
                         Icon(Icons.Default.Edit, contentDescription = null, tint = Color.Black)
                     }
-                    // Đã bỏ icon facebook theo yêu cầu
                 }
             )
         }
@@ -96,11 +107,22 @@ fun ChatListScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Tìm kiếm tài khoản", color = Color.Gray, fontSize = 15.sp)
+                    BasicTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        textStyle = TextStyle(fontSize = 15.sp, color = Color.Black),
+                        modifier = Modifier.fillMaxWidth(),
+                        decorationBox = { innerTextField ->
+                            if (searchQuery.isEmpty()) {
+                                Text("Tìm kiếm tài khoản", color = Color.Gray, fontSize = 15.sp)
+                            }
+                            innerTextField()
+                        }
+                    )
                 }
             }
 
-            LazyColumn {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 // Stories/Active Users
                 item {
                     LazyRow(
@@ -135,7 +157,7 @@ fun ChatListScreen(
                                 Text("Tạo tin", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
                             }
                         }
-                        items(chatUsers) { user ->
+                        items(allUsers) { user ->
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(contentAlignment = Alignment.BottomEnd) {
                                     AsyncImage(
@@ -146,7 +168,6 @@ fun ChatListScreen(
                                             .clip(CircleShape),
                                         contentScale = ContentScale.Crop
                                     )
-                                    // Active dot
                                     Box(
                                         modifier = Modifier
                                             .size(15.dp)
@@ -167,50 +188,54 @@ fun ChatListScreen(
                     }
                 }
 
-                // Chat Items với tính năng swipe để xóa
-                items(chatUsers, key = { it.name }) { user ->
-                    val dismissState = rememberDismissState(
-                        confirmStateChange = {
-                            if (it == DismissValue.DismissedToStart) {
-                                chatUsers = chatUsers.filter { it.name != user.name }
-                                true
-                            } else false
-                        }
-                    )
-
-                    SwipeToDismiss(
-                        state = dismissState,
-                        directions = setOf(DismissDirection.EndToStart),
-                        background = {
-                            val color = when (dismissState.targetValue) {
-                                DismissValue.Default -> Color.Transparent
-                                else -> Color.Red
+                // Chat Items
+                items(filteredUsers, key = { it.name }) { user ->
+                    var isVisible by remember { mutableStateOf(true) }
+                    
+                    if (isVisible) {
+                        val dismissState = rememberDismissState(
+                            confirmStateChange = {
+                                if (it == DismissValue.DismissedToStart) {
+                                    isVisible = false
+                                    true
+                                } else false
                             }
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(color)
-                                    .padding(horizontal = 20.dp),
-                                contentAlignment = Alignment.CenterEnd
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color.White
+                        )
+
+                        SwipeToDismiss(
+                            state = dismissState,
+                            directions = setOf(DismissDirection.EndToStart),
+                            background = {
+                                val color = when (dismissState.targetValue) {
+                                    DismissValue.Default -> Color.Transparent
+                                    else -> Color.Red
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color)
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.White
+                                    )
+                                }
+                            },
+                            dismissContent = {
+                                ChatItem(
+                                    name = user.name,
+                                    avatarUrl = user.avatarUrl,
+                                    lastMessage = "Chào bạn! Mình thấy bài viết của bạn trên community...",
+                                    time = "12:48",
+                                    hasUnread = true,
+                                    onClick = { onChatClick(user.name, user.avatarUrl) }
                                 )
                             }
-                        },
-                        dismissContent = {
-                            ChatItem(
-                                name = user.name,
-                                avatarUrl = user.avatarUrl,
-                                lastMessage = "Chào bạn! Mình thấy bài viết của bạn trên community...",
-                                time = "12:48",
-                                hasUnread = true,
-                                onClick = { onChatClick(user.name, user.name, user.avatarUrl) }
-                            )
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -240,7 +265,8 @@ fun ChatItem(
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            error = coil.compose.rememberAsyncImagePainter(R.drawable.ava1)
         )
         
         Spacer(modifier = Modifier.width(12.dp))
@@ -250,7 +276,9 @@ fun ChatItem(
                 text = name,
                 fontSize = 16.sp,
                 fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Normal,
-                color = Color.Black
+                color = Color.Black,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
