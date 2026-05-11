@@ -1,6 +1,5 @@
 package com.soulmate.app.ui.stats
 
-import android.R.attr.data
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -36,8 +35,12 @@ data class DonutData(val label: String, val percentage: Float, val color: Color)
 data class DailyMoodData(val dayLabel: String, val moodScore: Float)
 
 @Composable
-fun MoodDonutChart(data: List<DonutData>) {
+fun MoodDonutChart(
+    data: List<DonutData>,
+    emptyMessage: String = "Chưa có dữ liệu"
+) {
     var animationPlayed by remember { mutableStateOf(false) }
+    val nonEmptyData = data.filter { it.percentage > 0f }
 
     val animateSweep by animateFloatAsState(
         targetValue = if (animationPlayed) 1f else 0f,
@@ -54,25 +57,38 @@ fun MoodDonutChart(data: List<DonutData>) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Box(modifier = Modifier.size(200.dp), contentAlignment = Alignment.Center) {
-            Canvas(modifier = Modifier.size(160.dp)) {
-                var startAngle = -90f
+            if (nonEmptyData.isEmpty()) {
+                Text(
+                    text = emptyMessage,
+                    color = Color.Gray,
+                    fontSize = 13.sp
+                )
+            } else {
+                Canvas(modifier = Modifier.size(160.dp)) {
+                    var startAngle = -90f
 
-                data.forEach { item ->
-                    val sweepAngle = (item.percentage / 100f) * 360f * animateSweep
+                    nonEmptyData.forEach { item ->
+                        val sweepAngle = (item.percentage / 100f) * 360f * animateSweep
 
-                    drawArc(
-                        color = item.color,
-                        startAngle = startAngle,
-                        sweepAngle = sweepAngle,
-                        useCenter = false,
-                        style = Stroke(width = 32.dp.toPx(), cap = StrokeCap.Butt)
-                    )
-                    startAngle += sweepAngle
+                        drawArc(
+                            color = item.color,
+                            startAngle = startAngle,
+                            sweepAngle = sweepAngle,
+                            useCenter = false,
+                            style = Stroke(width = 32.dp.toPx(), cap = StrokeCap.Butt)
+                        )
+                        startAngle += sweepAngle
+                    }
                 }
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Chủ yếu", color = Color.Gray, fontSize = 12.sp)
-                Text(text = data.maxByOrNull { it.percentage }?.label ?: "", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colors.onSurface)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Chủ yếu", color = Color.Gray, fontSize = 12.sp)
+                    Text(
+                        text = nonEmptyData.maxByOrNull { it.percentage }?.label ?: "--",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colors.onSurface
+                    )
+                }
             }
         }
 
@@ -82,28 +98,26 @@ fun MoodDonutChart(data: List<DonutData>) {
             modifier = Modifier.fillMaxWidth().padding(start = 24.dp),
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            data.forEach { item ->
-                if (item.percentage > 0) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .clip(CircleShape)
-                                .background(item.color)
-                        )
+            nonEmptyData.forEach { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(item.color)
+                    )
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                        Text(
-                            text = "${item.label} ${item.percentage.toInt()}%",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = "${item.label} ${item.percentage.toInt()}%",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
         }
@@ -111,7 +125,27 @@ fun MoodDonutChart(data: List<DonutData>) {
 }
 
 @Composable
-fun MoodLineChart(data: List<DailyMoodData>) {
+fun MoodLineChart(
+    data: List<DailyMoodData>,
+    emptyMessage: String = "Chưa có dữ liệu"
+) {
+    val hasRealData = data.any { it.moodScore > 0f }
+    if (data.isEmpty() || !hasRealData) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = emptyMessage,
+                color = Color.Gray,
+                fontSize = 13.sp
+            )
+        }
+        return
+    }
+
     val entries = data.mapIndexed { index, dailyMood ->
         FloatEntry(x = index.toFloat(), y = dailyMood.moodScore)
     }
@@ -121,7 +155,7 @@ fun MoodLineChart(data: List<DailyMoodData>) {
 
     Chart(
         chart = lineChart(
-            axisValuesOverrider = AxisValuesOverrider.fixed(minY = 1f, maxY = 5f),
+            axisValuesOverrider = AxisValuesOverrider.fixed(minY = 0f, maxY = 5f),
             lines = listOf(
                 lineSpec(
                     lineColor = primaryColor,
@@ -141,6 +175,7 @@ fun MoodLineChart(data: List<DailyMoodData>) {
         startAxis = rememberStartAxis(
             valueFormatter = { value, _ ->
                 when (value.toInt()) {
+                    0 -> ""
                     1 -> "Angry"
                     2 -> "Sad"
                     3 -> "Neutral"
