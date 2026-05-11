@@ -39,7 +39,7 @@ fun SettingScreen(
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val isDarkMode by themeViewModel.isDarkMode
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState()
     val currentUser by authViewModel.currentUser
     val notificationEnabled by settingsViewModel.notificationEnabled.collectAsState()
     var showEditProfileDialog by remember { mutableStateOf(false) }
@@ -72,7 +72,7 @@ fun SettingScreen(
             trailing = {
                 Switch(
                     checked = isDarkMode,
-                    onCheckedChange = { themeViewModel.toggleDarkMode() },
+                    onCheckedChange = { isChecked -> themeViewModel.toggleDarkMode(isChecked) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colors.primary,
                         checkedTrackColor = MaterialTheme.colors.primaryVariant

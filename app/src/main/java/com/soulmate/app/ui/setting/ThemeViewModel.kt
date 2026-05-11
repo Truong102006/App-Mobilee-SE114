@@ -1,17 +1,32 @@
 package com.soulmate.app.ui.setting
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.soulmate.app.domain.repository.ISettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ThemeViewModel @Inject constructor() : ViewModel() {
-    private val _isDarkMode = mutableStateOf(false)
-    val isDarkMode: State<Boolean> = _isDarkMode
+class ThemeViewModel @Inject constructor(
+    private val settingsRepository: ISettingsRepository
+) : ViewModel() {
 
-    fun toggleDarkMode() {
-        _isDarkMode.value = !_isDarkMode.value
+    // Lấy trạng thái từ DataStore
+    val isDarkMode: StateFlow<Boolean> = settingsRepository.isDarkMode
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    // Truyền biến isDark vào để lưu
+    fun toggleDarkMode(isDark: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.toggleDarkMode(isDark)
+        }
     }
 }

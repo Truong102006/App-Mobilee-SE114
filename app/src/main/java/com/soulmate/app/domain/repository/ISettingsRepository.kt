@@ -18,6 +18,9 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "so
 interface ISettingsRepository {
     val notificationEnabled: Flow<Boolean>
     suspend fun toggleNotification(isEnabled: Boolean)
+
+    val isDarkMode: Flow<Boolean>
+    suspend fun toggleDarkMode(isDark: Boolean)
 }
 
 class SettingsRepositoryImpl @Inject constructor(
@@ -26,6 +29,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     private object PreferencesKeys {
         val NOTIFICATION_ENABLED = booleanPreferencesKey("notification_enabled")
+        val DARK_MODE = booleanPreferencesKey("dark_mode")
     }
 
     override val notificationEnabled: Flow<Boolean> = dataStore.data
@@ -36,9 +40,23 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.NOTIFICATION_ENABLED] ?: true
         }
 
+    override val isDarkMode: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.DARK_MODE] ?: false
+        }
+
     override suspend fun toggleNotification(isEnabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.NOTIFICATION_ENABLED] = isEnabled
+        }
+    }
+
+    override suspend fun toggleDarkMode(isDark: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DARK_MODE] = isDark
         }
     }
 }
