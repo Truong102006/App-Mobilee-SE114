@@ -5,11 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,9 +20,13 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.soulmate.app.R
 import com.soulmate.app.domain.model.User
+import java.util.Locale
 
 @Composable
 fun HeaderSection(user: User?) {
+    val displayName = user?.anonymousName?.takeIf { it.isNotBlank() } ?: "SoulMate User"
+    val avatarUrl = user?.avatarUrl?.takeIf { it.isNotBlank() }
+
     // Giảm chiều cao Box tổng xuống để ảnh nền ngắn lại
     Box(modifier = Modifier.fillMaxWidth().height(310.dp)) {
 
@@ -43,7 +44,7 @@ fun HeaderSection(user: User?) {
         ) {
             Text("Hello There !", fontSize = 16.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
             Text(
-                text = user?.anonymousName ?: "SoulMate User",
+                text = displayName,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colors.onSurface
@@ -61,23 +62,30 @@ fun HeaderSection(user: User?) {
                 .background(MaterialTheme.colors.surface),
             contentAlignment = Alignment.Center
         ) {
-            if (user?.avatarUrl != null) {
+            if (avatarUrl != null) {
                 AsyncImage(
-                    model = user.avatarUrl,
+                    model = avatarUrl,
                     contentDescription = "User Avatar",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                    placeholder = painterResource(id = R.drawable.ava1),
-                    error = painterResource(id = R.drawable.ava1)
+                    modifier = Modifier.fillMaxSize()
                 )
             } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "User",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(24.dp)
+                Text(
+                    text = avatarInitial(displayName),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colors.primary)
+                        .wrapContentSize(Alignment.Center)
                 )
             }
         }
     }
+}
+
+private fun avatarInitial(name: String): String {
+    val firstLetter = name.trim().firstOrNull { it.isLetterOrDigit() } ?: 'U'
+    return firstLetter.toString().uppercase(Locale.getDefault())
 }

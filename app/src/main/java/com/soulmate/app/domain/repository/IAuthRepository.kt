@@ -4,7 +4,7 @@ import com.soulmate.app.domain.model.User
 
 interface IAuthRepository {
     // Đăng ký tài khoản mới bằng Email và Password
-    suspend fun register(email: String, password: String): Result<User>
+    suspend fun register(name: String, email: String, password: String): Result<User>
 
     // Đăng nhập vào hệ thống
     suspend fun login(email: String, password: String): Result<User>
