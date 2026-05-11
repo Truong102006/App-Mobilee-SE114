@@ -4,11 +4,15 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,7 +27,8 @@ import com.soulmate.app.ui.social.CommunityViewModel
 fun HomeScreen(
     musicViewModel: MusicViewModel, 
     historyViewModel: HistoryViewModel,
-    communityViewModel: CommunityViewModel = hiltViewModel()
+    communityViewModel: CommunityViewModel = hiltViewModel(),
+    onChatBubbleClick: () -> Unit = {}
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
 
@@ -92,7 +97,8 @@ fun HomeScreen(
         onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
         onOpenComments = { postId -> communityViewModel.loadComments(postId) },
         onDeleteClick = { postId -> communityViewModel.deletePost(postId) },
-        onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) }
+        onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) },
+        onChatBubbleClick = onChatBubbleClick
     )
 }
 
@@ -122,7 +128,8 @@ fun HomeScreenContent(
     onLikeComment: (String, String) -> Unit,
     onOpenComments: (String) -> Unit,
     onDeleteClick: (String) -> Unit,
-    onEditClick: (String, String) -> Unit
+    onEditClick: (String, String) -> Unit,
+    onChatBubbleClick: () -> Unit
 ) {
     val virtualCount = 50000
 
@@ -217,6 +224,26 @@ fun HomeScreenContent(
 
                 Spacer(modifier = Modifier.height(100.dp))
             }
+        }
+
+        // --- BONG BÓNG CHAT ---
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 120.dp)
+                .size(60.dp)
+                .shadow(elevation = 8.dp, shape = CircleShape)
+                .clip(CircleShape)
+                .background(Color(0xFF0084FF))
+                .clickable { onChatBubbleClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.Chat,
+                contentDescription = "Chat",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
+            )
         }
 
         // Màn hình chi tiết

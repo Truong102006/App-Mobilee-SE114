@@ -39,6 +39,8 @@ import com.soulmate.app.ui.setting.ThemeViewModel
 import com.soulmate.app.ui.social.CommunityViewModel
 import com.soulmate.app.ui.stats.StatsScreen
 import com.soulmate.app.ui.theme.SoulMateTheme
+import com.soulmate.app.ui.chat.ChatListScreen
+import com.soulmate.app.ui.chat.ChatViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -74,7 +76,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
                     bottomBar = {
-                        if (!isAuthScreen) {
+                        if (!isAuthScreen && currentDestination?.route != Screen.ChatList.route && currentDestination?.route != Screen.ChatDetail.route) {
                             CustomBottomNav(navController = navController)
                         }
                     }
@@ -140,7 +142,10 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 musicViewModel = musicViewModel, 
                                 historyViewModel = hvm,
-                                communityViewModel = communityViewModel // Truyền shared VM
+                                communityViewModel = communityViewModel, // Truyền shared VM
+                                onChatBubbleClick = {
+                                    navController.navigate(Screen.ChatList.route)
+                                }
                             ) 
                         }
                         composable(Screen.History.route) { 
@@ -198,6 +203,16 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 }
+                            )
+                        }
+
+                        composable(Screen.ChatList.route) {
+                            ChatListScreen(
+                                communityViewModel = communityViewModel,
+                                onChatClick = { name, userId, avatarUrl ->
+                                    // Navigate to detail if needed
+                                },
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
                     }
