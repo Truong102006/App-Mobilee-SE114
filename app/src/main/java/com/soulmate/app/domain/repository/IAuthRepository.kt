@@ -20,6 +20,9 @@ interface IAuthRepository {
 
     // Lấy UID của User hiện tại đang đăng nhập
     fun getCurrentUserId(): String?
+
+    // Cập nhật thông tin User
+    suspend fun updateUserProfile(user: User): Result<Unit>
     
     // Lấy thông tin chi tiết User từ Firestore
     suspend fun getUserProfile(uid: String): Result<User>

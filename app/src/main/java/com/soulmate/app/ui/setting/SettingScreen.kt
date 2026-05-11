@@ -1,5 +1,8 @@
 package com.soulmate.app.ui.setting
 
+import EditProfileDialog
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,16 +29,20 @@ import coil.compose.AsyncImage
 import com.soulmate.app.domain.model.User
 import com.soulmate.app.ui.login.AuthViewModel
 import java.util.Locale
+import androidx.core.net.toUri
 
 @Composable
 fun SettingScreen(
     themeViewModel: ThemeViewModel,
     authViewModel: AuthViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
     onLogout: () -> Unit = {}
 ) {
-    val isDarkMode by themeViewModel.isDarkMode
+    val context = LocalContext.current
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState()
     val currentUser by authViewModel.currentUser
-    var notificationEnabled by remember { mutableStateOf(true) }
+    val notificationEnabled by settingsViewModel.notificationEnabled.collectAsState()
+    var showEditProfileDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -64,7 +72,7 @@ fun SettingScreen(
             trailing = {
                 Switch(
                     checked = isDarkMode,
-                    onCheckedChange = { themeViewModel.toggleDarkMode() },
+                    onCheckedChange = { isChecked -> themeViewModel.toggleDarkMode(isChecked) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colors.primary,
                         checkedTrackColor = MaterialTheme.colors.primaryVariant
@@ -78,7 +86,7 @@ fun SettingScreen(
             trailing = {
                 Switch(
                     checked = notificationEnabled,
-                    onCheckedChange = { notificationEnabled = it },
+                    onCheckedChange = { isChecked -> settingsViewModel.toggleNotification(isChecked) },
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary)
                 )
             }
@@ -88,7 +96,15 @@ fun SettingScreen(
 
         // --- SECTION: ACCOUNT & SECURITY ---
         SettingSectionTitle("Account")
-        SettingItem(icon = Icons.Default.Person, title = "Edit Profile")
+        SettingItem(
+            icon = Icons.Default.Person,
+            title = "Edit Profile",
+            onClick = {
+                if (currentUser != null) {
+                    showEditProfileDialog = true
+                }
+            }
+        )
         SettingItem(icon = Icons.Default.Lock, title = "Privacy & Security")
         SettingItem(icon = Icons.Default.Language, title = "Language", subtitle = "Vietnamese")
 
@@ -96,8 +112,33 @@ fun SettingScreen(
 
         // --- SECTION: SUPPORT ---
         SettingSectionTitle("Support")
-        SettingItem(icon = Icons.Default.Info, title = "About SoulMate")
-        SettingItem(icon = Icons.Default.Help, title = "Help Center")
+        SettingItem(
+            icon = Icons.Default.Info,
+            title = "About SoulMate",
+            onClick = {
+                val intent = Intent(
+                    Intent.ACTION_VIEW,
+                    "https://github.com/Truong102006/App-Mobilee-SE114".toUri()
+                )
+                context.startActivity(intent)
+            }
+        )
+        SettingItem(
+            icon = Icons.Default.Help,
+            title = "Help Center",
+            onClick = {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = "mailto:".toUri()
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf("support@soulmate.com")) // TODO: Thay email thật của nhóm
+                    putExtra(Intent.EXTRA_SUBJECT, "Feedback/Support for SoulMate App")
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(context, "No email app found!", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -117,6 +158,18 @@ fun SettingScreen(
         }
 
         Spacer(modifier = Modifier.height(40.dp))
+    }
+
+    // Hiển thị Dialog Edit Profile
+    if (showEditProfileDialog && currentUser != null) {
+        EditProfileDialog(
+            user = currentUser!!,
+            onDismiss = { showEditProfileDialog = false },
+            onSave = { updatedUser ->
+                authViewModel.updateProfile(updatedUser)
+                showEditProfileDialog = false
+            }
+        )
     }
 }
 
@@ -199,6 +252,7 @@ fun SettingItem(
     icon: ImageVector,
     title: String,
     subtitle: String? = null,
+    onClick: () -> Unit = {},
     trailing: @Composable (() -> Unit)? = null
 ) {
     Row(
@@ -207,7 +261,7 @@ fun SettingItem(
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colors.surface)
-            .clickable { /* Xử lý khi click vào item */ }
+            .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

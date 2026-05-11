@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.theme
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
@@ -7,9 +8,11 @@ import androidx.compose.material.lightColors
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme as MaterialTheme3
 
+@SuppressLint("ConflictingOnColor")
 private val LightColorPalette = lightColors(
     primary = BrandOrange,
     primaryVariant = BrandYellow,
@@ -22,6 +25,7 @@ private val LightColorPalette = lightColors(
     onSurface = Color.Black
 )
 
+@SuppressLint("ConflictingOnColor")
 private val DarkColorPalette = darkColors(
     primary = BrandYellow,
     primaryVariant = BrandOrange,

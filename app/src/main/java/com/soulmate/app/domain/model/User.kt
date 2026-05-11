@@ -2,9 +2,14 @@ package com.soulmate.app.domain.model
 
 data class User(
     val userId: String = "",
+
     val email: String = "",
     val anonymousName: String = "SoulMate User",
     val avatarUrl: String? = null,
+    val gender: String = "Secret",
+    val phoneNumber: String = "",
+    val socialMedias: List<String> = emptyList(),
+
     val role: String = "user", // "user" hoặc "admin"
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
@@ -21,9 +26,14 @@ data class User(
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "userId" to userId,
+
             "email" to email,
             "anonymousName" to anonymousName,
             "avatarUrl" to avatarUrl,
+            "gender" to gender,
+            "phoneNumber" to phoneNumber,
+            "socialMedias" to socialMedias,
+
             "role" to role,
             "createdAt" to createdAt,
             "updatedAt" to updatedAt,

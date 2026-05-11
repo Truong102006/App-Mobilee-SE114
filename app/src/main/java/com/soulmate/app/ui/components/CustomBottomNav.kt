@@ -24,10 +24,10 @@ fun CustomBottomNav(navController: NavController) {
 
     val items = listOf(
         Screen.Home,
-        Screen.History, // This is now labeled "Journal"
-        null,           // Placeholder for the center + button
+        Screen.History,
+        null,
         Screen.Stats,
-        Screen.Setting  // This is now labeled "Me"
+        Screen.Setting
     )
 
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -87,7 +87,6 @@ fun CustomBottomNav(navController: NavController) {
             }
         }
 
-        // The Floating Action Button in the middle
         FloatingActionButton(
             onClick = {
                 navController.navigate(Screen.Diary.route) {

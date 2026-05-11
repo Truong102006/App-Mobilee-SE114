@@ -11,22 +11,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ThemeViewModel @Inject constructor(
+class SettingsViewModel @Inject constructor(
     private val settingsRepository: ISettingsRepository
 ) : ViewModel() {
 
-    // Lấy trạng thái từ DataStore
-    val isDarkMode: StateFlow<Boolean> = settingsRepository.isDarkMode
+    val notificationEnabled: StateFlow<Boolean> = settingsRepository.notificationEnabled
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
+            initialValue = true
         )
 
-    // Truyền biến isDark vào để lưu
-    fun toggleDarkMode(isDark: Boolean) {
+    fun toggleNotification(isEnabled: Boolean) {
         viewModelScope.launch {
-            settingsRepository.toggleDarkMode(isDark)
+            settingsRepository.toggleNotification(isEnabled)
         }
     }
 }
