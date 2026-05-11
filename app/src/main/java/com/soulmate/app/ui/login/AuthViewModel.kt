@@ -98,23 +98,20 @@ class AuthViewModel @Inject constructor(
     }
 
     // Thêm hàm này vào trong AuthViewModel.kt
-//    fun updateProfile(updatedUser: User) {
-//        viewModelScope.launch {
-//            _isLoading.value = true
-//
-//            // Gọi xuống Repository để lưu lên Firebase/Database
-//            // TODO: Đảm bảo IAuthRepository có hàm updateUserProfile(user)
-//            authRepository.updateUserProfile(updatedUser)
-//                .onSuccess {
-//                    // Thành công -> Cập nhật State để UI đổi ngay lập tức
-//                    _currentUser.value = updatedUser
-//                    // Có thể emit 1 message success nếu muốn
-//                }
-//                .onFailure {
-//                    _error.emit(it.localizedMessage ?: "Cập nhật thất bại")
-//                }
-//
-//            _isLoading.value = false
-//        }
-//    }
+    fun updateProfile(updatedUser: User) {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            // Gọi xuống Repository để lưu lên Firebase/Database
+            authRepository.updateUserProfile(updatedUser)
+                .onSuccess {
+                    _currentUser.value = updatedUser
+                }
+                .onFailure {
+                    _error.emit(it.localizedMessage ?: "Cập nhật thất bại")
+                }
+
+            _isLoading.value = false
+        }
+    }
 }

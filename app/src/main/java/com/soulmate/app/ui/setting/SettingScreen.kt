@@ -164,11 +164,10 @@ fun SettingScreen(
         EditProfileDialog(
             user = currentUser!!,
             onDismiss = { showEditProfileDialog = false },
-//            onSave = { updatedUser ->
-//                authViewModel.updateProfile(updatedUser)
-//                showEditProfileDialog = false
-//            }
-            onSave = {}
+            onSave = { updatedUser ->
+                authViewModel.updateProfile(updatedUser)
+                showEditProfileDialog = false
+            }
         )
     }
 }

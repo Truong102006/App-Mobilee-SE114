@@ -139,4 +139,8 @@ class AuthRepositoryImpl @Inject constructor(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    override suspend fun updateUserProfile(user: User): Result<Unit> {
+        TODO("Not yet implemented")
+    }
 }
