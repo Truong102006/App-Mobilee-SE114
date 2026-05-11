@@ -1,5 +1,7 @@
 package com.soulmate.app.data.repository
 
+import android.net.Uri
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -7,6 +9,7 @@ import com.google.firebase.firestore.Query
 import com.soulmate.app.domain.repository.ICommunityRepository
 import com.soulmate.app.ui.social.Comment
 import com.soulmate.app.ui.social.CommunityPost
+import com.soulmate.app.utils.CloudinaryHelper
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -35,6 +38,24 @@ class CommunityRepositoryImpl @Inject constructor(
             else -> {
                 val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                 sdf.format(timestamp.toDate())
+            }
+        }
+    }
+
+    private fun isRemoteHttpUrl(value: String): Boolean {
+        return value.startsWith("http://", ignoreCase = true) ||
+            value.startsWith("https://", ignoreCase = true)
+    }
+
+    private suspend fun uploadToCloudinary(imagePath: String): String {
+        return if (isRemoteHttpUrl(imagePath)) {
+            imagePath
+        } else {
+            try {
+                CloudinaryHelper.uploadImageSuspend(Uri.parse(imagePath))
+            } catch (e: Exception) {
+                Log.e("CommunityRepo", "Cloudinary upload failed for $imagePath", e)
+                imagePath
             }
         }
     }
@@ -107,6 +128,11 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addPost(post: CommunityPost): Result<Unit> = try {
+        // Upload images to Cloudinary before saving to Firestore
+        val uploadedUrls = post.imageUrls.map { path ->
+            uploadToCloudinary(path)
+        }
+
         val postData = hashMapOf(
             "user_name" to post.userName,
             "user_avatar_url" to post.userAvatarUrl,
@@ -114,7 +140,7 @@ class CommunityRepositoryImpl @Inject constructor(
             "mood" to post.mood,
             "timestamp" to FieldValue.serverTimestamp(),
             "text_content" to post.textContent,
-            "image_urls" to post.imageUrls,
+            "image_urls" to uploadedUrls,
             "like_count" to 0,
             "comment_count" to 0,
             "view_count" to 0,

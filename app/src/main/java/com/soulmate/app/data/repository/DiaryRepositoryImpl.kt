@@ -6,23 +6,20 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageException
 import com.soulmate.app.domain.model.Diary
 import com.soulmate.app.domain.repository.IDiaryRepository
+import com.soulmate.app.utils.CloudinaryHelper
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DiaryRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth,
-    private val storage: FirebaseStorage
+    private val auth: FirebaseAuth
 ) : IDiaryRepository {
     companion object {
         private const val TAG = "DiaryRepositoryImpl"
@@ -36,29 +33,6 @@ class DiaryRepositoryImpl @Inject constructor(
     private fun isRemoteHttpUrl(value: String): Boolean {
         return value.startsWith("http://", ignoreCase = true) ||
             value.startsWith("https://", ignoreCase = true)
-    }
-
-    private fun shouldFallbackToLocalImage(errorCode: Int): Boolean {
-        return when (errorCode) {
-            StorageException.ERROR_OBJECT_NOT_FOUND,
-            StorageException.ERROR_BUCKET_NOT_FOUND,
-            StorageException.ERROR_PROJECT_NOT_FOUND,
-            StorageException.ERROR_NOT_AUTHENTICATED,
-            StorageException.ERROR_NOT_AUTHORIZED,
-            StorageException.ERROR_QUOTA_EXCEEDED,
-            StorageException.ERROR_RETRY_LIMIT_EXCEEDED,
-            StorageException.ERROR_UNKNOWN -> true
-            else -> false
-        }
-    }
-
-    private fun logStorageFallback(exception: StorageException, imagePath: String) {
-        val bucket = storage.app.options.storageBucket ?: "(null)"
-        Log.w(
-            TAG,
-            "Storage upload failed, fallback to local URI. bucket=$bucket path=$imagePath code=${exception.errorCode} http=${exception.httpResultCode}",
-            exception
-        )
     }
 
     override fun getDiaries(userId: String): Flow<List<Diary>> = callbackFlow {
@@ -89,79 +63,26 @@ class DiaryRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
-    private suspend fun uploadImage(uri: Uri): String {
-        val fileName = "diary_images/${UUID.randomUUID()}.jpg"
-        val ref = storage.reference.child(fileName)
-
-        ref.putFile(uri).await()
-        return ref.downloadUrl.await().toString()
-    }
-
-    private fun mapStorageErrorToUserMessage(e: StorageException): String {
-        return when (e.errorCode) {
-            StorageException.ERROR_BUCKET_NOT_FOUND,
-            StorageException.ERROR_PROJECT_NOT_FOUND -> {
-                "Firebase Storage chua duoc cau hinh. Vao Firebase Console > Storage > Get started de tao bucket."
+    private suspend fun uploadToCloudinary(imagePath: String): String {
+        return if (isRemoteHttpUrl(imagePath)) {
+            imagePath
+        } else {
+            try {
+                CloudinaryHelper.uploadImageSuspend(Uri.parse(imagePath))
+            } catch (e: Exception) {
+                Log.e(TAG, "Cloudinary upload failed for $imagePath", e)
+                imagePath // Fallback to local path if upload fails
             }
-            StorageException.ERROR_OBJECT_NOT_FOUND -> {
-                "Khong upload duoc anh (HTTP ${e.httpResultCode}). Thuong la bucket chua ton tai hoac du an chua bat Blaze cho Cloud Storage."
-            }
-            StorageException.ERROR_NOT_AUTHENTICATED -> {
-                "Ban chua dang nhap, vui long dang nhap lai roi thu luu anh."
-            }
-            StorageException.ERROR_NOT_AUTHORIZED -> {
-                "Khong du quyen ghi Storage. Kiem tra Firebase Storage Rules."
-            }
-            StorageException.ERROR_QUOTA_EXCEEDED -> {
-                "Storage vuot quota. Can nang cap/goi thanh toan Blaze de tiep tuc."
-            }
-            else -> e.message ?: "Loi upload anh tu Firebase Storage."
         }
     }
 
     override suspend fun saveDiary(diary: Diary): Result<Unit> = try {
         val currentUserUid = auth.currentUser?.uid ?: throw Exception("User not logged in")
 
-        var canUploadToCloud = true
-        val uploadedUrls = diary.imageUrls
-            .mapNotNull { it.trim().takeIf(String::isNotEmpty) }
-            .map { imagePath ->
-                if (!canUploadToCloud) {
-                    return@map imagePath
-                }
-
-                when {
-                    isRemoteHttpUrl(imagePath) -> imagePath
-                    imagePath.startsWith("gs://", ignoreCase = true) -> {
-                        runCatching {
-                            storage.getReferenceFromUrl(imagePath).downloadUrl.await().toString()
-                        }.getOrElse { throwable ->
-                            val storageException = throwable as? StorageException
-                            if (storageException != null && shouldFallbackToLocalImage(storageException.errorCode)) {
-                                canUploadToCloud = false
-                                logStorageFallback(storageException, imagePath)
-                                imagePath
-                            } else {
-                                throw throwable
-                            }
-                        }
-                    }
-                    else -> {
-                        runCatching {
-                            uploadImage(Uri.parse(imagePath))
-                        }.getOrElse { throwable ->
-                            val storageException = throwable as? StorageException
-                            if (storageException != null && shouldFallbackToLocalImage(storageException.errorCode)) {
-                                canUploadToCloud = false
-                                logStorageFallback(storageException, imagePath)
-                                imagePath
-                            } else {
-                                throw throwable
-                            }
-                        }
-                    }
-                }
-            }
+        // Upload images to Cloudinary and get secure_urls
+        val uploadedUrls = diary.imageUrls.map { path ->
+            uploadToCloudinary(path)
+        }
 
         val docRef = if (diary.diaryId.isEmpty()) {
             diariesCollection.document()
@@ -185,18 +106,8 @@ class DiaryRepositoryImpl @Inject constructor(
         docRef.set(diaryData).await()
         Result.success(Unit)
     } catch (e: Exception) {
-        val storageException = e as? StorageException
-        if (storageException != null) {
-            val bucket = storage.app.options.storageBucket ?: "(null)"
-            Log.e(
-                TAG,
-                "Upload failed. bucket=$bucket code=${storageException.errorCode} http=${storageException.httpResultCode}",
-                storageException
-            )
-            Result.failure(Exception(mapStorageErrorToUserMessage(storageException)))
-        } else {
-            Result.failure(e)
-        }
+        Log.e(TAG, "Save diary failed", e)
+        Result.failure(e)
     }
 
     override suspend fun loadDiaries(): Result<List<Diary>> = try {

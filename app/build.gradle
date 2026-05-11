@@ -92,6 +92,13 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("io.coil-kt:coil-gif:2.4.0")
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'com.github.bumptech.glide:compose:1.0.0-beta01'
+    
+    // Cloudinary
+    implementation 'com.cloudinary:cloudinary-android:3.0.2'
     
     // Hilt
     implementation "com.google.dagger:hilt-android:2.50"

@@ -15,6 +15,8 @@ import com.soulmate.app.data.repository.AuthRepositoryImpl
 import com.soulmate.app.domain.repository.IAuthRepository
 import com.soulmate.app.data.repository.CommunityRepositoryImpl
 import com.soulmate.app.domain.repository.ICommunityRepository
+import com.soulmate.app.data.repository.ChatRepositoryImpl
+import com.soulmate.app.domain.repository.IChatRepository
 
 
 @Module
@@ -50,4 +52,10 @@ abstract class RepositoryModule {
     abstract fun bindCommunityRepository(
         communityRepositoryImpl: CommunityRepositoryImpl
     ): ICommunityRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindChatRepository(
+        chatRepositoryImpl: ChatRepositoryImpl
+    ): IChatRepository
 }
