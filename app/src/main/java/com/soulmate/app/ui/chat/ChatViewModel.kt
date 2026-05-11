@@ -32,8 +32,8 @@ class ChatViewModel @Inject constructor(
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
             chatRepository.getMessages(senderId, receiverId).collect { list ->
-                // Sửa lỗi crash khi timestamp null
-                _messages.value = list.sortedByDescending { it.timestamp?.seconds ?: 0L }
+                // Sắp xếp tin nhắn từ cũ đến mới (từ trên xuống dưới)
+                _messages.value = list.sortedBy { it.timestamp?.seconds ?: 0L }
             }
         }
     }

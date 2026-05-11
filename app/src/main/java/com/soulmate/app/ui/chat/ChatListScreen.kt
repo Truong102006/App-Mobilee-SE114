@@ -40,6 +40,9 @@ fun ChatListScreen(
 ) {
     val posts by communityViewModel.posts
     var searchQuery by remember { mutableStateOf("") }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var userToDelete by remember { mutableStateOf<ChatUser?>(null) }
+    var deletedUserNames by remember { mutableStateOf(setOf<String>()) }
     
     // Lấy danh sách user duy nhất từ các bài đăng community
     val allUsers = remember(posts) {
@@ -48,12 +51,9 @@ fun ChatListScreen(
         }
     }
 
-    val filteredUsers = remember(allUsers, searchQuery) {
-        if (searchQuery.isEmpty()) {
-            allUsers
-        } else {
-            allUsers.filter { it.name.contains(searchQuery, ignoreCase = true) }
-        }
+    val filteredUsers = remember(allUsers, searchQuery, deletedUserNames) {
+        allUsers.filter { it.name !in deletedUserNames }
+            .filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
 
     Scaffold(
@@ -190,55 +190,82 @@ fun ChatListScreen(
 
                 // Chat Items
                 items(filteredUsers, key = { it.name }) { user ->
-                    var isVisible by remember { mutableStateOf(true) }
-                    
-                    if (isVisible) {
-                        val dismissState = rememberDismissState(
-                            confirmStateChange = {
-                                if (it == DismissValue.DismissedToStart) {
-                                    isVisible = false
-                                    true
-                                } else false
+                    val dismissState = rememberDismissState(
+                        confirmStateChange = {
+                            if (it == DismissValue.DismissedToStart) {
+                                userToDelete = user
+                                showDeleteDialog = true
                             }
-                        )
+                            false // Luôn trả về false để mục chat không tự biến mất mà chờ xác nhận từ Dialog
+                        }
+                    )
 
-                        SwipeToDismiss(
-                            state = dismissState,
-                            directions = setOf(DismissDirection.EndToStart),
-                            background = {
-                                val color = when (dismissState.targetValue) {
-                                    DismissValue.Default -> Color.Transparent
-                                    else -> Color.Red
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(color)
-                                        .padding(horizontal = 20.dp),
-                                    contentAlignment = Alignment.CenterEnd
-                                ) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = Color.White
-                                    )
-                                }
-                            },
-                            dismissContent = {
-                                ChatItem(
-                                    name = user.name,
-                                    avatarUrl = user.avatarUrl,
-                                    lastMessage = "Chào bạn! Mình thấy bài viết của bạn trên community...",
-                                    time = "12:48",
-                                    hasUnread = true,
-                                    onClick = { onChatClick(user.name, user.avatarUrl) }
+                    SwipeToDismiss(
+                        state = dismissState,
+                        directions = setOf(DismissDirection.EndToStart),
+                        background = {
+                            val color = when (dismissState.targetValue) {
+                                DismissValue.Default -> Color.Transparent
+                                else -> Color.Red
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(color)
+                                    .padding(horizontal = 20.dp),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color.White
                                 )
                             }
-                        )
-                    }
+                        },
+                        dismissContent = {
+                            ChatItem(
+                                name = user.name,
+                                avatarUrl = user.avatarUrl,
+                                lastMessage = "Chào bạn! Mình thấy bài viết của bạn trên community...",
+                                time = "12:48",
+                                hasUnread = true,
+                                onClick = { onChatClick(user.name, user.avatarUrl) }
+                            )
+                        }
+                    )
                 }
             }
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                userToDelete = null
+            },
+            title = { Text("Xác nhận xóa") },
+            text = { Text("Bạn có muốn xóa đoạn chat này không?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    userToDelete?.let {
+                        deletedUserNames = deletedUserNames + it.name
+                    }
+                    showDeleteDialog = false
+                    userToDelete = null
+                }) {
+                    Text("Xác nhận", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    userToDelete = null
+                }) {
+                    Text("Hủy")
+                }
+            }
+        )
     }
 }
 

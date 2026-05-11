@@ -31,6 +31,8 @@ import coil.compose.AsyncImage
 import com.soulmate.app.R
 import com.soulmate.app.domain.model.ChatMessage
 import com.google.firebase.auth.FirebaseAuth
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun ChatDetailScreen(
@@ -44,7 +46,6 @@ fun ChatDetailScreen(
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    // Sử dụng userName làm receiverId tạm thời theo logic hiện tại
     val receiverId = userName
 
     LaunchedEffect(receiverId) {
@@ -53,8 +54,25 @@ fun ChatDetailScreen(
         }
     }
 
+    // Tự động cuộn xuống cuối khi có tin nhắn mới
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
+    
+    // Tự động cuộn xuống khi bàn phím mở
+    val isKeyboardVisible = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
+    LaunchedEffect(isKeyboardVisible) {
+        if (isKeyboardVisible && messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
+
     Scaffold(
-        modifier = Modifier.fillMaxSize().statusBarsPadding(),
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
         topBar = {
             TopAppBar(
                 backgroundColor = Color.White,
@@ -116,8 +134,33 @@ fun ChatDetailScreen(
                     }
                 }
             )
-        },
-        bottomBar = {
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color.White)
+                // Sử dụng windowInsetsPadding kết hợp ime và navigationBars để tránh khoảng trắng dư thừa
+                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom))
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
+                state = listState,
+                reverseLayout = false // Hiển thị từ trên xuống dưới (cũ trên, mới dưới)
+            ) {
+                items(messages, key = { it.id.ifEmpty { it.timestamp?.toString() ?: it.hashCode().toString() } }) { message ->
+                    MessageBubble(
+                        message = message,
+                        isMine = message.senderId == currentUserId,
+                        userAvatarUrl = userAvatarUrl
+                    )
+                }
+            }
+            
             ChatBottomBar(
                 messageText = messageText,
                 onMessageChange = { messageText = it },
@@ -129,24 +172,6 @@ fun ChatDetailScreen(
                 }
             )
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color.White),
-            contentPadding = PaddingValues(16.dp),
-            state = listState,
-            reverseLayout = true
-        ) {
-            items(messages, key = { it.id.ifEmpty { it.timestamp?.toString() ?: it.hashCode().toString() } }) { message ->
-                MessageBubble(
-                    message = message,
-                    isMine = message.senderId == currentUserId,
-                    userAvatarUrl = userAvatarUrl
-                )
-            }
-        }
     }
 }
 
@@ -156,44 +181,67 @@ fun MessageBubble(
     isMine: Boolean,
     userAvatarUrl: String?
 ) {
-    Row(
+    val timeString = remember(message.timestamp) {
+        if (message.timestamp != null) {
+            SimpleDateFormat("HH:mm", Locale.getDefault()).format(message.timestamp.toDate())
+        } else ""
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp),
-        horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start,
-        verticalAlignment = Alignment.Bottom
+            .padding(vertical = 4.dp),
+        horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
     ) {
-        if (!isMine) {
-            AsyncImage(
-                model = userAvatarUrl ?: R.drawable.ava1,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-                error = painterResource(R.drawable.ava1)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-
-        Box(
-            modifier = Modifier
-                .widthIn(max = 260.dp)
-                .clip(
-                    RoundedCornerShape(
-                        topStart = 18.dp,
-                        topEnd = 18.dp,
-                        bottomStart = if (isMine) 18.dp else 4.dp,
-                        bottomEnd = if (isMine) 4.dp else 18.dp
-                    )
-                )
-                .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F0F0))
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
         ) {
+            if (!isMine) {
+                AsyncImage(
+                    model = userAvatarUrl ?: R.drawable.ava1,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(R.drawable.ava1)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            Box(
+                modifier = Modifier
+                    .widthIn(max = 260.dp)
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 18.dp,
+                            topEnd = 18.dp,
+                            bottomStart = if (isMine) 18.dp else 4.dp,
+                            bottomEnd = if (isMine) 4.dp else 18.dp
+                        )
+                    )
+                    .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F0F0))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = message.messageText,
+                    color = if (isMine) Color.White else Color.Black,
+                    fontSize = 15.sp
+                )
+            }
+        }
+        
+        if (timeString.isNotEmpty()) {
             Text(
-                text = message.messageText,
-                color = if (isMine) Color.White else Color.Black,
-                fontSize = 15.sp
+                text = timeString,
+                fontSize = 10.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(
+                    top = 2.dp,
+                    start = if (isMine) 0.dp else 36.dp,
+                    end = if (isMine) 4.dp else 0.dp
+                )
             )
         }
     }
@@ -212,9 +260,7 @@ fun ChatBottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp)
-                .navigationBarsPadding()
-                .imePadding(),
+                .padding(horizontal = 4.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = {}) {
