@@ -3,7 +3,7 @@ package com.soulmate.app.ui.chat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,12 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.filled.VideoCall
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -134,29 +130,71 @@ fun ChatDetailScreen(
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(Color.White)
-                // Sử dụng windowInsetsPadding kết hợp ime và navigationBars để tránh khoảng trắng dư thừa
-                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom))
+                .navigationBarsPadding()
+                .imePadding()
         ) {
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 state = listState,
-                reverseLayout = false // Hiển thị từ trên xuống dưới (cũ trên, mới dưới)
+                reverseLayout = false
             ) {
-                items(messages, key = { it.id.ifEmpty { it.timestamp?.toString() ?: it.hashCode().toString() } }) { message ->
+                itemsIndexed(messages, key = { index, message -> 
+                    message.id.ifEmpty { "msg_$index" } 
+                }) { index, message ->
+                    
+                    val showHeader = remember(messages, index) {
+                        if (index == 0) true
+                        else {
+                            val current = messages[index].timestamp?.seconds ?: 0L
+                            val previous = messages[index - 1].timestamp?.seconds ?: 0L
+                            (current - previous) > 10 * 60 // 10 mins
+                        }
+                    }
+
+                    val isLastInBurst = remember(messages, index) {
+                        if (index == messages.lastIndex) true
+                        else {
+                            val current = messages[index]
+                            val next = messages[index + 1]
+                            if (current.senderId != next.senderId) true
+                            else {
+                                val currentTime = current.timestamp?.seconds ?: 0L
+                                val nextTime = next.timestamp?.seconds ?: 0L
+                                (nextTime - currentTime) > 3 * 60 // 3 mins
+                            }
+                        }
+                    }
+
+                    if (showHeader) {
+                        Text(
+                            text = formatHeaderDate(message.timestamp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            textAlign = TextAlign.Center,
+                            fontSize = 11.sp,
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
                     MessageBubble(
                         message = message,
                         isMine = message.senderId == currentUserId,
-                        userAvatarUrl = userAvatarUrl
+                        userAvatarUrl = userAvatarUrl,
+                        showTime = isLastInBurst,
+                        showAvatar = isLastInBurst && message.senderId != currentUserId
                     )
                 }
             }
@@ -175,11 +213,20 @@ fun ChatDetailScreen(
     }
 }
 
+private fun formatHeaderDate(timestamp: com.google.firebase.Timestamp?): String {
+    if (timestamp == null) return ""
+    val date = timestamp.toDate()
+    val sdf = SimpleDateFormat("d 'THG' M 'LÚC' HH:mm", Locale("vi", "VN"))
+    return sdf.format(date).uppercase()
+}
+
 @Composable
 fun MessageBubble(
     message: ChatMessage,
     isMine: Boolean,
-    userAvatarUrl: String?
+    userAvatarUrl: String?,
+    showTime: Boolean,
+    showAvatar: Boolean
 ) {
     val timeString = remember(message.timestamp) {
         if (message.timestamp != null) {
@@ -190,7 +237,7 @@ fun MessageBubble(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 1.dp),
         horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
     ) {
         Row(
@@ -198,15 +245,19 @@ fun MessageBubble(
             horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
         ) {
             if (!isMine) {
-                AsyncImage(
-                    model = userAvatarUrl ?: R.drawable.ava1,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                    error = painterResource(R.drawable.ava1)
-                )
+                if (showAvatar) {
+                    AsyncImage(
+                        model = userAvatarUrl ?: R.drawable.ava1,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(R.drawable.ava1)
+                    )
+                } else {
+                    Spacer(modifier = Modifier.size(28.dp))
+                }
                 Spacer(modifier = Modifier.width(8.dp))
             }
 
@@ -217,11 +268,11 @@ fun MessageBubble(
                         RoundedCornerShape(
                             topStart = 18.dp,
                             topEnd = 18.dp,
-                            bottomStart = if (isMine) 18.dp else 4.dp,
-                            bottomEnd = if (isMine) 4.dp else 18.dp
+                            bottomStart = if (isMine) 18.dp else (if (showAvatar) 4.dp else 18.dp),
+                            bottomEnd = if (isMine) (if (showTime) 4.dp else 18.dp) else 18.dp
                         )
                     )
-                    .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F0F0))
+                    .background(if (isMine) Color(0xFF0000AA) else Color(0xFFF0F2F5))
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Text(
@@ -232,7 +283,7 @@ fun MessageBubble(
             }
         }
         
-        if (timeString.isNotEmpty()) {
+        if (showTime && timeString.isNotEmpty()) {
             Text(
                 text = timeString,
                 fontSize = 10.sp,
@@ -284,6 +335,16 @@ fun ChatBottomBar(
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent
                 ),
+                trailingIcon = {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.Default.SentimentSatisfiedAlt,
+                            contentDescription = null,
+                            tint = Color(0xFF0084FF),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                },
                 maxLines = 4
             )
 
