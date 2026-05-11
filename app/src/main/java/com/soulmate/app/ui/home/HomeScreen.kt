@@ -234,7 +234,7 @@ fun HomeScreenContent(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 20.dp, bottom = 120.dp)
-                .size(76.dp) 
+                .size(52.dp) 
                 .shadow(elevation = 8.dp, shape = CircleShape)
                 .clip(CircleShape)
                 .background(Color.White)
@@ -246,7 +246,7 @@ fun HomeScreenContent(
                 contentDescription = "Chat",
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(14.dp),
+                    .padding(8.dp),
                 contentScale = ContentScale.Fit
             )
         }
