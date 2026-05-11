@@ -1,5 +1,7 @@
 package com.soulmate.app.ui.setting
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +28,7 @@ import coil.compose.AsyncImage
 import com.soulmate.app.domain.model.User
 import com.soulmate.app.ui.login.AuthViewModel
 import java.util.Locale
+import androidx.core.net.toUri
 
 @Composable
 fun SettingScreen(
@@ -32,6 +36,7 @@ fun SettingScreen(
     authViewModel: AuthViewModel = hiltViewModel(),
     onLogout: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val isDarkMode by themeViewModel.isDarkMode
     val currentUser by authViewModel.currentUser
     var notificationEnabled by remember { mutableStateOf(true) }
@@ -96,8 +101,33 @@ fun SettingScreen(
 
         // --- SECTION: SUPPORT ---
         SettingSectionTitle("Support")
-        SettingItem(icon = Icons.Default.Info, title = "About SoulMate")
-        SettingItem(icon = Icons.Default.Help, title = "Help Center")
+        SettingItem(
+            icon = Icons.Default.Info,
+            title = "About SoulMate",
+            onClick = {
+                val intent = Intent(
+                    Intent.ACTION_VIEW,
+                    "https://github.com/Truong102006/App-Mobilee-SE114".toUri()
+                )
+                context.startActivity(intent)
+            }
+        )
+        SettingItem(
+            icon = Icons.Default.Help,
+            title = "Help Center",
+            onClick = {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = "mailto:".toUri()
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf("support@soulmate.com")) // TODO: Thay email thật của nhóm
+                    putExtra(Intent.EXTRA_SUBJECT, "Feedback/Support for SoulMate App")
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(context, "No email app found!", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -199,6 +229,7 @@ fun SettingItem(
     icon: ImageVector,
     title: String,
     subtitle: String? = null,
+    onClick: () -> Unit = {},
     trailing: @Composable (() -> Unit)? = null
 ) {
     Row(
@@ -207,7 +238,7 @@ fun SettingItem(
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colors.surface)
-            .clickable { /* Xử lý khi click vào item */ }
+            .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
