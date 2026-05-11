@@ -2,7 +2,6 @@ package com.soulmate.app.data.repository
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.soulmate.app.domain.model.ChatMessage
 import com.soulmate.app.domain.repository.IChatRepository
 import kotlinx.coroutines.channels.awaitClose
@@ -36,10 +35,9 @@ class ChatRepositoryImpl @Inject constructor(
     override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = callbackFlow {
         val subscription = chatCollection
             .whereIn("senderId", listOf(senderId, receiverId))
-            .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {

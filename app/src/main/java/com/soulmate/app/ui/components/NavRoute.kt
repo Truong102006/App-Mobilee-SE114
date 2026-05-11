@@ -11,4 +11,6 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int) {
     object Stats: Screen("stats", "Stats", R.drawable.ic_stats)
     object Setting : Screen("setting", "Settings", R.drawable.ic_setting)
     object DiaryDetail : Screen("diary_detail", "Diary Detail", 0)
+    object ChatList : Screen("chat_list", "Messenger", 0)
+    object ChatDetail : Screen("chat_detail", "Chat Detail", 0)
 }

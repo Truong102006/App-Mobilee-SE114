@@ -31,9 +31,27 @@ class ChatViewModel @Inject constructor(
 
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
-            chatRepository.getMessages(senderId, receiverId).collect {
-                _messages.value = it
+            chatRepository.getMessages(senderId, receiverId).collect { list ->
+                // Sắp xếp tin nhắn từ cũ đến mới (từ trên xuống dưới)
+                _messages.value = list.sortedBy { it.timestamp?.seconds ?: 0L }
             }
+        }
+    }
+
+    fun sendMessage(
+        senderId: String,
+        receiverId: String,
+        messageText: String,
+        imageUrl: String? = null
+    ) {
+        viewModelScope.launch {
+            val chatMessage = ChatMessage(
+                senderId = senderId,
+                receiverId = receiverId,
+                messageText = messageText,
+                imageUrl = imageUrl
+            )
+            chatRepository.sendMessage(chatMessage)
         }
     }
 
@@ -51,29 +69,11 @@ class ChatViewModel @Inject constructor(
             },
             onSuccess = { imageUrl ->
                 _isUploading.value = false
-                saveMessageToFirestore(senderId, receiverId, messageText, imageUrl)
+                sendMessage(senderId, receiverId, messageText, imageUrl)
             },
-            onError = { error ->
+            onError = {
                 _isUploading.value = false
-                // Handle error (e.g., show Toast)
             }
         )
-    }
-
-    private fun saveMessageToFirestore(
-        senderId: String,
-        receiverId: String,
-        messageText: String,
-        imageUrl: String?
-    ) {
-        viewModelScope.launch {
-            val chatMessage = ChatMessage(
-                senderId = senderId,
-                receiverId = receiverId,
-                messageText = messageText,
-                imageUrl = imageUrl
-            )
-            chatRepository.sendMessage(chatMessage)
-        }
     }
 }
