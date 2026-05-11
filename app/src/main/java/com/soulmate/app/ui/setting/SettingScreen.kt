@@ -1,6 +1,5 @@
 package com.soulmate.app.ui.setting
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,15 +17,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.soulmate.app.R
 import com.soulmate.app.domain.model.User
 import com.soulmate.app.ui.login.AuthViewModel
+import java.util.Locale
 
 @Composable
 fun SettingScreen(
@@ -124,6 +122,9 @@ fun SettingScreen(
 
 @Composable
 fun ProfileSection(user: User?) {
+    val displayName = user?.anonymousName?.takeIf { it.isNotBlank() } ?: "SoulMate User"
+    val avatarUrl = user?.avatarUrl?.takeIf { it.isNotBlank() }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -132,21 +133,9 @@ fun ProfileSection(user: User?) {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (user?.avatarUrl != null) {
+        if (avatarUrl != null) {
             AsyncImage(
-                model = user.avatarUrl,
-                contentDescription = "Avatar",
-                modifier = Modifier
-                    .size(65.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray),
-                contentScale = ContentScale.Crop,
-                placeholder = painterResource(id = R.drawable.ava1),
-                error = painterResource(id = R.drawable.ava1)
-            )
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.ava1),
+                model = avatarUrl,
                 contentDescription = "Avatar",
                 modifier = Modifier
                     .size(65.dp)
@@ -154,13 +143,28 @@ fun ProfileSection(user: User?) {
                     .background(Color.LightGray),
                 contentScale = ContentScale.Crop
             )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(65.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colors.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = buildAvatarInitial(displayName),
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))
 
         Column {
             Text(
-                text = user?.anonymousName ?: "SoulMate User",
+                text = displayName,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 color = MaterialTheme.colors.onSurface
@@ -172,6 +176,11 @@ fun ProfileSection(user: User?) {
             )
         }
     }
+}
+
+private fun buildAvatarInitial(name: String): String {
+    val firstLetter = name.trim().firstOrNull { it.isLetterOrDigit() } ?: 'U'
+    return firstLetter.toString().uppercase(Locale.getDefault())
 }
 
 @Composable

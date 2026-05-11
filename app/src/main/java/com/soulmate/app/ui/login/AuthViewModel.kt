@@ -65,7 +65,7 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isLoading.value = true
-            authRepository.register(email, password)
+            authRepository.register(name = name.trim(), email = email, password = password)
                 .onSuccess {
                     _currentUser.value = it
                     _authSuccess.emit(Unit)

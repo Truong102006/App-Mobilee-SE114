@@ -2,6 +2,7 @@ package com.soulmate.app.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.soulmate.app.domain.model.User
 import com.soulmate.app.domain.repository.IAuthRepository
@@ -17,16 +18,26 @@ class AuthRepositoryImpl @Inject constructor(
 
     private val usersCollection = firestore.collection("users")
 
-    override suspend fun register(email: String, password: String): Result<User> = try {
+    override suspend fun register(name: String, email: String, password: String): Result<User> = try {
         val authResult = auth.createUserWithEmailAndPassword(email, password).await()
-        val uid = authResult.user?.uid ?: throw Exception("Không thể lấy UID sau khi đăng ký")
+        val firebaseUser = authResult.user ?: throw Exception("Khong the lay user sau khi dang ky")
+        val uid = firebaseUser.uid
+        val normalizedName = name.trim()
+        val displayName = normalizedName.ifBlank { "User_${uid.take(5)}" }
 
+        val profileUpdateRequest = UserProfileChangeRequest.Builder()
+            .setDisplayName(displayName)
+            .build()
+        firebaseUser.updateProfile(profileUpdateRequest).await()
+
+        val now = System.currentTimeMillis()
         val newUser = User(
             userId = uid,
             email = email,
-            anonymousName = "User_${uid.take(5)}",
-            createdAt = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis()
+            anonymousName = displayName,
+            createdAt = now,
+            updatedAt = now,
+            lastLoginAt = now
         )
 
         usersCollection.document(uid).set(newUser).await()
@@ -37,12 +48,21 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun login(email: String, password: String): Result<User> = try {
         val authResult = auth.signInWithEmailAndPassword(email, password).await()
-        val uid = authResult.user?.uid ?: throw Exception("Đăng nhập thất bại")
+        val firebaseUser = authResult.user ?: throw Exception("Dang nhap that bai")
+        val uid = firebaseUser.uid
+        val now = System.currentTimeMillis()
 
-        usersCollection.document(uid).update("lastLoginAt", System.currentTimeMillis()).await()
+        usersCollection.document(uid).update("lastLoginAt", now).await()
 
         val snapshot = usersCollection.document(uid).get().await()
-        val user = snapshot.toObject(User::class.java) ?: throw Exception("Không tìm thấy profile")
+        val user = snapshot.toObject(User::class.java) ?: throw Exception("Khong tim thay profile")
+
+        if (firebaseUser.displayName.isNullOrBlank() && user.anonymousName.isNotBlank()) {
+            val profileUpdateRequest = UserProfileChangeRequest.Builder()
+                .setDisplayName(user.anonymousName)
+                .build()
+            firebaseUser.updateProfile(profileUpdateRequest).await()
+        }
 
         Result.success(user)
     } catch (e: Exception) {
@@ -52,15 +72,13 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signInWithGoogle(idToken: String): Result<User> = try {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         val authResult = auth.signInWithCredential(credential).await()
-        val firebaseUser = authResult.user ?: throw Exception("Đăng nhập Google thất bại")
+        val firebaseUser = authResult.user ?: throw Exception("Dang nhap Google that bai")
         val uid = firebaseUser.uid
 
-        // Kiểm tra xem user đã tồn tại trong Firestore chưa
         val snapshot = usersCollection.document(uid).get().await()
         val existingUser = snapshot.toObject(User::class.java)
 
         val user = if (existingUser == null) {
-            // Nếu là user mới, tạo profile mới với thông tin từ Google
             User(
                 userId = uid,
                 email = firebaseUser.email ?: "",
@@ -73,7 +91,6 @@ class AuthRepositoryImpl @Inject constructor(
                 usersCollection.document(uid).set(it).await()
             }
         } else {
-            // Nếu user đã tồn tại, chỉ cập nhật name, avatar và lastLoginAt nếu cần
             val updatedUser = existingUser.copy(
                 anonymousName = firebaseUser.displayName ?: existingUser.anonymousName,
                 avatarUrl = firebaseUser.photoUrl?.toString() ?: existingUser.avatarUrl,
@@ -99,13 +116,16 @@ class AuthRepositoryImpl @Inject constructor(
     override fun getCurrentUser(): User? {
         val firebaseUser = auth.currentUser
         return if (firebaseUser != null) {
+            val fallbackName = "User_${firebaseUser.uid.take(5)}"
             User(
                 userId = firebaseUser.uid,
                 email = firebaseUser.email ?: "",
-                anonymousName = firebaseUser.displayName ?: "SoulMate User",
+                anonymousName = firebaseUser.displayName?.ifBlank { null } ?: fallbackName,
                 avatarUrl = firebaseUser.photoUrl?.toString()
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun getCurrentUserId(): String? {
@@ -114,7 +134,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getUserProfile(uid: String): Result<User> = try {
         val snapshot = usersCollection.document(uid).get().await()
-        val user = snapshot.toObject(User::class.java) ?: throw Exception("Không tìm thấy profile")
+        val user = snapshot.toObject(User::class.java) ?: throw Exception("Khong tim thay profile")
         Result.success(user)
     } catch (e: Exception) {
         Result.failure(e)
