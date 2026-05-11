@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.domain.repository.IDiaryRepository
 import com.soulmate.app.ui.home.components.RecordingNote
+import com.soulmate.app.ui.social.CommunityPost
+import com.soulmate.app.ui.social.CommunityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -14,11 +16,13 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    private val diaryRepository: IDiaryRepository
+    private val diaryRepository: IDiaryRepository,
+    private val communityRepository: CommunityRepository
 ) : ViewModel() {
     private val _historyNotes = mutableStateListOf<RecordingNote>()
     val historyNotes: List<RecordingNote> = _historyNotes
@@ -85,4 +89,24 @@ class HistoryViewModel @Inject constructor(
     fun getNoteById(id: String): RecordingNote? {
         return _historyNotes.find { it.id.toString() == id }
     }
+
+    fun shareDiaryToCommunity(note: RecordingNote) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+
+        val newPost = CommunityPost(
+            id = UUID.randomUUID().toString(),
+            userName = currentUser?.displayName ?: "Anonymous User",
+            userAvatarUrl = currentUser?.photoUrl?.toString(),
+            mood = note.moodTag,
+            timeAgo = "Just now",
+            textContent = note.text,
+            imageUrls = note.imageUrls,
+            likeCount = 0,
+            commentCount = 0,
+            viewCount = 0
+        )
+
+        communityRepository.addPost(newPost)
+    }
+
 }

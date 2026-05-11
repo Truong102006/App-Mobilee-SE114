@@ -17,8 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RemoveRedEye
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -37,21 +35,18 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import coil.compose.AsyncImage
 import com.soulmate.app.ui.journal.editor.Mood
-import com.soulmate.app.ui.theme.CommunityTick
 
 data class CommunityPost(
     val id: String,
     val userName: String,
     val userAvatarUrl: String?,
-    val isVerified: Boolean,
-    val mood: String,
+    val mood: String?,
     val timeAgo: String,
     val textContent: String,
     val imageUrls: List<String>,
@@ -183,15 +178,6 @@ fun CommunityCard(
                             fontSize = 16.sp,
                             color = MaterialTheme.colors.onSurface
                         )
-                        if (post.isVerified) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = "Verified",
-                                tint = CommunityTick,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
                     }
 
                     // Cảm xúc + Thời gian (Theo đúng yêu cầu của bạn)
@@ -299,23 +285,6 @@ fun CommunityCard(
                     text = post.commentCount.toString(),
                     onClick = { /* TODO */ }
                 )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Share Icon Button (Không viền, dạng tròn nhỏ)
-                IconButton(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Share,
-                        contentDescription = "Share",
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                    )
-                }
 
                 Spacer(modifier = Modifier.weight(1f))
 

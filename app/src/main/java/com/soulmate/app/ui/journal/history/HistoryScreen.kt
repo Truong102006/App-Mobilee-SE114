@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,7 +41,7 @@ fun HistoryScreen(
             Column(modifier = Modifier.background(MaterialTheme.colors.surface)) {
                 Spacer(modifier = Modifier.height(30.dp))
                 TopAppBar(
-                    title = { Text("Lịch sử nhật ký", fontWeight = FontWeight.Bold) },
+                    title = { Text("History", fontWeight = FontWeight.Bold) },
                     backgroundColor = MaterialTheme.colors.surface,
                     contentColor = MaterialTheme.colors.primary,
                     elevation = 0.dp
@@ -80,7 +79,7 @@ fun HistoryScreen(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Không có nhật ký nào trong tháng $selectedMonth/$selectedYear", color = Color.Gray)
+                Text("There is no diary on $selectedMonth/$selectedYear", color = Color.Gray)
             }
         } else {
             LazyColumn(
@@ -103,8 +102,8 @@ fun HistoryScreen(
     if (noteToDelete != null) {
         AlertDialog(
             onDismissRequest = { noteToDelete = null },
-            title = { Text("Xác nhận xóa", fontWeight = FontWeight.Bold) },
-            text = { Text("Bạn có chắc chắn muốn xóa mục nhật ký này không?") },
+            title = { Text("Delete confirmation", fontWeight = FontWeight.Bold) },
+            text = { Text("This diary will be deleted permanently?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -112,12 +111,12 @@ fun HistoryScreen(
                         noteToDelete = null
                     }
                 ) {
-                    Text("Xóa", color = Color.Red, fontWeight = FontWeight.Bold)
+                    Text("Delete", color = Color.Red, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { noteToDelete = null }) {
-                    Text("Hủy", color = Color.Gray)
+                    Text("Cancel", color = Color.Gray)
                 }
             },
             shape = RoundedCornerShape(16.dp)

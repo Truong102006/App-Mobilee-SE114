@@ -4,17 +4,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.soulmate.app.ui.social.CommunityCard
-import com.soulmate.app.ui.social.CommunityPost
+import com.soulmate.app.ui.social.CommunityViewModel
 
 @Composable
-fun CommunityScreen() {
-    val feedPosts = remember { getMockCommunityPosts() }
+fun CommunityScreen(
+    viewModel: CommunityViewModel = hiltViewModel()
+) {
+    val feedPosts by viewModel.feedPosts.collectAsState()
 
     Scaffold(
         topBar = {
@@ -42,56 +47,4 @@ fun CommunityScreen() {
             }
         }
     }
-}
-
-// ==========================================
-// HÀM TẠO DỮ LIỆU ẢO (MOCK DATA)
-// ==========================================
-private fun getMockCommunityPosts(): List<CommunityPost> {
-    return listOf(
-        CommunityPost(
-            id = "post_1",
-            userName = "Marvin McKinney",
-            userAvatarUrl = null,
-            isVerified = true,
-            mood = "Happy",
-            timeAgo = "Today at 6:41",
-            textContent = "<h3>10 Tips for Beginners in Stock Market Investing</h3><p>Start your journey today with these simple steps. Don't let the market scare you! 📈💰</p>",
-            imageUrls = listOf(
-                "https://dummyimage.com/600x400/4caf50/ffffff.png&text=Investing+101",
-                "https://dummyimage.com/600x400/2196f3/ffffff.png&text=Stock+Market"
-            ),
-            likeCount = 2321,
-            commentCount = 5321,
-            viewCount = 8900
-        ),
-        CommunityPost(
-            id = "post_2",
-            userName = "Nguyễn Khánh",
-            userAvatarUrl = null,
-            isVerified = false,
-            mood = "Peaceful",
-            timeAgo = "Yesterday at 14:30",
-            textContent = "<h3>Hoàn thành xong Demo</h3><p>Hôm nay thời tiết thật đẹp, mình đã hoàn thành xong đồ án môn học. Một ngày thật năng suất và ý nghĩa! Cảm giác code chạy mượt mà không lỗi (crash) thật là <b>tuyệt vời</b> ✨</p>",
-            imageUrls = emptyList(),
-            likeCount = 128,
-            commentCount = 12,
-            viewCount = 450
-        ),
-        CommunityPost(
-            id = "post_3",
-            userName = "Sarah Jenkins",
-            userAvatarUrl = null,
-            isVerified = true,
-            mood = "Sad",
-            timeAgo = "2 days ago",
-            textContent = "<p>Sometimes things don't go as planned. Taking a step back to breathe and reflect today. Tomorrow is a new start. 🌧️</p>",
-            imageUrls = listOf(
-                "https://dummyimage.com/600x400/9e9e9e/ffffff.png&text=Rainy+Day"
-            ),
-            likeCount = 890,
-            commentCount = 145,
-            viewCount = 3200
-        )
-    )
 }

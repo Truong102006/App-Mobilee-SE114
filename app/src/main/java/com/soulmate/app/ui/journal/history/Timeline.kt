@@ -199,7 +199,7 @@ private fun DiaryCardContent(item: RecordingNote) {
                     modifier = Modifier
                         .padding(top = 4.dp, bottom = 4.dp)
                         .clip(RoundedCornerShape(4.dp))
-                        .clickable { isExpanded = !isExpanded } // Đổi trạng thái khi click
+                        .clickable { isExpanded = !isExpanded }
                 )
             }
 
