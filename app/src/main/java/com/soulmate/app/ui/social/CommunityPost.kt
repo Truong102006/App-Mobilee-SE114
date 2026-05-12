@@ -11,7 +11,9 @@ data class Comment(
     val timeAgo: String = "",
     val likeCount: Int = 0,
     val isLiked: Boolean = false,
-    val likedBy: List<String> = emptyList()
+    val likedBy: List<String> = emptyList(),
+    val parentId: String? = null, // ID của bình luận gốc
+    val replyToUserName: String? = null // Tên người được trả lời
 )
 
 data class CommunityPost(

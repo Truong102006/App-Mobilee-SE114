@@ -110,9 +110,17 @@ fun HomeScreen(
         communityPosts = communityPosts,
         postComments = postComments,
         onLikeClick = { postId -> communityViewModel.toggleLike(postId) },
-        onCommentClick = { postId, comment -> 
+        onCommentClick = { postId, content, parentId, replyToUserName -> 
             val user = authViewModel.currentUser.value
-            communityViewModel.addComment(postId, user?.userId ?: "", user?.anonymousName ?: "User", user?.avatarUrl, comment) 
+            communityViewModel.addComment(
+                postId, 
+                user?.userId ?: "", 
+                user?.anonymousName ?: "User", 
+                user?.avatarUrl, 
+                content,
+                parentId,
+                replyToUserName
+            ) 
         },
         onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
         onOpenComments = { postId -> communityViewModel.loadComments(postId) },
@@ -146,7 +154,7 @@ fun HomeScreenContent(
     communityPosts: List<com.soulmate.app.ui.social.CommunityPost>,
     postComments: Map<String, List<Comment>>,
     onLikeClick: (String) -> Unit,
-    onCommentClick: (String, String) -> Unit,
+    onCommentClick: (String, String, String?, String?) -> Unit,
     onLikeComment: (String, String) -> Unit,
     onOpenComments: (String) -> Unit,
     onDeleteClick: (String) -> Unit,
@@ -233,7 +241,9 @@ fun HomeScreenContent(
                             post = post,
                             comments = postComments[post.id] ?: emptyList(),
                             onLikeClick = { onLikeClick(post.id) },
-                            onCommentClick = { comment -> onCommentClick(post.id, comment) },
+                            onCommentClick = { content, parentId, replyToUserName -> 
+                                onCommentClick(post.id, content, parentId, replyToUserName) 
+                            },
                             onLikeComment = { commentId -> onLikeComment(post.id, commentId) },
                             onOpenComments = { onOpenComments(post.id) },
                             onDeleteClick = { onDeleteClick(post.id) },
