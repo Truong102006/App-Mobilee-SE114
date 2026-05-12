@@ -33,14 +33,32 @@ class ChatViewModel @Inject constructor(
     private val _lastMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val lastMessages: StateFlow<List<ChatMessage>> = _lastMessages.asStateFlow()
 
+    private val _replyingTo = mutableStateOf<ChatMessage?>(null)
+    val replyingTo: State<ChatMessage?> = _replyingTo
+
+    fun setReplyingTo(message: ChatMessage?) {
+        _replyingTo.value = message
+    }
+
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
             chatRepository.getMessages(senderId, receiverId).collect { list ->
-                // Sắp xếp chính xác theo giây và nano giây để đảm bảo thứ tự
-                _messages.value = list.sortedWith(
-                    compareBy<ChatMessage> { it.timestamp?.seconds ?: Long.MAX_VALUE }
-                        .thenBy { it.timestamp?.nanoseconds ?: Int.MAX_VALUE }
-                )
+                _messages.value = list.sortedWith { m1, m2 ->
+                    val t1 = m1.timestamp
+                    val t2 = m2.timestamp
+                    when {
+                        t1 == null && t2 == null -> 0
+                        t1 == null -> 1
+                        t2 == null -> -1
+                        else -> {
+                            if (t1.seconds != t2.seconds) {
+                                t1.seconds.compareTo(t2.seconds)
+                            } else {
+                                t1.nanoseconds.compareTo(t2.nanoseconds)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -75,7 +93,8 @@ class ChatViewModel @Inject constructor(
         senderId: String,
         receiverId: String,
         messageText: String,
-        imageUrl: String? = null
+        imageUrl: String? = null,
+        replyTo: ChatMessage? = null
     ) {
         viewModelScope.launch {
             val chatMessage = ChatMessage(
@@ -83,9 +102,19 @@ class ChatViewModel @Inject constructor(
                 receiverId = receiverId,
                 messageText = messageText,
                 imageUrl = imageUrl,
-                read = false
+                read = false,
+                replyToId = replyTo?.id,
+                replyToText = replyTo?.messageText,
+                replyToName = if (replyTo?.senderId == senderId) "Bạn" else null // We'll handle the name in UI if null
             )
             chatRepository.sendMessage(chatMessage)
+            _replyingTo.value = null
+        }
+    }
+
+    fun deleteMessage(messageId: String) {
+        viewModelScope.launch {
+            chatRepository.deleteMessage(messageId)
         }
     }
 

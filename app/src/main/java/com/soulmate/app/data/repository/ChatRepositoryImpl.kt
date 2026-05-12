@@ -29,7 +29,10 @@ class ChatRepositoryImpl @Inject constructor(
             "messageText" to message.messageText,
             "imageUrl" to message.imageUrl,
             "timestamp" to FieldValue.serverTimestamp(),
-            "read" to false
+            "read" to false,
+            "replyToId" to message.replyToId,
+            "replyToText" to message.replyToText,
+            "replyToName" to message.replyToName
         )
         chatCollection.add(messageData).await()
         Result.success(Unit)
@@ -65,10 +68,9 @@ class ChatRepositoryImpl @Inject constructor(
                     val t2 = m2.timestamp
                     when {
                         t1 == null && t2 == null -> 0
-                        t1 == null -> 1 // Local messages without server timestamp go last
+                        t1 == null -> 1
                         t2 == null -> -1
                         else -> {
-                            // Precise comparison using seconds and nanoseconds
                             if (t1.seconds != t2.seconds) {
                                 t1.seconds.compareTo(t2.seconds)
                             } else {
@@ -102,7 +104,6 @@ class ChatRepositoryImpl @Inject constructor(
                     doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
                 }
 
-                // Correctly group and find the absolute latest message per conversation
                 val lastMessages = allMessages.groupBy { 
                     if (it.senderId == userId) it.receiverId else it.senderId 
                 }.map { entry ->
@@ -111,7 +112,7 @@ class ChatRepositoryImpl @Inject constructor(
                         val t2 = m2.timestamp
                         when {
                             t1 == null && t2 == null -> 0
-                            t1 == null -> -1 // Sending... prioritized at top
+                            t1 == null -> -1
                             t2 == null -> 1
                             else -> {
                                 if (t2.seconds != t1.seconds) {
@@ -178,6 +179,13 @@ class ChatRepositoryImpl @Inject constructor(
                 }
             }.await()
         }
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun deleteMessage(messageId: String): Result<Unit> = try {
+        chatCollection.document(messageId).delete().await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
