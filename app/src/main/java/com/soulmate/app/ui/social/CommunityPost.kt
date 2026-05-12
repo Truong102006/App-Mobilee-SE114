@@ -1,5 +1,7 @@
 package com.soulmate.app.ui.social
 
+import com.google.firebase.Timestamp
+
 data class Comment(
     val id: String = "",
     val userId: String = "",
@@ -27,5 +29,6 @@ data class CommunityPost(
     val viewCount: Int = 0,
     val isLiked: Boolean = false,
     val likedBy: List<String> = emptyList(),
-    val comments: List<Comment> = emptyList()
+    val comments: List<Comment> = emptyList(),
+    val timestamp: Timestamp? = null
 )

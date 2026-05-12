@@ -21,11 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
@@ -56,35 +56,41 @@ fun ChatListScreen(
         }
     }
 
-    val activeUsers = remember(communityPosts) {
-        communityPosts.filter { it.userId.isNotEmpty() && it.userId != currentUserId }
+    // Extraction of all unique users who have posted in Community
+    val communityUsers = remember(communityPosts) {
+        communityPosts
+            .filter { it.userId.isNotEmpty() && it.userId != currentUserId }
+            .sortedByDescending { it.id } // Heuristic for latest info if multiple posts exist
             .distinctBy { it.userId }
             .map { ChatUser(it.userId, it.userName, it.userAvatarUrl) }
     }
 
-    val chatDisplayItems = remember(lastMessages, activeUsers, searchQuery) {
+    val chatDisplayItems = remember(lastMessages, communityUsers, searchQuery) {
+        val userMap = communityUsers.associateBy { it.id }
         val items = mutableListOf<ChatDisplayItem>()
-        
-        // Add existing conversations
+        val processedUserIds = mutableSetOf<String>()
+
+        // 1. Existing conversations
         lastMessages.forEach { msg ->
             val otherUserId = if (msg.senderId == currentUserId) msg.receiverId else msg.senderId
-            // Try to get updated user info from community posts if available
-            val communityUser = activeUsers.find { it.id == otherUserId }
-            val user = communityUser ?: ChatUser(otherUserId, "Người dùng", null)
-            
-            items.add(ChatDisplayItem(
-                user = user,
-                lastMessage = msg.messageText,
-                isFromMe = msg.senderId == currentUserId,
-                timestamp = msg.timestamp,
-                hasUnread = msg.senderId != currentUserId && !msg.read,
-                messageId = msg.id
-            ))
+            if (otherUserId != currentUserId) {
+                // Prefer community user info (name/avatar) if available for better accuracy
+                val user = userMap[otherUserId] ?: ChatUser(otherUserId, "Người dùng", null)
+                items.add(ChatDisplayItem(
+                    user = user,
+                    lastMessage = msg.messageText,
+                    isFromMe = msg.senderId == currentUserId,
+                    timestamp = msg.timestamp,
+                    hasUnread = msg.senderId != currentUserId && !msg.read,
+                    messageId = msg.id
+                ))
+                processedUserIds.add(otherUserId)
+            }
         }
-        
-        // Add community users who haven't chatted yet
-        activeUsers.forEach { user ->
-            if (items.none { it.user.id == user.id }) {
+
+        // 2. Community users who haven't chatted yet
+        communityUsers.forEach { user ->
+            if (!processedUserIds.contains(user.id)) {
                 items.add(ChatDisplayItem(
                     user = user,
                     lastMessage = "Bắt đầu cuộc trò chuyện",
@@ -95,14 +101,16 @@ fun ChatListScreen(
                 ))
             }
         }
-        
+
         // Filter by user name only
         val filtered = if (searchQuery.isEmpty()) items 
         else items.filter { it.user.name.contains(searchQuery, ignoreCase = true) }
 
-        // Sort: items with timestamp (active chats) first, then by timestamp descending, then inactive chats
-        filtered.sortedWith(compareByDescending<ChatDisplayItem> { it.timestamp?.seconds ?: 0L }
-            .thenBy { it.lastMessage == "Bắt đầu cuộc trò chuyện" })
+        // Sorting: Active chats first (by timestamp DESC), then "Start conversation" users
+        filtered.sortedWith(
+            compareByDescending<ChatDisplayItem> { it.timestamp != null }
+                .thenByDescending { it.timestamp?.seconds ?: 0L }
+        )
     }
 
     Scaffold(
@@ -177,7 +185,7 @@ fun ChatListScreen(
             }
 
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                // Active Row (Stories)
+                // Active Row (Stories/Community Users)
                 item {
                     LazyRow(
                         modifier = Modifier.padding(vertical = 12.dp),
@@ -200,19 +208,13 @@ fun ChatListScreen(
                                 Text("Tạo tin", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
                             }
                         }
-                        items(activeUsers) { user ->
+                        items(communityUsers) { user ->
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.clickable { onChatClick(user.id, user.name, user.avatarUrl) }
                             ) {
                                 Box(contentAlignment = Alignment.BottomEnd) {
-                                    AsyncImage(
-                                        model = user.avatarUrl ?: R.drawable.ava1,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(64.dp).clip(CircleShape),
-                                        contentScale = ContentScale.Crop,
-                                        error = coil.compose.rememberAsyncImagePainter(R.drawable.ava1)
-                                    )
+                                    UserAvatar(user.name, user.avatarUrl, 64.dp)
                                     Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(Color.White).padding(2.dp)) {
                                         Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
                                     }
@@ -283,6 +285,66 @@ fun ChatListScreen(
     }
 }
 
+@Composable
+fun UserAvatar(name: String, avatarUrl: String?, size: Dp) {
+    if (!avatarUrl.isNullOrBlank()) {
+        AsyncImage(
+            model = avatarUrl,
+            contentDescription = null,
+            modifier = Modifier.size(size).clip(CircleShape),
+            contentScale = ContentScale.Crop,
+            error = painterResource(R.drawable.ava1)
+        )
+    } else {
+        Box(
+            modifier = Modifier.size(size).clip(CircleShape).background(Color(0xFFF0F2F5)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = name.take(1).uppercase(),
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0084FF),
+                fontSize = (size.value * 0.4).sp
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatItem(
+    name: String,
+    avatarUrl: String?,
+    lastMessage: String,
+    time: String,
+    hasUnread: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().background(Color.White).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(contentAlignment = Alignment.BottomEnd) {
+            UserAvatar(name, avatarUrl, 60.dp)
+            Box(modifier = Modifier.size(16.dp).clip(CircleShape).background(Color.White).padding(2.dp)) {
+                Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = name, fontSize = 17.sp, fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Medium, color = Color.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = lastMessage, fontSize = 14.sp, color = if (hasUnread) Color.Black else Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false), fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Normal)
+                if (time.isNotEmpty()) {
+                    Text(text = " • $time", fontSize = 14.sp, color = Color.Gray)
+                }
+            }
+        }
+        if (hasUnread) {
+            Box(modifier = Modifier.padding(start = 8.dp).size(12.dp).clip(CircleShape).background(Color(0xFF0084FF)))
+        }
+    }
+}
+
 data class ChatDisplayItem(
     val user: ChatUser,
     val lastMessage: String,
@@ -301,47 +363,6 @@ private fun formatChatTime(timestamp: com.google.firebase.Timestamp?): String {
         SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
     } else {
         SimpleDateFormat("d 'thg' M", Locale.getDefault()).format(date)
-    }
-}
-
-@Composable
-fun ChatItem(
-    name: String,
-    avatarUrl: String?,
-    lastMessage: String,
-    time: String,
-    hasUnread: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().background(Color.White).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(contentAlignment = Alignment.BottomEnd) {
-            AsyncImage(
-                model = avatarUrl ?: R.drawable.ava1,
-                contentDescription = null,
-                modifier = Modifier.size(60.dp).clip(CircleShape),
-                contentScale = ContentScale.Crop,
-                error = coil.compose.rememberAsyncImagePainter(R.drawable.ava1)
-            )
-            Box(modifier = Modifier.size(16.dp).clip(CircleShape).background(Color.White).padding(2.dp)) {
-                Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
-            }
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = name, fontSize = 17.sp, fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Medium, color = Color.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = lastMessage, fontSize = 14.sp, color = if (hasUnread) Color.Black else Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false), fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Normal)
-                if (time.isNotEmpty()) {
-                    Text(text = " • $time", fontSize = 14.sp, color = Color.Gray)
-                }
-            }
-        }
-        if (hasUnread) {
-            Box(modifier = Modifier.padding(start = 8.dp).size(12.dp).clip(CircleShape).background(Color(0xFF0084FF)))
-        }
     }
 }
 

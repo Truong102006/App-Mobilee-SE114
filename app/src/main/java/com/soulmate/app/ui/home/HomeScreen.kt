@@ -244,6 +244,11 @@ fun HomeScreenContent(
                                 if (post.userId.isNotEmpty()) {
                                     onUserClick(post.userId, post.userName, post.userAvatarUrl)
                                 }
+                            },
+                            onChatClick = {
+                                if (post.userId.isNotEmpty()) {
+                                    onUserClick(post.userId, post.userName, post.userAvatarUrl)
+                                }
                             }
                         )
                     }

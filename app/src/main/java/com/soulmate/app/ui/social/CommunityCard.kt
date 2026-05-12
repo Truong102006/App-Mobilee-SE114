@@ -242,6 +242,14 @@ fun CommunityCard(
                     ) {
                         DropdownMenuItem(onClick = {
                             showMenu = false
+                            onChatClick()
+                        }) {
+                            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color(0xFF0084FF))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Chat")
+                        }
+                        DropdownMenuItem(onClick = {
+                            showMenu = false
                             showDeleteDialog = true
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
