@@ -233,12 +233,13 @@ fun HomeScreenContent(
         }
 
         // --- BONG BÓNG CHAT ---
-        var offsetX by remember { mutableStateOf(0f) }
-        var offsetY by remember { mutableStateOf(0f) }
+        var offsetX by remember { mutableFloatStateOf(0f) }
+        var offsetY by remember { mutableFloatStateOf(0f) }
 
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 120.dp)
                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                 .pointerInput(Unit) {
                     detectDragGesturesAfterLongPress { change, dragAmount ->
@@ -247,8 +248,7 @@ fun HomeScreenContent(
                         offsetY += dragAmount.y
                     }
                 }
-                .padding(end = 20.dp, bottom = 120.dp)
-                .size(52.dp) 
+                .size(54.dp)
                 .shadow(elevation = 8.dp, shape = CircleShape)
                 .clip(CircleShape)
                 .background(Color.White)
@@ -256,7 +256,7 @@ fun HomeScreenContent(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.messenger),
+                painter = painterResource(id = R.drawable.messenger1),
                 contentDescription = "Chat",
                 modifier = Modifier
                     .fillMaxSize()
