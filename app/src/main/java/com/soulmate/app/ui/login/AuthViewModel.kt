@@ -1,11 +1,13 @@
 package com.soulmate.app.ui.login
 
+import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.soulmate.app.domain.model.User
 import com.soulmate.app.domain.repository.IAuthRepository
+import com.soulmate.app.utils.CloudinaryHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -112,6 +114,36 @@ class AuthViewModel @Inject constructor(
                 }
 
             _isLoading.value = false
+        }
+    }
+
+    fun updateProfileWithImage(updatedUser: User, imageUri: Uri?) {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            try {
+                var finalUser = updatedUser
+
+                if (imageUri != null) {
+                    // GỌI HÀM CLOUDINARY (Chờ cho đến khi upload xong và lấy URL)
+                    val downloadUrl = CloudinaryHelper.uploadImageSuspend(imageUri)
+                    finalUser = finalUser.copy(avatarUrl = downloadUrl)
+                }
+
+                // 2. Gọi hàm update Database (Lưu đống text và link ảnh lên Firestore)
+                authRepository.updateUserProfile(finalUser)
+                    .onSuccess {
+                        _currentUser.value = finalUser
+                    }
+                    .onFailure {
+                        _error.emit(it.localizedMessage ?: "Cập nhật Database thất bại")
+                    }
+
+            } catch (e: Exception) {
+                _error.emit(e.localizedMessage ?: "Lỗi tải ảnh lên Cloudinary. Vui lòng thử lại.")
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 }

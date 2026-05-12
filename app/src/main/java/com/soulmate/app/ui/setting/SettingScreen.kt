@@ -161,12 +161,17 @@ fun SettingScreen(
     }
 
     // Hiển thị Dialog Edit Profile
+    val authLoading by authViewModel.isLoading // Lấy state loading
+
     if (showEditProfileDialog && currentUser != null) {
         EditProfileDialog(
             user = currentUser!!,
+            isLoading = authLoading,
             onDismiss = { showEditProfileDialog = false },
-            onSave = { updatedUser ->
-                authViewModel.updateProfile(updatedUser)
+            onSave = { updatedUser, imageUri ->
+                // Gọi hàm update mới
+                authViewModel.updateProfileWithImage(updatedUser, imageUri)
+
                 showEditProfileDialog = false
             }
         )
