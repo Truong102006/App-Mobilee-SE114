@@ -36,7 +36,11 @@ class ChatViewModel @Inject constructor(
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
             chatRepository.getMessages(senderId, receiverId).collect { list ->
-                _messages.value = list.sortedBy { it.timestamp?.seconds ?: 0L }
+                // Sắp xếp chính xác theo giây và nano giây để đảm bảo thứ tự
+                _messages.value = list.sortedWith(
+                    compareBy<ChatMessage> { it.timestamp?.seconds ?: Long.MAX_VALUE }
+                        .thenBy { it.timestamp?.nanoseconds ?: Int.MAX_VALUE }
+                )
             }
         }
     }
