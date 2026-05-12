@@ -71,7 +71,6 @@ class CommunityRepositoryImpl @Inject constructor(
                     val posts = snapshot.documents.mapNotNull { doc ->
                         try {
                             val likedBy = doc.get("liked_by") as? List<String> ?: emptyList()
-                            // Get timestamp safely to avoid exceptions for older posts
                             val timestamp = try { doc.getTimestamp("timestamp") } catch (e: Exception) { null }
                             
                             CommunityPost(
@@ -122,7 +121,9 @@ class CommunityRepositoryImpl @Inject constructor(
                                 content = doc.getString("content") ?: "",
                                 timeAgo = formatTimeAgo(doc.getTimestamp("timestamp")),
                                 likeCount = likedBy.size,
-                                likedBy = likedBy
+                                likedBy = likedBy,
+                                parentId = doc.getString("parent_id"), // Lấy parent_id
+                                replyToUserName = doc.getString("reply_to_user_name") // Lấy tên người được trả lời
                             )
                         } catch (e: Exception) {
                             null
@@ -184,7 +185,9 @@ class CommunityRepositoryImpl @Inject constructor(
             "user_avatar_url" to comment.userAvatarUrl,
             "content" to comment.content,
             "timestamp" to FieldValue.serverTimestamp(),
-            "liked_by" to emptyList<String>()
+            "liked_by" to emptyList<String>(),
+            "parent_id" to comment.parentId, // Lưu parent_id
+            "reply_to_user_name" to comment.replyToUserName // Lưu tên người được trả lời
         )
         val postRef = postsCollection.document(postId)
         firestore.runBatch { batch ->

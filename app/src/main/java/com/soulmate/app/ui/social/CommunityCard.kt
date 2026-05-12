@@ -128,7 +128,7 @@ fun CommunityCard(
     post: CommunityPost,
     comments: List<Comment> = emptyList(),
     onLikeClick: () -> Unit,
-    onCommentClick: (String) -> Unit,
+    onCommentClick: (String, String?, String?) -> Unit,
     onLikeComment: (String) -> Unit,
     onOpenComments: () -> Unit = {},
     onDeleteClick: () -> Unit,
@@ -391,6 +391,7 @@ fun CommunityCard(
                 Box(modifier = Modifier.fillMaxSize().padding(padding).background(Color(0xFF18191A))) {
                     CommentSection(
                         comments = comments,
+                        postAuthorId = post.userId, // BỔ SUNG THIẾU SÓT QUAN TRỌNG
                         onAddComment = onCommentClick,
                         onLikeComment = onLikeComment,
                         currentUserAvatarUrl = currentUserAvatarUrl,
