@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RemoveRedEye
 import androidx.compose.material.*
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -134,6 +135,8 @@ fun CommunityCard(
     onEditClick: (String) -> Unit,
     currentUserAvatarUrl: String?,
     currentUserName: String,
+    onUserClick: () -> Unit = {},
+    onChatClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -160,64 +163,69 @@ fun CommunityCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (post.userAvatarUrl != null) {
-                    AsyncImage(
-                        model = post.userAvatarUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colors.primary.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = post.userName.take(1).uppercase(),
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colors.primary,
-                            fontSize = 20.sp
+                Row(
+                    modifier = Modifier.weight(1f).clickable { onUserClick() },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (post.userAvatarUrl != null) {
+                        AsyncImage(
+                            model = post.userAvatarUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
                         )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = post.userName,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colors.onSurface
-                        )
-                        if (post.isVerified) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = "Verified",
-                                tint = CommunityTick,
-                                modifier = Modifier.size(16.dp)
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colors.primary.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = post.userName.take(1).uppercase(),
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colors.primary,
+                                fontSize = 20.sp
                             )
                         }
                     }
 
-                    val moodEnum = Mood.entries.find { it.label == post.mood } ?: Mood.Neutral
-                    val moodColor = moodEnum.displayColor
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                    val moodTimeText = buildAnnotatedString {
-                        append("Feeling ")
-                        withStyle(style = SpanStyle(color = moodColor, fontWeight = FontWeight.Bold)) {
-                            append(post.mood)
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = post.userName,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colors.onSurface
+                            )
+                            if (post.isVerified) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Rounded.CheckCircle,
+                                    contentDescription = "Verified",
+                                    tint = CommunityTick,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
-                        append(", ${post.timeAgo}")
+
+                        val moodEnum = Mood.entries.find { it.label == post.mood } ?: Mood.Neutral
+                        val moodColor = moodEnum.displayColor
+
+                        val moodTimeText = buildAnnotatedString {
+                            append("Feeling ")
+                            withStyle(style = SpanStyle(color = moodColor, fontWeight = FontWeight.Bold)) {
+                                append(post.mood)
+                            }
+                            append(", ${post.timeAgo}")
+                        }
+                        Text(text = moodTimeText, fontSize = 13.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
                     }
-                    Text(text = moodTimeText, fontSize = 13.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
                 }
 
                 Box {
@@ -232,6 +240,14 @@ fun CommunityCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        DropdownMenuItem(onClick = {
+                            showMenu = false
+                            onChatClick()
+                        }) {
+                            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color(0xFF0084FF))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Chat")
+                        }
                         DropdownMenuItem(onClick = {
                             showMenu = false
                             showEditDialog = true

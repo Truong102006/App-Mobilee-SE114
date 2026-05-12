@@ -29,11 +29,22 @@ class ChatViewModel @Inject constructor(
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
+    private val _lastMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val lastMessages: StateFlow<List<ChatMessage>> = _lastMessages.asStateFlow()
+
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
             chatRepository.getMessages(senderId, receiverId).collect { list ->
                 // Sắp xếp tin nhắn từ cũ đến mới (từ trên xuống dưới)
                 _messages.value = list.sortedBy { it.timestamp?.seconds ?: 0L }
+            }
+        }
+    }
+
+    fun loadLastMessages(userId: String) {
+        viewModelScope.launch {
+            chatRepository.getLastMessages(userId).collect { list ->
+                _lastMessages.value = list
             }
         }
     }
@@ -52,6 +63,12 @@ class ChatViewModel @Inject constructor(
                 imageUrl = imageUrl
             )
             chatRepository.sendMessage(chatMessage)
+        }
+    }
+
+    fun deleteConversation(userId: String, otherUserId: String) {
+        viewModelScope.launch {
+            chatRepository.deleteConversation(userId, otherUserId)
         }
     }
 

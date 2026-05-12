@@ -74,6 +74,7 @@ class CommunityRepositoryImpl @Inject constructor(
                             val likedBy = doc.get("liked_by") as? List<String> ?: emptyList()
                             CommunityPost(
                                 id = doc.id,
+                                userId = doc.getString("user_id") ?: "",
                                 userName = doc.getString("user_name") ?: "Người dùng",
                                 userAvatarUrl = doc.getString("user_avatar_url"),
                                 isVerified = doc.getBoolean("is_verified") ?: false,
@@ -110,6 +111,7 @@ class CommunityRepositoryImpl @Inject constructor(
                             val likedBy = doc.get("liked_by") as? List<String> ?: emptyList()
                             Comment(
                                 id = doc.id,
+                                userId = doc.getString("user_id") ?: "",
                                 userName = doc.getString("user_name") ?: "Người dùng",
                                 userAvatarUrl = doc.getString("user_avatar_url"),
                                 content = doc.getString("content") ?: "",
@@ -134,6 +136,7 @@ class CommunityRepositoryImpl @Inject constructor(
         }
 
         val postData = hashMapOf(
+            "user_id" to post.userId,
             "user_name" to post.userName,
             "user_avatar_url" to post.userAvatarUrl,
             "is_verified" to post.isVerified,
@@ -172,6 +175,7 @@ class CommunityRepositoryImpl @Inject constructor(
 
     override suspend fun addComment(postId: String, comment: Comment): Result<Unit> = try {
         val commentData = hashMapOf(
+            "user_id" to comment.userId,
             "user_name" to comment.userName,
             "user_avatar_url" to comment.userAvatarUrl,
             "content" to comment.content,

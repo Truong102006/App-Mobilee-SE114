@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
@@ -34,7 +32,8 @@ fun HomeScreen(
     musicViewModel: MusicViewModel, 
     historyViewModel: HistoryViewModel,
     communityViewModel: CommunityViewModel = hiltViewModel(),
-    onChatBubbleClick: () -> Unit = {}
+    onChatBubbleClick: () -> Unit = {},
+    onNavigateToChat: (String, String, String?) -> Unit = { _, _, _ -> }
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
 
@@ -48,7 +47,6 @@ fun HomeScreen(
     val communityPosts by communityViewModel.posts
     val postComments = communityViewModel.postComments
 
-    // --- LOGIC HIỂN THỊ DANH SÁCH ---
     val virtualCount = 50000
     val listState = rememberLazyListState()
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -60,7 +58,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         while (true) {
             kotlinx.coroutines.delay(2800)
-            try { listState.animateScrollToItem(listState.firstVisibleItemIndex + 1) } catch (e: Exception) {}
+            try { listState.animateScrollToItem(listState.firstVisibleItemIndex + 1) } catch (_: Exception) {}
         }
     }
 
@@ -98,13 +96,14 @@ fun HomeScreen(
         onLikeClick = { postId -> communityViewModel.toggleLike(postId) },
         onCommentClick = { postId, comment -> 
             val user = authViewModel.currentUser.value
-            communityViewModel.addComment(postId, user?.anonymousName ?: "User", user?.avatarUrl, comment) 
+            communityViewModel.addComment(postId, user?.userId ?: "", user?.anonymousName ?: "User", user?.avatarUrl, comment) 
         },
         onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
         onOpenComments = { postId -> communityViewModel.loadComments(postId) },
         onDeleteClick = { postId -> communityViewModel.deletePost(postId) },
         onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) },
-        onChatBubbleClick = onChatBubbleClick
+        onChatBubbleClick = onChatBubbleClick,
+        onUserClick = onNavigateToChat
     )
 }
 
@@ -135,11 +134,11 @@ fun HomeScreenContent(
     onOpenComments: (String) -> Unit,
     onDeleteClick: (String) -> Unit,
     onEditClick: (String, String) -> Unit,
-    onChatBubbleClick: () -> Unit
+    onChatBubbleClick: () -> Unit,
+    onUserClick: (String, String, String?) -> Unit = { _, _, _ -> }
 ) {
     val virtualCount = 50000
 
-    // --- GIAO DIỆN ---
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             bottomBar = {
@@ -197,7 +196,6 @@ fun HomeScreenContent(
                     }
                 }
 
-                // --- PHẦN COMMUNITY FEEDS ---
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Community Feeds",
@@ -223,7 +221,12 @@ fun HomeScreenContent(
                             onDeleteClick = { onDeleteClick(post.id) },
                             onEditClick = { newContent -> onEditClick(post.id, newContent) },
                             currentUserAvatarUrl = currentUser?.avatarUrl,
-                            currentUserName = currentUser?.anonymousName ?: "User"
+                            currentUserName = currentUser?.anonymousName ?: "User",
+                            onUserClick = { 
+                                if (post.userId.isNotEmpty()) {
+                                    onUserClick(post.userId, post.userName, post.userAvatarUrl)
+                                }
+                            }
                         )
                     }
                 }
@@ -232,7 +235,6 @@ fun HomeScreenContent(
             }
         }
 
-        // --- BONG BÓNG CHAT ---
         var offsetX by remember { mutableFloatStateOf(0f) }
         var offsetY by remember { mutableFloatStateOf(0f) }
 
@@ -265,7 +267,6 @@ fun HomeScreenContent(
             )
         }
 
-        // Màn hình chi tiết
         if (isFullScreen && currentPlayingSong != null) {
             MusicPlayerDetailScreen(
                 title = currentPlayingSong.title,
