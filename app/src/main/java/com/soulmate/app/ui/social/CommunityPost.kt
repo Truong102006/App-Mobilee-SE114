@@ -2,6 +2,7 @@ package com.soulmate.app.ui.social
 
 data class Comment(
     val id: String = "",
+    val userId: String = "",
     val userName: String = "",
     val userAvatarUrl: String? = null,
     val content: String = "",
@@ -13,6 +14,7 @@ data class Comment(
 
 data class CommunityPost(
     val id: String = "",
+    val userId: String = "",
     val userName: String = "",
     val userAvatarUrl: String? = null,
     val isVerified: Boolean = false,

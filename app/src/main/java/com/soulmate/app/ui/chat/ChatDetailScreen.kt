@@ -32,6 +32,7 @@ import java.util.*
 
 @Composable
 fun ChatDetailScreen(
+    userId: String,
     userName: String,
     userAvatarUrl: String?,
     chatViewModel: ChatViewModel,
@@ -42,10 +43,10 @@ fun ChatDetailScreen(
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    val receiverId = userName
+    val receiverId = userId
 
     LaunchedEffect(receiverId) {
-        if (currentUserId.isNotEmpty()) {
+        if (currentUserId.isNotEmpty() && receiverId.isNotEmpty()) {
             chatViewModel.loadMessages(currentUserId, receiverId)
         }
     }
@@ -138,7 +139,6 @@ fun ChatDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(Color.White)
-                // Sửa lỗi UI: Sử dụng safeDrawing để ô nhập liệu bám sát bàn phím mà không để lại khoảng trắng
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
         ) {
             LazyColumn(
@@ -243,9 +243,11 @@ fun MessageBubble(
             .padding(vertical = 1.dp),
         horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
     ) {
+        // Fix explicit type to solve "inferred type Any" compiler error
+        val arrangement: Arrangement.Horizontal = if (isMine) Arrangement.End else Arrangement.Start
         Row(
             verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
+            horizontalArrangement = arrangement
         ) {
             if (!isMine) {
                 if (showAvatar) {

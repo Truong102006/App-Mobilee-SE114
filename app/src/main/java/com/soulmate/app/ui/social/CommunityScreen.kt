@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.social
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +19,8 @@ import com.soulmate.app.ui.login.AuthViewModel
 @Composable
 fun CommunityScreen(
     viewModel: CommunityViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    onNavigateToChat: (String, String, String?) -> Unit = { _, _, _ -> }
 ) {
     val feedPosts by viewModel.posts
     val currentUser by authViewModel.currentUser
@@ -49,67 +51,26 @@ fun CommunityScreen(
                     post = post,
                     onLikeClick = { viewModel.toggleLike(post.id) },
                     onCommentClick = { comment -> 
-                        viewModel.addComment(post.id, currentUser?.anonymousName ?: "User", currentUser?.avatarUrl, comment) 
+                        viewModel.addComment(
+                            post.id, 
+                            currentUser?.userId ?: "", 
+                            currentUser?.anonymousName ?: "User", 
+                            currentUser?.avatarUrl, 
+                            comment
+                        ) 
                     },
                     onLikeComment = { commentId -> viewModel.toggleCommentLike(post.id, commentId) },
                     onDeleteClick = { viewModel.deletePost(post.id) },
                     onEditClick = { newContent -> viewModel.updatePostContent(post.id, newContent) },
                     currentUserAvatarUrl = currentUser?.avatarUrl,
-                    currentUserName = currentUser?.anonymousName ?: "User"
+                    currentUserName = currentUser?.anonymousName ?: "User",
+                    onUserClick = {
+                        if (post.userId.isNotEmpty()) {
+                            onNavigateToChat(post.userId, post.userName, post.userAvatarUrl)
+                        }
+                    }
                 )
             }
         }
     }
-}
-
-// ==========================================
-// HÀM TẠO DỮ LIỆU ẢO (MOCK DATA)
-// ==========================================
-fun getMockCommunityPosts(): List<CommunityPost> {
-    return listOf(
-        CommunityPost(
-            id = "post_1",
-            userName = "Marvin McKinney",
-            userAvatarUrl = null,
-            isVerified = true,
-            mood = "Happy",
-            timeAgo = "Today at 6:41",
-            textContent = "<h3>10 Tips for Beginners in Stock Market Investing</h3><p>Start your journey today with these simple steps. Don't let the market scare you! 📈💰</p>",
-            imageUrls = listOf(
-                "https://dummyimage.com/600x400/4caf50/ffffff.png&text=Investing+101",
-                "https://dummyimage.com/600x400/2196f3/ffffff.png&text=Stock+Market"
-            ),
-            likeCount = 2321,
-            commentCount = 5321,
-            viewCount = 8900
-        ),
-        CommunityPost(
-            id = "post_2",
-            userName = "Nguyễn Khánh",
-            userAvatarUrl = null,
-            isVerified = false,
-            mood = "Peaceful",
-            timeAgo = "Yesterday at 14:30",
-            textContent = "<h3>Hoàn thành xong Demo</h3><p>Hôm nay thời tiết thật đẹp, mình đã hoàn thành xong đồ án môn học. Một ngày thật năng suất và ý nghĩa! Cảm giác code chạy mượt mà không lỗi (crash) thật là <b>tuyệt vời</b> ✨</p>",
-            imageUrls = emptyList(),
-            likeCount = 128,
-            commentCount = 12,
-            viewCount = 450
-        ),
-        CommunityPost(
-            id = "post_3",
-            userName = "Sarah Jenkins",
-            userAvatarUrl = null,
-            isVerified = true,
-            mood = "Sad",
-            timeAgo = "2 days ago",
-            textContent = "<p>Sometimes things don't go as planned. Taking a step back to breathe and reflect today. Tomorrow is a new start. 🌧️</p>",
-            imageUrls = listOf(
-                "https://dummyimage.com/600x400/9e9e9e/ffffff.png&text=Rainy+Day"
-            ),
-            likeCount = 890,
-            commentCount = 145,
-            viewCount = 3200
-        )
-    )
 }
