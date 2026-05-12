@@ -54,8 +54,9 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun addPost(post: CommunityPost) {
+        val userId = currentUserId ?: return
         viewModelScope.launch {
-            repository.addPost(post)
+            repository.addPost(post.copy(userId = userId))
         }
     }
 
@@ -66,9 +67,10 @@ class CommunityViewModel @Inject constructor(
         }
     }
 
-    fun addComment(postId: String, userName: String, userAvatarUrl: String?, content: String) {
+    fun addComment(postId: String, userId: String, userName: String, userAvatarUrl: String?, content: String) {
         val newComment = Comment(
             id = UUID.randomUUID().toString(),
+            userId = userId,
             userName = userName,
             userAvatarUrl = userAvatarUrl,
             content = content,

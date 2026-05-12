@@ -109,7 +109,12 @@ class MainActivity : ComponentActivity() {
                                 musicViewModel = musicViewModel, 
                                 historyViewModel = hiltViewModel(),
                                 communityViewModel = communityViewModel,
-                                onChatBubbleClick = { navController.navigate(Screen.ChatList.route) }
+                                onChatBubbleClick = { navController.navigate(Screen.ChatList.route) },
+                                onNavigateToChat = { userId, name, avatarUrl ->
+                                    val encodedName = Uri.encode(name)
+                                    val encodedUrl = if (avatarUrl != null) Uri.encode(avatarUrl) else "none"
+                                    navController.navigate("${Screen.ChatDetail.route}?userId=$userId&userName=$encodedName&avatarUrl=$encodedUrl")
+                                }
                             ) 
                         }
                         composable(
@@ -145,26 +150,29 @@ class MainActivity : ComponentActivity() {
                         composable(Screen.ChatList.route) {
                             ChatListScreen(
                                 communityViewModel = communityViewModel,
-                                onChatClick = { name, avatarUrl ->
+                                onChatClick = { userId, name, avatarUrl ->
                                     val encodedName = Uri.encode(name)
                                     val encodedUrl = if (avatarUrl != null) Uri.encode(avatarUrl) else "none"
-                                    navController.navigate("${Screen.ChatDetail.route}?userName=$encodedName&avatarUrl=$encodedUrl")
+                                    navController.navigate("${Screen.ChatDetail.route}?userId=$userId&userName=$encodedName&avatarUrl=$encodedUrl")
                                 },
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
                         composable(
-                            route = Screen.ChatDetail.route + "?userName={userName}&avatarUrl={avatarUrl}",
+                            route = Screen.ChatDetail.route + "?userId={userId}&userName={userName}&avatarUrl={avatarUrl}",
                             arguments = listOf(
+                                navArgument("userId") { type = NavType.StringType; defaultValue = "" },
                                 navArgument("userName") { type = NavType.StringType; defaultValue = "" },
                                 navArgument("avatarUrl") { type = NavType.StringType; defaultValue = "none" }
                             )
                         ) { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId") ?: ""
                             val userName = backStackEntry.arguments?.getString("userName") ?: ""
                             val rawUrl = backStackEntry.arguments?.getString("avatarUrl")
                             val avatarUrl = if (rawUrl == "none" || rawUrl.isNullOrEmpty()) null else rawUrl
 
                             ChatDetailScreen(
+                                userId = userId,
                                 userName = userName,
                                 userAvatarUrl = avatarUrl,
                                 chatViewModel = hiltViewModel(),
