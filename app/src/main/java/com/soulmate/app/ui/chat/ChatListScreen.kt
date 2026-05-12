@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
@@ -61,19 +62,67 @@ fun ChatListScreen(
             .map { ChatUser(it.userId, it.userName, it.userAvatarUrl) }
     }
 
+    val chatDisplayItems = remember(lastMessages, activeUsers, searchQuery) {
+        val items = mutableListOf<ChatDisplayItem>()
+        
+        // Add existing conversations
+        lastMessages.forEach { msg ->
+            val otherUserId = if (msg.senderId == currentUserId) msg.receiverId else msg.senderId
+            // Try to get updated user info from community posts if available
+            val communityUser = activeUsers.find { it.id == otherUserId }
+            val user = communityUser ?: ChatUser(otherUserId, "Người dùng", null)
+            
+            items.add(ChatDisplayItem(
+                user = user,
+                lastMessage = msg.messageText,
+                isFromMe = msg.senderId == currentUserId,
+                timestamp = msg.timestamp,
+                hasUnread = msg.senderId != currentUserId && !msg.read,
+                messageId = msg.id
+            ))
+        }
+        
+        // Add community users who haven't chatted yet
+        activeUsers.forEach { user ->
+            if (items.none { it.user.id == user.id }) {
+                items.add(ChatDisplayItem(
+                    user = user,
+                    lastMessage = "Bắt đầu cuộc trò chuyện",
+                    isFromMe = false,
+                    timestamp = null,
+                    hasUnread = false,
+                    messageId = ""
+                ))
+            }
+        }
+        
+        // Filter by user name only
+        val filtered = if (searchQuery.isEmpty()) items 
+        else items.filter { it.user.name.contains(searchQuery, ignoreCase = true) }
+
+        // Sort: items with timestamp (active chats) first, then by timestamp descending, then inactive chats
+        filtered.sortedWith(compareByDescending<ChatDisplayItem> { it.timestamp?.seconds ?: 0L }
+            .thenBy { it.lastMessage == "Bắt đầu cuộc trò chuyện" })
+    }
+
     Scaffold(
         modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
                 backgroundColor = Color.White,
                 elevation = 0.dp,
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF0084FF))
+                    }
+                },
                 title = {
                     Text(
                         "messenger",
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF0084FF),
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 0.dp)
                     )
                 },
                 actions = {
@@ -119,7 +168,7 @@ fun ChatListScreen(
                         modifier = Modifier.fillMaxWidth(),
                         decorationBox = { innerTextField ->
                             if (searchQuery.isEmpty()) {
-                                Text("Hỏi Meta AI hoặc tìm kiếm", color = Color.Gray, fontSize = 16.sp)
+                                Text("Tìm kiếm theo tên", color = Color.Gray, fontSize = 16.sp)
                             }
                             innerTextField()
                         }
@@ -161,7 +210,8 @@ fun ChatListScreen(
                                         model = user.avatarUrl ?: R.drawable.ava1,
                                         contentDescription = null,
                                         modifier = Modifier.size(64.dp).clip(CircleShape),
-                                        contentScale = ContentScale.Crop
+                                        contentScale = ContentScale.Crop,
+                                        error = coil.compose.rememberAsyncImagePainter(R.drawable.ava1)
                                     )
                                     Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(Color.White).padding(2.dp)) {
                                         Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
@@ -173,17 +223,14 @@ fun ChatListScreen(
                     }
                 }
 
-                // Chat Items with Swipe to Delete
-                items(lastMessages.filter { it.messageText.contains(searchQuery, ignoreCase = true) }, key = { it.id }) { message ->
-                    val otherUserId = if (message.senderId == currentUserId) message.receiverId else message.senderId
-                    val otherUser = activeUsers.find { it.id == otherUserId } ?: ChatUser(otherUserId, "Người dùng", null)
-
+                // Chat Items
+                items(chatDisplayItems, key = { it.user.id }) { item ->
                     val dismissState = rememberDismissState(
                         confirmStateChange = {
                             if (it == DismissValue.DismissedToStart) {
-                                userToDeleteId = otherUserId
+                                userToDeleteId = item.user.id
                                 showDeleteDialog = true
-                                false // Wait for confirmation
+                                false
                             } else false
                         }
                     )
@@ -202,12 +249,12 @@ fun ChatListScreen(
                         },
                         dismissContent = {
                             ChatItem(
-                                name = otherUser.name,
-                                avatarUrl = otherUser.avatarUrl,
-                                lastMessage = if (message.senderId == currentUserId) "Bạn: ${message.messageText}" else message.messageText,
-                                time = formatChatTime(message.timestamp),
-                                hasUnread = message.senderId != currentUserId,
-                                onClick = { onChatClick(otherUser.id, otherUser.name, otherUser.avatarUrl) }
+                                name = item.user.name,
+                                avatarUrl = item.user.avatarUrl,
+                                lastMessage = if (item.timestamp != null) (if (item.isFromMe) "Bạn: ${item.lastMessage}" else item.lastMessage) else item.lastMessage,
+                                time = formatChatTime(item.timestamp),
+                                hasUnread = item.hasUnread,
+                                onClick = { onChatClick(item.user.id, item.user.name, item.user.avatarUrl) }
                             )
                         }
                     )
@@ -235,6 +282,15 @@ fun ChatListScreen(
         )
     }
 }
+
+data class ChatDisplayItem(
+    val user: ChatUser,
+    val lastMessage: String,
+    val isFromMe: Boolean,
+    val timestamp: com.google.firebase.Timestamp?,
+    val hasUnread: Boolean,
+    val messageId: String
+)
 
 private fun formatChatTime(timestamp: com.google.firebase.Timestamp?): String {
     if (timestamp == null) return ""
@@ -278,7 +334,9 @@ fun ChatItem(
             Text(text = name, fontSize = 17.sp, fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Medium, color = Color.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = lastMessage, fontSize = 14.sp, color = if (hasUnread) Color.Black else Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false), fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Normal)
-                Text(text = " • $time", fontSize = 14.sp, color = Color.Gray)
+                if (time.isNotEmpty()) {
+                    Text(text = " • $time", fontSize = 14.sp, color = Color.Gray)
+                }
             }
         }
         if (hasUnread) {

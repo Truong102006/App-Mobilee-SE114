@@ -1,6 +1,7 @@
 package com.soulmate.app.data.repository
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.soulmate.app.domain.model.ChatMessage
@@ -25,7 +26,8 @@ class ChatRepositoryImpl @Inject constructor(
             "receiverId" to message.receiverId,
             "messageText" to message.messageText,
             "imageUrl" to message.imageUrl,
-            "timestamp" to (message.timestamp ?: Timestamp.now())
+            "timestamp" to FieldValue.serverTimestamp(),
+            "read" to false
         )
         chatCollection.add(messageData).await()
         Result.success(Unit)
@@ -35,7 +37,6 @@ class ChatRepositoryImpl @Inject constructor(
 
     override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = callbackFlow {
         val subscription = chatCollection
-            .whereIn("senderId", listOf(senderId, receiverId))
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(emptyList())
@@ -47,7 +48,16 @@ class ChatRepositoryImpl @Inject constructor(
                     }.filter { 
                         (it.senderId == senderId && it.receiverId == receiverId) ||
                         (it.senderId == receiverId && it.receiverId == senderId)
-                    }.sortedBy { it.timestamp?.seconds ?: 0L }
+                    }.sortedWith { m1, m2 ->
+                        val t1 = m1.timestamp
+                        val t2 = m2.timestamp
+                        when {
+                            t1 == null && t2 == null -> 0
+                            t1 == null -> 1
+                            t2 == null -> -1
+                            else -> t1.compareTo(t2)
+                        }
+                    }
                     
                     trySend(messages)
                 }
@@ -80,20 +90,40 @@ class ChatRepositoryImpl @Inject constructor(
 
     override suspend fun deleteConversation(userId: String, otherUserId: String): Result<Unit> = try {
         val messages = chatCollection
-            .whereIn("senderId", listOf(userId, otherUserId))
             .get()
             .await()
             .documents
             .filter { doc ->
-                val senderId = doc.getString("senderId")
-                val receiverId = doc.getString("receiverId")
-                (senderId == userId && receiverId == otherUserId) ||
-                (senderId == otherUserId && receiverId == userId)
+                val sId = doc.getString("senderId")
+                val rId = doc.getString("receiverId")
+                (sId == userId && rId == otherUserId) || (sId == otherUserId && rId == userId)
             }
         
-        firestore.runBatch { batch ->
-            messages.forEach { batch.delete(it.reference) }
-        }.await()
+        if (messages.isNotEmpty()) {
+            firestore.runBatch { batch ->
+                messages.forEach { batch.delete(it.reference) }
+            }.await()
+        }
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun markAsRead(userId: String, otherUserId: String): Result<Unit> = try {
+        val unreadMessages = chatCollection
+            .whereEqualTo("senderId", otherUserId)
+            .whereEqualTo("receiverId", userId)
+            .whereEqualTo("read", false)
+            .get()
+            .await()
+        
+        if (!unreadMessages.isEmpty) {
+            firestore.runBatch { batch ->
+                unreadMessages.documents.forEach { doc ->
+                    batch.update(doc.reference, "read", true)
+                }
+            }.await()
+        }
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)

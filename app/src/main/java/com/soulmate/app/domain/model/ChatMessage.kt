@@ -8,5 +8,6 @@ data class ChatMessage(
     val receiverId: String = "",
     val messageText: String = "",
     val imageUrl: String? = null,
-    val timestamp: Timestamp? = null
+    val timestamp: Timestamp? = null,
+    val read: Boolean = false
 )

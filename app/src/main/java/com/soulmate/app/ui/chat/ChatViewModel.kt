@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,7 +36,6 @@ class ChatViewModel @Inject constructor(
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
             chatRepository.getMessages(senderId, receiverId).collect { list ->
-                // Sắp xếp tin nhắn từ cũ đến mới (từ trên xuống dưới)
                 _messages.value = list.sortedBy { it.timestamp?.seconds ?: 0L }
             }
         }
@@ -46,6 +46,24 @@ class ChatViewModel @Inject constructor(
             chatRepository.getLastMessages(userId).collect { list ->
                 _lastMessages.value = list
             }
+        }
+    }
+
+    fun markAsRead(userId: String, otherUserId: String) {
+        viewModelScope.launch {
+            chatRepository.markAsRead(userId, otherUserId)
+        }
+    }
+
+    fun hasUnreadMessages(userId: String): StateFlow<Boolean> {
+        return lastMessages.map { messages ->
+            messages.any { it.receiverId == userId && !it.read }
+        }.let { flow ->
+            val state = MutableStateFlow(false)
+            viewModelScope.launch {
+                flow.collect { state.value = it }
+            }
+            state.asStateFlow()
         }
     }
 
@@ -60,7 +78,8 @@ class ChatViewModel @Inject constructor(
                 senderId = senderId,
                 receiverId = receiverId,
                 messageText = messageText,
-                imageUrl = imageUrl
+                imageUrl = imageUrl,
+                read = false
             )
             chatRepository.sendMessage(chatMessage)
         }
