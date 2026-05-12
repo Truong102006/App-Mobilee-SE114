@@ -48,6 +48,7 @@ fun ChatDetailScreen(
     LaunchedEffect(receiverId) {
         if (currentUserId.isNotEmpty() && receiverId.isNotEmpty()) {
             chatViewModel.loadMessages(currentUserId, receiverId)
+            chatViewModel.markAsRead(currentUserId, receiverId)
         }
     }
 

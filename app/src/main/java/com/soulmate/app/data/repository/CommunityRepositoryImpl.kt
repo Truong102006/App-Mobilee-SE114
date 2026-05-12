@@ -62,16 +62,18 @@ class CommunityRepositoryImpl @Inject constructor(
 
     override fun getPosts(): Flow<List<CommunityPost>> = callbackFlow {
         val subscription = postsCollection
-            .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
                     val posts = snapshot.documents.mapNotNull { doc ->
                         try {
                             val likedBy = doc.get("liked_by") as? List<String> ?: emptyList()
+                            // Get timestamp safely to avoid exceptions for older posts
+                            val timestamp = try { doc.getTimestamp("timestamp") } catch (e: Exception) { null }
+                            
                             CommunityPost(
                                 id = doc.id,
                                 userId = doc.getString("user_id") ?: "",
@@ -79,18 +81,21 @@ class CommunityRepositoryImpl @Inject constructor(
                                 userAvatarUrl = doc.getString("user_avatar_url"),
                                 isVerified = doc.getBoolean("is_verified") ?: false,
                                 mood = doc.getString("mood") ?: "Neutral",
-                                timeAgo = formatTimeAgo(doc.getTimestamp("timestamp")),
+                                timeAgo = formatTimeAgo(timestamp),
                                 textContent = doc.getString("text_content") ?: "",
                                 imageUrls = doc.get("image_urls") as? List<String> ?: emptyList(),
                                 likeCount = doc.getLong("like_count")?.toInt() ?: 0,
                                 commentCount = doc.getLong("comment_count")?.toInt() ?: 0,
                                 viewCount = doc.getLong("view_count")?.toInt() ?: 0,
-                                likedBy = likedBy
+                                likedBy = likedBy,
+                                timestamp = timestamp
                             )
                         } catch (e: Exception) {
+                            Log.e("CommunityRepo", "Error parsing post ${doc.id}", e)
                             null
                         }
-                    }
+                    }.sortedByDescending { it.timestamp?.seconds ?: 0L }
+                    
                     trySend(posts)
                 }
             }
@@ -130,7 +135,6 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addPost(post: CommunityPost): Result<Unit> = try {
-        // Upload images to Cloudinary before saving to Firestore
         val uploadedUrls = post.imageUrls.map { path ->
             uploadToCloudinary(path)
         }

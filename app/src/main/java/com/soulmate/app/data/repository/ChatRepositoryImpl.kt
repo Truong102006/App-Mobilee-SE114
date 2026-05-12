@@ -1,8 +1,11 @@
 package com.soulmate.app.data.repository
 
+import android.util.Log
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.Filter
 import com.soulmate.app.domain.model.ChatMessage
 import com.soulmate.app.domain.repository.IChatRepository
 import kotlinx.coroutines.channels.awaitClose
@@ -25,7 +28,8 @@ class ChatRepositoryImpl @Inject constructor(
             "receiverId" to message.receiverId,
             "messageText" to message.messageText,
             "imageUrl" to message.imageUrl,
-            "timestamp" to (message.timestamp ?: Timestamp.now())
+            "timestamp" to FieldValue.serverTimestamp(),
+            "read" to false
         )
         chatCollection.add(messageData).await()
         Result.success(Unit)
@@ -34,66 +38,146 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = callbackFlow {
-        val subscription = chatCollection
-            .whereIn("senderId", listOf(senderId, receiverId))
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val messages = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
-                    }.filter { 
-                        (it.senderId == senderId && it.receiverId == receiverId) ||
-                        (it.senderId == receiverId && it.receiverId == senderId)
-                    }.sortedBy { it.timestamp?.seconds ?: 0L }
-                    
-                    trySend(messages)
-                }
+        val query = chatCollection.where(
+            Filter.or(
+                Filter.and(
+                    Filter.equalTo("senderId", senderId),
+                    Filter.equalTo("receiverId", receiverId)
+                ),
+                Filter.and(
+                    Filter.equalTo("senderId", receiverId),
+                    Filter.equalTo("receiverId", senderId)
+                )
+            )
+        )
+
+        val subscription = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("ChatRepo", "Snapshot error: ${error.message}")
+                trySend(emptyList())
+                return@addSnapshotListener
             }
+            if (snapshot != null) {
+                val messages = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
+                }.sortedWith { m1, m2 ->
+                    val t1 = m1.timestamp
+                    val t2 = m2.timestamp
+                    when {
+                        t1 == null && t2 == null -> 0
+                        t1 == null -> 1 // Local messages without server timestamp go last
+                        t2 == null -> -1
+                        else -> {
+                            // Precise comparison using seconds and nanoseconds
+                            if (t1.seconds != t2.seconds) {
+                                t1.seconds.compareTo(t2.seconds)
+                            } else {
+                                t1.nanoseconds.compareTo(t2.nanoseconds)
+                            }
+                        }
+                    }
+                }
+                
+                trySend(messages)
+            }
+        }
         awaitClose { subscription.remove() }
     }
 
     override fun getLastMessages(userId: String): Flow<List<ChatMessage>> = callbackFlow {
-        val subscription = chatCollection
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val allMessages = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
-                    }.filter { it.senderId == userId || it.receiverId == userId }
+        val query = chatCollection.where(
+            Filter.or(
+                Filter.equalTo("senderId", userId),
+                Filter.equalTo("receiverId", userId)
+            )
+        )
 
-                    val lastMessages = allMessages.groupBy { 
-                        if (it.senderId == userId) it.receiverId else it.senderId 
-                    }.map { it.value.first() }
-                    
-                    trySend(lastMessages)
-                }
+        val subscription = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(emptyList())
+                return@addSnapshotListener
             }
+            if (snapshot != null) {
+                val allMessages = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
+                }
+
+                // Correctly group and find the absolute latest message per conversation
+                val lastMessages = allMessages.groupBy { 
+                    if (it.senderId == userId) it.receiverId else it.senderId 
+                }.map { entry ->
+                    entry.value.sortedWith { m1, m2 ->
+                        val t1 = m1.timestamp
+                        val t2 = m2.timestamp
+                        when {
+                            t1 == null && t2 == null -> 0
+                            t1 == null -> -1 // Sending... prioritized at top
+                            t2 == null -> 1
+                            else -> {
+                                if (t2.seconds != t1.seconds) {
+                                    t2.seconds.compareTo(t1.seconds)
+                                } else {
+                                    t2.nanoseconds.compareTo(t1.nanoseconds)
+                                }
+                            }
+                        }
+                    }.first()
+                }.sortedWith { m1, m2 ->
+                    val t1 = m1.timestamp
+                    val t2 = m2.timestamp
+                    when {
+                        t1 == null && t2 == null -> 0
+                        t1 == null -> -1
+                        t2 == null -> 1
+                        else -> {
+                            if (t2.seconds != t1.seconds) {
+                                t2.seconds.compareTo(t1.seconds)
+                            } else {
+                                t2.nanoseconds.compareTo(t1.nanoseconds)
+                            }
+                        }
+                    }
+                }
+                
+                trySend(lastMessages)
+            }
+        }
         awaitClose { subscription.remove() }
     }
 
     override suspend fun deleteConversation(userId: String, otherUserId: String): Result<Unit> = try {
-        val messages = chatCollection
-            .whereIn("senderId", listOf(userId, otherUserId))
+        val messages = chatCollection.where(
+            Filter.or(
+                Filter.and(Filter.equalTo("senderId", userId), Filter.equalTo("receiverId", otherUserId)),
+                Filter.and(Filter.equalTo("senderId", otherUserId), Filter.equalTo("receiverId", userId))
+            )
+        ).get().await()
+        
+        if (!messages.isEmpty) {
+            firestore.runBatch { batch ->
+                messages.documents.forEach { batch.delete(it.reference) }
+            }.await()
+        }
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun markAsRead(userId: String, otherUserId: String): Result<Unit> = try {
+        val unreadMessages = chatCollection
+            .whereEqualTo("senderId", otherUserId)
+            .whereEqualTo("receiverId", userId)
+            .whereEqualTo("read", false)
             .get()
             .await()
-            .documents
-            .filter { doc ->
-                val senderId = doc.getString("senderId")
-                val receiverId = doc.getString("receiverId")
-                (senderId == userId && receiverId == otherUserId) ||
-                (senderId == otherUserId && receiverId == userId)
-            }
         
-        firestore.runBatch { batch ->
-            messages.forEach { batch.delete(it.reference) }
-        }.await()
+        if (!unreadMessages.isEmpty) {
+            firestore.runBatch { batch ->
+                unreadMessages.documents.forEach { doc ->
+                    batch.update(doc.reference, "read", true)
+                }
+            }.await()
+        }
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
