@@ -1,6 +1,7 @@
 package com.soulmate.app.ui.home
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -13,6 +14,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +27,7 @@ import com.soulmate.app.ui.login.AuthViewModel
 import com.soulmate.app.ui.social.Comment
 import com.soulmate.app.ui.social.CommunityCard
 import com.soulmate.app.ui.social.CommunityViewModel
+import kotlin.math.roundToInt
 
 @Composable
 fun HomeScreen(
@@ -230,9 +233,20 @@ fun HomeScreenContent(
         }
 
         // --- BONG BÓNG CHAT ---
+        var offsetX by remember { mutableStateOf(0f) }
+        var offsetY by remember { mutableStateOf(0f) }
+
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
+                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                .pointerInput(Unit) {
+                    detectDragGesturesAfterLongPress { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                    }
+                }
                 .padding(end = 20.dp, bottom = 120.dp)
                 .size(52.dp) 
                 .shadow(elevation = 8.dp, shape = CircleShape)
