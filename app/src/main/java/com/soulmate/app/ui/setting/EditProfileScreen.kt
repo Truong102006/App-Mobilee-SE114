@@ -1,3 +1,7 @@
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,8 +31,9 @@ import java.util.Locale
 @Composable
 fun EditProfileDialog(
     user: User,
+    isLoading: Boolean,
     onDismiss: () -> Unit,
-    onSave: (User) -> Unit
+    onSave: (User, Uri?) -> Unit
 ) {
     var name by remember { mutableStateOf(user.anonymousName) }
     var phone by remember { mutableStateOf(user.phoneNumber) }
@@ -43,6 +48,17 @@ fun EditProfileDialog(
     var showLinkDialog by remember { mutableStateOf(false) }
     var linkInput by remember { mutableStateOf("") }
     var editLinkIndex by remember { mutableStateOf<Int?>(null) } // null = Add new, Int = Edit
+
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            selectedImageUri = uri
+        }
+    }
+
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -82,18 +98,20 @@ fun EditProfileDialog(
                     Box(
                         modifier = Modifier
                             .size(100.dp)
-                            .clickable { /* TODO: Mở thư viện ảnh */ },
+                            .clickable(enabled = !isLoading) {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
                         contentAlignment = Alignment.BottomEnd
                     ) {
-                        // Ảnh chính
-                        if (!user.avatarUrl.isNullOrBlank()) {
+                        val imageToShow = selectedImageUri ?: user.avatarUrl
+
+                        if (imageToShow != null && imageToShow.toString().isNotBlank()) {
                             AsyncImage(
-                                model = user.avatarUrl,
+                                model = imageToShow,
                                 contentDescription = "Avatar",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(CircleShape)
-                                    .background(Color.LightGray),
+                                modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color.LightGray),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -274,15 +292,20 @@ fun EditProfileDialog(
                             socialMedias = socialLinks,
                             updatedAt = System.currentTimeMillis()
                         )
-                        onSave(updatedUser)
+                        onSave(updatedUser, selectedImageUri)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
+                    enabled = !isLoading,
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
                 ) {
-                    Text("Save Changes", color = Color.White, fontWeight = FontWeight.Bold)
+                    if (isLoading) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text("Save Changes", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
