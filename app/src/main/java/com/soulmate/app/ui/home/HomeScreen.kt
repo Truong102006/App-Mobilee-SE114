@@ -256,7 +256,7 @@ fun HomeScreenContent(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.messenger1),
+                painter = painterResource(id = R.drawable.messenger),
                 contentDescription = "Chat",
                 modifier = Modifier
                     .fillMaxSize()
