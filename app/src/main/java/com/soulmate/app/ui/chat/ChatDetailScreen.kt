@@ -1,9 +1,12 @@
 package com.soulmate.app.ui.chat
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -21,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -33,6 +38,7 @@ import coil.compose.AsyncImage
 import com.soulmate.app.R
 import com.soulmate.app.domain.model.ChatMessage
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -206,6 +212,9 @@ fun ChatDetailScreen(
                             onLongPress = {
                                 selectedMessage = message
                                 showOptionsSheet = true
+                            },
+                            onSwipeToReply = {
+                                chatViewModel.setReplyingTo(message)
                             }
                         )
                     }
@@ -330,124 +339,181 @@ fun MessageBubble(
     otherUserName: String,
     showTime: Boolean,
     showAvatar: Boolean,
-    onLongPress: () -> Unit
+    onLongPress: () -> Unit,
+    onSwipeToReply: () -> Unit
 ) {
+    val offsetX = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
     val timeString = remember(message.timestamp) {
         if (message.timestamp != null) {
             SimpleDateFormat("HH:mm", Locale.getDefault()).format(message.timestamp.toDate())
         } else ""
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 1.dp),
-        horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        // Chỉ cho phép vuốt sang trái (dragAmount < 0)
+                        val newOffset = (offsetX.value + dragAmount).coerceIn(-120f, 0f)
+                        scope.launch {
+                            offsetX.snapTo(newOffset)
+                        }
+                    },
+                    onDragEnd = {
+                        if (offsetX.value <= -90f) {
+                            onSwipeToReply()
+                        }
+                        scope.launch {
+                            offsetX.animateTo(0f, animationSpec = spring())
+                        }
+                    },
+                    onDragCancel = {
+                        scope.launch {
+                            offsetX.animateTo(0f)
+                        }
+                    }
+                )
+            }
     ) {
-        // Reply Header
-        if (message.replyToId != null) {
-            val replyName = if (message.replyToName == "Bạn") "bạn" else otherUserName
-            Row(
-                modifier = Modifier.padding(
-                    start = if (isMine) 0.dp else 36.dp,
-                    end = if (isMine) 8.dp else 0.dp,
-                    bottom = 2.dp
-                ),
-                verticalAlignment = Alignment.CenterVertically
+        // Biểu tượng Reply hiện ra khi vuốt
+        if (offsetX.value < 0) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 16.dp)
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Reply, 
-                    contentDescription = null, 
-                    modifier = Modifier.size(12.dp), 
-                    tint = Color.Gray
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = if (isMine) "Bạn đã trả lời $replyName" else "$otherUserName đã trả lời bạn",
-                    fontSize = 11.sp,
-                    color = Color.Gray
+                    imageVector = Icons.AutoMirrored.Filled.Reply,
+                    contentDescription = null,
+                    tint = if (offsetX.value <= -90f) Color(0xFF0084FF) else Color.Gray.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .graphicsLayer {
+                            alpha = (offsetX.value / -90f).coerceIn(0f, 1f)
+                            scaleX = (offsetX.value / -90f).coerceIn(0.5f, 1f)
+                            scaleY = (offsetX.value / -90f).coerceIn(0.5f, 1f)
+                        }
                 )
             }
         }
 
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .graphicsLayer { translationX = offsetX.value }
+                .padding(vertical = 1.dp),
+            horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
         ) {
-            if (!isMine) {
-                if (showAvatar) {
-                    AsyncImage(
-                        model = userAvatarUrl ?: R.drawable.ava1,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp).clip(CircleShape),
-                        contentScale = ContentScale.Crop,
-                        error = painterResource(R.drawable.ava1)
+            // Reply Header
+            if (message.replyToId != null) {
+                val replyName = if (message.replyToName == "Bạn") "bạn" else otherUserName
+                Row(
+                    modifier = Modifier.padding(
+                        start = if (isMine) 0.dp else 36.dp,
+                        end = if (isMine) 8.dp else 0.dp,
+                        bottom = 2.dp
+                    ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Reply, 
+                        contentDescription = null, 
+                        modifier = Modifier.size(12.dp), 
+                        tint = Color.Gray
                     )
-                } else {
-                    Spacer(modifier = Modifier.size(28.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = if (isMine) "Bạn đã trả lời $replyName" else "$otherUserName đã trả lời bạn",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
             }
 
-            Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
-                // Replied Message Content
-                if (message.replyToText != null) {
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
+            ) {
+                if (!isMine) {
+                    if (showAvatar) {
+                        AsyncImage(
+                            model = userAvatarUrl ?: R.drawable.ava1,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp).clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                            error = painterResource(R.drawable.ava1)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.size(28.dp))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+
+                Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
+                    // Replied Message Content
+                    if (message.replyToText != null) {
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 2.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFFF0F2F5))
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = message.replyToText,
+                                fontSize = 13.sp,
+                                color = Color.Gray,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
+                    // Main Message Content
                     Box(
                         modifier = Modifier
-                            .padding(bottom = 2.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFFF0F2F5))
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .widthIn(max = 260.dp)
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = 18.dp,
+                                    topEnd = 18.dp,
+                                    bottomStart = if (isMine) 18.dp else (if (showAvatar) 4.dp else 18.dp),
+                                    bottomEnd = if (isMine) (if (showTime) 4.dp else 18.dp) else 18.dp
+                                )
+                            )
+                            .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F2F5))
+                            .combinedClickable(
+                                onClick = {},
+                                onLongClick = onLongPress
+                            )
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = message.replyToText,
-                            fontSize = 13.sp,
-                            color = Color.Gray,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            text = message.messageText,
+                            color = if (isMine) Color.White else Color.Black,
+                            fontSize = 15.sp
                         )
                     }
                 }
-
-                // Main Message Content
-                Box(
-                    modifier = Modifier
-                        .widthIn(max = 260.dp)
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 18.dp,
-                                topEnd = 18.dp,
-                                bottomStart = if (isMine) 18.dp else (if (showAvatar) 4.dp else 18.dp),
-                                bottomEnd = if (isMine) (if (showTime) 4.dp else 18.dp) else 18.dp
-                            )
-                        )
-                        .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F2F5))
-                        .combinedClickable(
-                            onClick = {},
-                            onLongClick = onLongPress
-                        )
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = message.messageText,
-                        color = if (isMine) Color.White else Color.Black,
-                        fontSize = 15.sp
-                    )
-                }
             }
-        }
-        
-        if (showTime && timeString.isNotEmpty()) {
-            Text(
-                text = timeString,
-                fontSize = 10.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(
-                    top = 2.dp,
-                    start = if (isMine) 0.dp else 36.dp,
-                    end = if (isMine) 4.dp else 0.dp
+            
+            if (showTime && timeString.isNotEmpty()) {
+                Text(
+                    text = timeString,
+                    fontSize = 10.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(
+                        top = 2.dp,
+                        start = if (isMine) 0.dp else 36.dp,
+                        end = if (isMine) 4.dp else 0.dp
+                    )
                 )
-            )
+            }
         }
     }
 }
