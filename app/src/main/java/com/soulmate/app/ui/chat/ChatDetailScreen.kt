@@ -1,5 +1,8 @@
 package com.soulmate.app.ui.chat
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -60,6 +63,16 @@ fun ChatDetailScreen(
     var messageToDelete by remember { mutableStateOf<ChatMessage?>(null) }
     var showOptionsSheet by remember { mutableStateOf(false) }
     var selectedMessage by remember { mutableStateOf<ChatMessage?>(null) }
+
+    // Bộ chọn ảnh từ thư viện
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            // Khi chọn xong, gọi ViewModel để upload lên Cloudinary và gửi tin nhắn
+            chatViewModel.sendImageMessage(currentUserId, userId, it)
+        }
+    }
 
     LaunchedEffect(userId) {
         if (currentUserId.isNotEmpty() && userId.isNotEmpty()) {
@@ -219,6 +232,16 @@ fun ChatDetailScreen(
                         )
                     }
                 }
+
+                // Hiển thị thanh tiến trình khi đang upload ảnh
+                if (chatViewModel.isUploading.value) {
+                    LinearProgressIndicator(
+                        progress = chatViewModel.uploadProgress.value.toFloat(),
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color(0xFF0084FF),
+                        backgroundColor = Color(0xFFF0F2F5)
+                    )
+                }
                 
                 ChatBottomBar(
                     messageText = messageText,
@@ -233,6 +256,10 @@ fun ChatDetailScreen(
                     },
                     onLikeClick = {
                         chatViewModel.sendMessage(currentUserId, userId, "👍")
+                    },
+                    onImageClick = {
+                        // Gọi bộ chọn ảnh
+                        imagePickerLauncher.launch("image/*")
                     }
                 )
             }
@@ -358,7 +385,6 @@ fun MessageBubble(
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
                         change.consume()
-                        // Chỉ cho phép vuốt sang trái (dragAmount < 0)
                         val newOffset = (offsetX.value + dragAmount).coerceIn(-120f, 0f)
                         scope.launch {
                             offsetX.snapTo(newOffset)
@@ -380,7 +406,6 @@ fun MessageBubble(
                 )
             }
     ) {
-        // Biểu tượng Reply hiện ra khi vuốt
         if (offsetX.value < 0) {
             Box(
                 modifier = Modifier
@@ -409,7 +434,6 @@ fun MessageBubble(
                 .padding(vertical = 1.dp),
             horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
         ) {
-            // Reply Header
             if (message.replyToId != null) {
                 val replyName = if (message.replyToName == "Bạn") "bạn" else otherUserName
                 Row(
@@ -455,7 +479,6 @@ fun MessageBubble(
                 }
 
                 Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
-                    // Replied Message Content
                     if (message.replyToText != null) {
                         Box(
                             modifier = Modifier
@@ -474,30 +497,51 @@ fun MessageBubble(
                         }
                     }
 
-                    // Main Message Content
-                    Box(
-                        modifier = Modifier
-                            .widthIn(max = 260.dp)
-                            .clip(
-                                RoundedCornerShape(
-                                    topStart = 18.dp,
-                                    topEnd = 18.dp,
-                                    bottomStart = if (isMine) 18.dp else (if (showAvatar) 4.dp else 18.dp),
-                                    bottomEnd = if (isMine) (if (showTime) 4.dp else 18.dp) else 18.dp
-                                )
-                            )
-                            .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F2F5))
-                            .combinedClickable(
-                                onClick = {},
-                                onLongClick = onLongPress
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    Column(
+                        horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
                     ) {
-                        Text(
-                            text = message.messageText,
-                            color = if (isMine) Color.White else Color.Black,
-                            fontSize = 15.sp
-                        )
+                        if (message.imageUrl != null) {
+                            AsyncImage(
+                                model = message.imageUrl,
+                                contentDescription = "Image message",
+                                modifier = Modifier
+                                    .widthIn(max = 240.dp)
+                                    .padding(bottom = 4.dp)
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .combinedClickable(
+                                        onClick = {},
+                                        onLongClick = onLongPress
+                                    ),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                        
+                        if (message.messageText.isNotBlank()) {
+                            Box(
+                                modifier = Modifier
+                                    .widthIn(max = 260.dp)
+                                    .clip(
+                                        RoundedCornerShape(
+                                            topStart = 18.dp,
+                                            topEnd = 18.dp,
+                                            bottomStart = if (isMine) 18.dp else (if (showAvatar) 4.dp else 18.dp),
+                                            bottomEnd = if (isMine) (if (showTime) 4.dp else 18.dp) else 18.dp
+                                        )
+                                    )
+                                    .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F2F5))
+                                    .combinedClickable(
+                                        onClick = {},
+                                        onLongClick = onLongPress
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = message.messageText,
+                                    color = if (isMine) Color.White else Color.Black,
+                                    fontSize = 15.sp
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -525,7 +569,8 @@ fun ChatBottomBar(
     replyingTo: ChatMessage?,
     onCancelReply: () -> Unit,
     onSendClick: () -> Unit,
-    onLikeClick: () -> Unit
+    onLikeClick: () -> Unit,
+    onImageClick: () -> Unit
 ) {
     Surface(
         elevation = 8.dp,
@@ -554,13 +599,15 @@ fun ChatBottomBar(
                 IconButton(onClick = {}) {
                     Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF0084FF))
                 }
-                IconButton(onClick = {}) {
+                IconButton(onClick = onImageClick) {
                     Icon(Icons.Default.Image, contentDescription = null, tint = Color(0xFF0084FF))
                 }
                 
                 TextField(
                     value = messageText,
-                    onValueChange = onMessageChange,
+                    onValueChange = {
+                        onMessageChange(it)
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 40.dp)
