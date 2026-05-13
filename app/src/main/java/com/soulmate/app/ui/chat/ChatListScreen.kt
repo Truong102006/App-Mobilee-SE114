@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -56,11 +57,10 @@ fun ChatListScreen(
         }
     }
 
-    // Extraction of all unique users who have posted in Community
     val communityUsers = remember(communityPosts) {
         communityPosts
             .filter { it.userId.isNotEmpty() && it.userId != currentUserId }
-            .sortedByDescending { it.id } // Heuristic for latest info if multiple posts exist
+            .sortedByDescending { it.id }
             .distinctBy { it.userId }
             .map { ChatUser(it.userId, it.userName, it.userAvatarUrl) }
     }
@@ -70,11 +70,9 @@ fun ChatListScreen(
         val items = mutableListOf<ChatDisplayItem>()
         val processedUserIds = mutableSetOf<String>()
 
-        // 1. Existing conversations
         lastMessages.forEach { msg ->
             val otherUserId = if (msg.senderId == currentUserId) msg.receiverId else msg.senderId
             if (otherUserId != currentUserId) {
-                // Prefer community user info (name/avatar) if available for better accuracy
                 val user = userMap[otherUserId] ?: ChatUser(otherUserId, "Người dùng", null)
                 items.add(ChatDisplayItem(
                     user = user,
@@ -88,7 +86,6 @@ fun ChatListScreen(
             }
         }
 
-        // 2. Community users who haven't chatted yet
         communityUsers.forEach { user ->
             if (!processedUserIds.contains(user.id)) {
                 items.add(ChatDisplayItem(
@@ -102,11 +99,9 @@ fun ChatListScreen(
             }
         }
 
-        // Filter by user name only
         val filtered = if (searchQuery.isEmpty()) items 
         else items.filter { it.user.name.contains(searchQuery, ignoreCase = true) }
 
-        // Sorting: Active chats first (by timestamp DESC), then "Start conversation" users
         filtered.sortedWith(
             compareByDescending<ChatDisplayItem> { it.timestamp != null }
                 .thenByDescending { it.timestamp?.seconds ?: 0L }
@@ -115,9 +110,10 @@ fun ChatListScreen(
 
     Scaffold(
         modifier = Modifier.statusBarsPadding(),
+        backgroundColor = Color.Black, // Messenger Dark Mode Background
         topBar = {
             TopAppBar(
-                backgroundColor = Color.White,
+                backgroundColor = Color.Black,
                 elevation = 0.dp,
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -139,10 +135,10 @@ fun ChatListScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFF0F2F5)),
+                                .background(Color(0xFF242526)), // Gray background for icons
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                     }
                 }
@@ -153,16 +149,16 @@ fun ChatListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White)
+                .background(Color.Black)
         ) {
-            // Modern Search Bar
+            // Modern Dark Search Bar
             Box(
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxWidth()
                     .height(44.dp)
                     .clip(RoundedCornerShape(22.dp))
-                    .background(Color(0xFFF0F2F5))
+                    .background(Color(0xFF242526))
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
@@ -172,7 +168,8 @@ fun ChatListScreen(
                     BasicTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                        textStyle = TextStyle(fontSize = 16.sp, color = Color.White),
+                        cursorBrush = SolidColor(Color.White),
                         modifier = Modifier.fillMaxWidth(),
                         decorationBox = { innerTextField ->
                             if (searchQuery.isEmpty()) {
@@ -185,7 +182,6 @@ fun ChatListScreen(
             }
 
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                // Active Row (Stories/Community Users)
                 item {
                     LazyRow(
                         modifier = Modifier.padding(vertical = 12.dp),
@@ -196,13 +192,13 @@ fun ChatListScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(contentAlignment = Alignment.BottomEnd) {
                                     Box(
-                                        modifier = Modifier.size(64.dp).clip(CircleShape).background(Color(0xFFF0F2F5)),
+                                        modifier = Modifier.size(64.dp).clip(CircleShape).background(Color(0xFF242526)),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(28.dp))
+                                        Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
                                     }
-                                    Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(Color.White).padding(2.dp)) {
-                                        Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color.LightGray))
+                                    Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(Color.Black).padding(2.dp)) {
+                                        Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color.DarkGray))
                                     }
                                 }
                                 Text("Tạo tin", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
@@ -215,17 +211,16 @@ fun ChatListScreen(
                             ) {
                                 Box(contentAlignment = Alignment.BottomEnd) {
                                     UserAvatar(user.name, user.avatarUrl, 64.dp)
-                                    Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(Color.White).padding(2.dp)) {
+                                    Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(Color.Black).padding(2.dp)) {
                                         Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
                                     }
                                 }
-                                Text(user.name.split(" ").firstOrNull() ?: "", fontSize = 12.sp, color = Color.Black, modifier = Modifier.padding(top = 4.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(user.name.split(" ").firstOrNull() ?: "", fontSize = 12.sp, color = Color.White, modifier = Modifier.padding(top = 4.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }
                 }
 
-                // Chat Items
                 items(chatDisplayItems, key = { it.user.id }) { item ->
                     val dismissState = rememberDismissState(
                         confirmStateChange = {
@@ -268,6 +263,8 @@ fun ChatListScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false; userToDeleteId = null },
+            backgroundColor = Color(0xFF242526),
+            contentColor = Color.White,
             title = { Text("Xóa đoạn chat?", fontWeight = FontWeight.Bold) },
             text = { Text("Bạn có chắc chắn muốn xóa vĩnh viễn đoạn hội thoại này không?") },
             confirmButton = {
@@ -278,7 +275,7 @@ fun ChatListScreen(
                 }) { Text("Xóa", color = Color.Red, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false; userToDeleteId = null }) { Text("Hủy", color = Color.Black) }
+                TextButton(onClick = { showDeleteDialog = false; userToDeleteId = null }) { Text("Hủy", color = Color.White) }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -297,7 +294,7 @@ fun UserAvatar(name: String, avatarUrl: String?, size: Dp) {
         )
     } else {
         Box(
-            modifier = Modifier.size(size).clip(CircleShape).background(Color(0xFFF0F2F5)),
+            modifier = Modifier.size(size).clip(CircleShape).background(Color(0xFF242526)),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -320,20 +317,20 @@ fun ChatItem(
     onClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().background(Color.White).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().background(Color.Black).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(contentAlignment = Alignment.BottomEnd) {
             UserAvatar(name, avatarUrl, 60.dp)
-            Box(modifier = Modifier.size(16.dp).clip(CircleShape).background(Color.White).padding(2.dp)) {
+            Box(modifier = Modifier.size(16.dp).clip(CircleShape).background(Color.Black).padding(2.dp)) {
                 Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
             }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = name, fontSize = 17.sp, fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Medium, color = Color.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = name, fontSize = 17.sp, fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Medium, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = lastMessage, fontSize = 14.sp, color = if (hasUnread) Color.Black else Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false), fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Normal)
+                Text(text = lastMessage, fontSize = 14.sp, color = if (hasUnread) Color.White else Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false), fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.Normal)
                 if (time.isNotEmpty()) {
                     Text(text = " • $time", fontSize = 14.sp, color = Color.Gray)
                 }
