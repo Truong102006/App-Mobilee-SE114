@@ -3,8 +3,11 @@ package com.soulmate.app.ui.chat
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,13 +66,14 @@ fun ChatDetailScreen(
     var messageToDelete by remember { mutableStateOf<ChatMessage?>(null) }
     var showOptionsSheet by remember { mutableStateOf(false) }
     var selectedMessage by remember { mutableStateOf<ChatMessage?>(null) }
+    
+    // State to handle full screen image viewing
+    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
-    // Bộ chọn ảnh từ thư viện
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            // Khi chọn xong, gọi ViewModel để upload lên Cloudinary và gửi tin nhắn
             chatViewModel.sendImageMessage(currentUserId, userId, it)
         }
     }
@@ -228,12 +232,14 @@ fun ChatDetailScreen(
                             },
                             onSwipeToReply = {
                                 chatViewModel.setReplyingTo(message)
+                            },
+                            onImageClick = { url ->
+                                fullScreenImageUrl = url
                             }
                         )
                     }
                 }
 
-                // Hiển thị thanh tiến trình khi đang upload ảnh
                 if (chatViewModel.isUploading.value) {
                     LinearProgressIndicator(
                         progress = chatViewModel.uploadProgress.value.toFloat(),
@@ -258,7 +264,6 @@ fun ChatDetailScreen(
                         chatViewModel.sendMessage(currentUserId, userId, "👍")
                     },
                     onImageClick = {
-                        // Gọi bộ chọn ảnh
                         imagePickerLauncher.launch("image/*")
                     }
                 )
@@ -277,6 +282,17 @@ fun ChatDetailScreen(
                         showOptionsSheet = false
                     }
                 )
+            }
+            
+            // Full Screen Image Viewer Overlay
+            AnimatedVisibility(
+                visible = fullScreenImageUrl != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                fullScreenImageUrl?.let { url ->
+                    FullScreenImageOverlay(imageUrl = url, onDismiss = { fullScreenImageUrl = null })
+                }
             }
         }
     }
@@ -301,6 +317,38 @@ fun ChatDetailScreen(
             },
             shape = RoundedCornerShape(16.dp)
         )
+    }
+}
+
+@Composable
+fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .clickable(onClick = onDismiss)
+    ) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = "Full Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Fit
+        )
+        
+        IconButton(
+            onClick = onDismiss,
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
     }
 }
 
@@ -367,7 +415,8 @@ fun MessageBubble(
     showTime: Boolean,
     showAvatar: Boolean,
     onLongPress: () -> Unit,
-    onSwipeToReply: () -> Unit
+    onSwipeToReply: () -> Unit,
+    onImageClick: (String) -> Unit
 ) {
     val offsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
@@ -434,6 +483,7 @@ fun MessageBubble(
                 .padding(vertical = 1.dp),
             horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
         ) {
+            // Reply Header
             if (message.replyToId != null) {
                 val replyName = if (message.replyToName == "Bạn") "bạn" else otherUserName
                 Row(
@@ -479,24 +529,37 @@ fun MessageBubble(
                 }
 
                 Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
-                    if (message.replyToText != null) {
-                        Box(
+                    // Replied UI (Thumbnail for image replies)
+                    if (message.replyToImageUrl != null) {
+                        AsyncImage(
+                            model = message.replyToImageUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .width(150.dp)
+                                .height(100.dp)
+                                .padding(bottom = 4.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (message.replyToText != null) {
+                        Surface(
                             modifier = Modifier
                                 .padding(bottom = 2.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(Color(0xFFF0F2F5))
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                .clip(RoundedCornerShape(14.dp)),
+                            color = Color(0xFFF0F2F5)
                         ) {
                             Text(
                                 text = message.replyToText,
                                 fontSize = 13.sp,
                                 color = Color.Gray,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
 
+                    // Main Message Content
                     Column(
                         horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
                     ) {
@@ -505,11 +568,11 @@ fun MessageBubble(
                                 model = message.imageUrl,
                                 contentDescription = "Image message",
                                 modifier = Modifier
-                                    .widthIn(max = 240.dp)
+                                    .widthIn(max = 210.dp) // Smaller image as requested
                                     .padding(bottom = 4.dp)
                                     .clip(RoundedCornerShape(18.dp))
                                     .combinedClickable(
-                                        onClick = {},
+                                        onClick = { onImageClick(message.imageUrl) },
                                         onLongClick = onLongPress
                                     ),
                                 contentScale = ContentScale.Fit
@@ -584,7 +647,24 @@ fun ChatBottomBar(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Đang trả lời tin nhắn", fontSize = 12.sp, color = Color(0xFF0084FF), fontWeight = FontWeight.Bold)
-                        Text(replyingTo.messageText, fontSize = 14.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(
+                            text = if (replyingTo.messageText.isNotBlank()) replyingTo.messageText else "Hình ảnh", 
+                            fontSize = 14.sp, 
+                            color = Color.Gray, 
+                            maxLines = 1, 
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    if (replyingTo.imageUrl != null) {
+                        AsyncImage(
+                            model = replyingTo.imageUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .padding(start = 8.dp),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                     IconButton(onClick = onCancelReply, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -605,9 +685,7 @@ fun ChatBottomBar(
                 
                 TextField(
                     value = messageText,
-                    onValueChange = {
-                        onMessageChange(it)
-                    },
+                    onValueChange = onMessageChange,
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 40.dp)
