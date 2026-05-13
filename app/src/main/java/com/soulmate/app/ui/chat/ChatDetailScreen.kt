@@ -67,7 +67,6 @@ fun ChatDetailScreen(
     var showOptionsSheet by remember { mutableStateOf(false) }
     var selectedMessage by remember { mutableStateOf<ChatMessage?>(null) }
     
-    // State to handle full screen image viewing
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -102,9 +101,10 @@ fun ChatDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
+        backgroundColor = Color.Black,
         topBar = {
             TopAppBar(
-                backgroundColor = Color.White,
+                backgroundColor = Color.Black,
                 elevation = 1.dp,
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -131,7 +131,7 @@ fun ChatDetailScreen(
                                 modifier = Modifier
                                     .size(10.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White)
+                                    .background(Color.Black)
                                     .padding(1.5.dp)
                             ) {
                                 Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
@@ -143,7 +143,7 @@ fun ChatDetailScreen(
                                 text = userName,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black,
+                                color = Color.White,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -163,14 +163,13 @@ fun ChatDetailScreen(
                     }
                 }
             )
-        },
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+        }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
+                    .background(Color.Black)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
             ) {
                 LazyColumn(
@@ -192,20 +191,6 @@ fun ChatDetailScreen(
                             }
                         }
 
-                        val isLastInBurst = remember(messages, index) {
-                            if (index == messages.lastIndex) true
-                            else {
-                                val current = messages[index]
-                                val next = messages[index + 1]
-                                if (current.senderId != next.senderId) true
-                                else {
-                                    val currentTime = current.timestamp?.seconds ?: 0L
-                                    val nextTime = next.timestamp?.seconds ?: 0L
-                                    (nextTime - currentTime) > 3 * 60
-                                }
-                            }
-                        }
-
                         if (showHeader) {
                             Text(
                                 text = formatHeaderDate(message.timestamp),
@@ -224,8 +209,8 @@ fun ChatDetailScreen(
                             isMine = message.senderId == currentUserId,
                             userAvatarUrl = userAvatarUrl,
                             otherUserName = userName,
-                            showTime = isLastInBurst,
-                            showAvatar = isLastInBurst && message.senderId != currentUserId,
+                            showTime = index == messages.lastIndex || messages[index+1].senderId != message.senderId,
+                            showAvatar = message.senderId != currentUserId,
                             onLongPress = {
                                 selectedMessage = message
                                 showOptionsSheet = true
@@ -245,7 +230,7 @@ fun ChatDetailScreen(
                         progress = chatViewModel.uploadProgress.value.toFloat(),
                         modifier = Modifier.fillMaxWidth(),
                         color = Color(0xFF0084FF),
-                        backgroundColor = Color(0xFFF0F2F5)
+                        backgroundColor = Color(0xFF242526)
                     )
                 }
                 
@@ -284,7 +269,6 @@ fun ChatDetailScreen(
                 )
             }
             
-            // Full Screen Image Viewer Overlay
             AnimatedVisibility(
                 visible = fullScreenImageUrl != null,
                 enter = fadeIn(),
@@ -300,6 +284,8 @@ fun ChatDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
+            backgroundColor = Color(0xFF242526),
+            contentColor = Color.White,
             title = { Text("Xóa tin nhắn?", fontWeight = FontWeight.Bold) },
             text = { Text("Bạn có chắc chắn muốn xóa vĩnh viễn tin nhắn này không?") },
             confirmButton = {
@@ -312,7 +298,7 @@ fun ChatDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Hủy")
+                    Text("Hủy", color = Color.White)
                 }
             },
             shape = RoundedCornerShape(16.dp)
@@ -357,13 +343,14 @@ fun ModalOptions(onDismiss: () -> Unit, onReply: () -> Unit, onDelete: () -> Uni
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.4f))
+            .background(Color.Black.copy(alpha = 0.6f))
             .clickable(onClick = onDismiss),
         contentAlignment = Alignment.Center
     ) {
         Card(
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.width(200.dp).clickable(enabled = false) { },
+            backgroundColor = Color(0xFF242526),
             elevation = 8.dp
         ) {
             Column {
@@ -372,12 +359,12 @@ fun ModalOptions(onDismiss: () -> Unit, onReply: () -> Unit, onDelete: () -> Uni
                     modifier = Modifier.fillMaxWidth().padding(8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.AutoMirrored.Filled.Reply, contentDescription = null, tint = Color.Black)
+                        Icon(Icons.AutoMirrored.Filled.Reply, contentDescription = null, tint = Color.White)
                         ClarificationSpacer()
-                        Text("Trả lời", color = Color.Black)
+                        Text("Trả lời", color = Color.White)
                     }
                 }
-                Divider()
+                Divider(color = Color.Gray.copy(alpha = 0.2f))
                 TextButton(
                     onClick = onDelete,
                     modifier = Modifier.fillMaxWidth().padding(8.dp)
@@ -483,14 +470,13 @@ fun MessageBubble(
                 .padding(vertical = 1.dp),
             horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
         ) {
-            // Reply Header
             if (message.replyToId != null) {
                 val replyName = if (message.replyToName == "Bạn") "bạn" else otherUserName
                 Row(
                     modifier = Modifier.padding(
                         start = if (isMine) 0.dp else 36.dp,
                         end = if (isMine) 8.dp else 0.dp,
-                        bottom = 2.dp
+                        bottom = 4.dp
                     ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -518,18 +504,17 @@ fun MessageBubble(
                         AsyncImage(
                             model = userAvatarUrl ?: R.drawable.ava1,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp).clip(CircleShape),
+                            modifier = Modifier.size(24.dp).clip(CircleShape),
                             contentScale = ContentScale.Crop,
                             error = painterResource(R.drawable.ava1)
                         )
                     } else {
-                        Spacer(modifier = Modifier.size(28.dp))
+                        Spacer(modifier = Modifier.size(24.dp))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                 }
 
                 Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
-                    // Replied UI (Thumbnail for image replies)
                     if (message.replyToImageUrl != null) {
                         AsyncImage(
                             model = message.replyToImageUrl,
@@ -546,7 +531,7 @@ fun MessageBubble(
                             modifier = Modifier
                                 .padding(bottom = 2.dp)
                                 .clip(RoundedCornerShape(14.dp)),
-                            color = Color(0xFFF0F2F5)
+                            color = Color(0xFF242526)
                         ) {
                             Text(
                                 text = message.replyToText,
@@ -559,7 +544,6 @@ fun MessageBubble(
                         }
                     }
 
-                    // Main Message Content
                     Column(
                         horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
                     ) {
@@ -568,7 +552,7 @@ fun MessageBubble(
                                 model = message.imageUrl,
                                 contentDescription = "Image message",
                                 modifier = Modifier
-                                    .widthIn(max = 210.dp) // Smaller image as requested
+                                    .widthIn(max = 210.dp)
                                     .padding(bottom = 4.dp)
                                     .clip(RoundedCornerShape(18.dp))
                                     .combinedClickable(
@@ -587,11 +571,11 @@ fun MessageBubble(
                                         RoundedCornerShape(
                                             topStart = 18.dp,
                                             topEnd = 18.dp,
-                                            bottomStart = if (isMine) 18.dp else (if (showAvatar) 4.dp else 18.dp),
-                                            bottomEnd = if (isMine) (if (showTime) 4.dp else 18.dp) else 18.dp
+                                            bottomStart = if (isMine) 18.dp else 4.dp,
+                                            bottomEnd = if (isMine) 4.dp else 18.dp
                                         )
                                     )
-                                    .background(if (isMine) Color(0xFF0084FF) else Color(0xFFF0F2F5))
+                                    .background(if (isMine) Color(0xFF0084FF) else Color(0xFF242526))
                                     .combinedClickable(
                                         onClick = {},
                                         onLongClick = onLongPress
@@ -600,7 +584,7 @@ fun MessageBubble(
                             ) {
                                 Text(
                                     text = message.messageText,
-                                    color = if (isMine) Color.White else Color.Black,
+                                    color = Color.White,
                                     fontSize = 15.sp
                                 )
                             }
@@ -637,12 +621,12 @@ fun ChatBottomBar(
 ) {
     Surface(
         elevation = 8.dp,
-        color = Color.White
+        color = Color.Black
     ) {
         Column {
             if (replyingTo != null) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Color(0xFFF0F2F5)).padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.fillMaxWidth().background(Color(0xFF242526)).padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -667,13 +651,13 @@ fun ChatBottomBar(
                         )
                     }
                     IconButton(onClick = onCancelReply, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                     }
                 }
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp).background(Color.Black),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {}) {
@@ -691,14 +675,14 @@ fun ChatBottomBar(
                         .heightIn(min = 40.dp)
                         .clip(RoundedCornerShape(20.dp)),
                     placeholder = { Text("Aa", color = Color.Gray, fontSize = 16.sp) },
-                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
+                    textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
                     colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color(0xFFF0F2F5),
+                        backgroundColor = Color(0xFF242526),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         disabledIndicatorColor = Color.Transparent,
-                        textColor = Color.Black,
-                        cursorColor = Color.Black
+                        textColor = Color.White,
+                        cursorColor = Color.White
                     ),
                     trailingIcon = {
                         IconButton(onClick = {}) {
