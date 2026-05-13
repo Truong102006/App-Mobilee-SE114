@@ -67,14 +67,24 @@ class CommunityViewModel @Inject constructor(
         }
     }
 
-    fun addComment(postId: String, userId: String, userName: String, userAvatarUrl: String?, content: String) {
+    fun addComment(
+        postId: String, 
+        userId: String, 
+        userName: String, 
+        userAvatarUrl: String?, 
+        content: String,
+        parentId: String? = null,
+        replyToUserName: String? = null
+    ) {
         val newComment = Comment(
             id = UUID.randomUUID().toString(),
             userId = userId,
             userName = userName,
             userAvatarUrl = userAvatarUrl,
             content = content,
-            timeAgo = "Vừa xong"
+            timeAgo = "Vừa xong",
+            parentId = parentId,
+            replyToUserName = replyToUserName
         )
         viewModelScope.launch {
             repository.addComment(postId, newComment)

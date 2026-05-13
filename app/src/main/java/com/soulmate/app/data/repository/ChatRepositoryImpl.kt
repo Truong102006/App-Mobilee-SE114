@@ -1,5 +1,6 @@
-﻿package com.soulmate.app.data.repository
+package com.soulmate.app.data.repository
 
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.data.remote.api.BackendApiService
@@ -25,6 +26,7 @@ class ChatRepositoryImpl @Inject constructor(
 ) : IChatRepository {
 
     companion object {
+        private const val TAG = "ChatRepositoryImpl"
         private const val POLL_INTERVAL_MS = 2000L
     }
 
@@ -108,5 +110,15 @@ class ChatRepositoryImpl @Inject constructor(
             authorization = "Bearer $idToken",
             otherUserId = otherUserId
         )
+    }
+
+    override suspend fun markAsRead(userId: String, otherUserId: String): Result<Unit> = runCatching {
+        // TODO: add backend endpoint to mark conversation messages as read.
+        Log.d(TAG, "markAsRead is not implemented on backend yet: userId=$userId otherUserId=$otherUserId")
+    }
+
+    override suspend fun deleteMessage(messageId: String): Result<Unit> = runCatching {
+        // TODO: add backend endpoint to delete a single message by id.
+        Log.d(TAG, "deleteMessage is not implemented on backend yet: messageId=$messageId")
     }
 }

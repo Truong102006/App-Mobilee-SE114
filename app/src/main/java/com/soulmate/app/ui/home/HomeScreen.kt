@@ -18,7 +18,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.R
+import com.soulmate.app.ui.chat.ChatViewModel
 import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.AuthViewModel
@@ -32,10 +34,12 @@ fun HomeScreen(
     musicViewModel: MusicViewModel, 
     historyViewModel: HistoryViewModel,
     communityViewModel: CommunityViewModel = hiltViewModel(),
+    chatViewModel: ChatViewModel = hiltViewModel(),
     onChatBubbleClick: () -> Unit = {},
     onNavigateToChat: (String, String, String?) -> Unit = { _, _, _ -> }
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
+    val currentUserId = remember { FirebaseAuth.getInstance().currentUser?.uid ?: "" }
 
     val songs = musicViewModel.songs
     val currentPlayingSong by musicViewModel.currentPlayingSong
@@ -46,10 +50,22 @@ fun HomeScreen(
     val currentUser by authViewModel.currentUser
     val communityPosts by communityViewModel.posts
     val postComments = communityViewModel.postComments
+    
+    val hasUnread by if (currentUserId.isNotEmpty()) {
+        chatViewModel.hasUnreadMessages(currentUserId).collectAsState()
+    } else {
+        remember { mutableStateOf(false) }
+    }
 
     val virtualCount = 50000
     val listState = rememberLazyListState()
     var selectedIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(currentUserId) {
+        if (currentUserId.isNotEmpty()) {
+            chatViewModel.loadLastMessages(currentUserId)
+        }
+    }
 
     LaunchedEffect(Unit) {
         listState.scrollToItem(virtualCount / 2)
@@ -94,16 +110,25 @@ fun HomeScreen(
         communityPosts = communityPosts,
         postComments = postComments,
         onLikeClick = { postId -> communityViewModel.toggleLike(postId) },
-        onCommentClick = { postId, comment -> 
+        onCommentClick = { postId, content, parentId, replyToUserName -> 
             val user = authViewModel.currentUser.value
-            communityViewModel.addComment(postId, user?.userId ?: "", user?.anonymousName ?: "User", user?.avatarUrl, comment) 
+            communityViewModel.addComment(
+                postId, 
+                user?.userId ?: "", 
+                user?.anonymousName ?: "User", 
+                user?.avatarUrl, 
+                content,
+                parentId,
+                replyToUserName
+            ) 
         },
         onLikeComment = { postId, commentId -> communityViewModel.toggleCommentLike(postId, commentId) },
         onOpenComments = { postId -> communityViewModel.loadComments(postId) },
         onDeleteClick = { postId -> communityViewModel.deletePost(postId) },
         onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) },
         onChatBubbleClick = onChatBubbleClick,
-        onUserClick = onNavigateToChat
+        onUserClick = onNavigateToChat,
+        hasUnread = hasUnread
     )
 }
 
@@ -129,13 +154,14 @@ fun HomeScreenContent(
     communityPosts: List<com.soulmate.app.ui.social.CommunityPost>,
     postComments: Map<String, List<Comment>>,
     onLikeClick: (String) -> Unit,
-    onCommentClick: (String, String) -> Unit,
+    onCommentClick: (String, String, String?, String?) -> Unit,
     onLikeComment: (String, String) -> Unit,
     onOpenComments: (String) -> Unit,
     onDeleteClick: (String) -> Unit,
     onEditClick: (String, String) -> Unit,
     onChatBubbleClick: () -> Unit,
-    onUserClick: (String, String, String?) -> Unit = { _, _, _ -> }
+    onUserClick: (String, String, String?) -> Unit = { _, _, _ -> },
+    hasUnread: Boolean = false
 ) {
     val virtualCount = 50000
 
@@ -215,7 +241,9 @@ fun HomeScreenContent(
                             post = post,
                             comments = postComments[post.id] ?: emptyList(),
                             onLikeClick = { onLikeClick(post.id) },
-                            onCommentClick = { comment -> onCommentClick(post.id, comment) },
+                            onCommentClick = { content, parentId, replyToUserName -> 
+                                onCommentClick(post.id, content, parentId, replyToUserName) 
+                            },
                             onLikeComment = { commentId -> onLikeComment(post.id, commentId) },
                             onOpenComments = { onOpenComments(post.id) },
                             onDeleteClick = { onDeleteClick(post.id) },
@@ -223,6 +251,11 @@ fun HomeScreenContent(
                             currentUserAvatarUrl = currentUser?.avatarUrl,
                             currentUserName = currentUser?.anonymousName ?: "User",
                             onUserClick = { 
+                                if (post.userId.isNotEmpty()) {
+                                    onUserClick(post.userId, post.userName, post.userAvatarUrl)
+                                }
+                            },
+                            onChatClick = {
                                 if (post.userId.isNotEmpty()) {
                                     onUserClick(post.userId, post.userName, post.userAvatarUrl)
                                 }
@@ -265,6 +298,18 @@ fun HomeScreenContent(
                     .padding(8.dp),
                 contentScale = ContentScale.Fit
             )
+            
+            if (hasUnread) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 4.dp, end = 4.dp)
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(Color.Red)
+                        .border(1.5.dp, Color.White, CircleShape)
+                )
+            }
         }
 
         if (isFullScreen && currentPlayingSong != null) {

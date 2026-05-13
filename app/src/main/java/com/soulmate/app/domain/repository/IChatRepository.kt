@@ -8,4 +8,6 @@ interface IChatRepository {
     fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>>
     fun getLastMessages(userId: String): Flow<List<ChatMessage>>
     suspend fun deleteConversation(userId: String, otherUserId: String): Result<Unit>
+    suspend fun markAsRead(userId: String, otherUserId: String): Result<Unit>
+    suspend fun deleteMessage(messageId: String): Result<Unit>
 }

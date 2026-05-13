@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,11 +33,32 @@ class ChatViewModel @Inject constructor(
     private val _lastMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val lastMessages: StateFlow<List<ChatMessage>> = _lastMessages.asStateFlow()
 
+    private val _replyingTo = mutableStateOf<ChatMessage?>(null)
+    val replyingTo: State<ChatMessage?> = _replyingTo
+
+    fun setReplyingTo(message: ChatMessage?) {
+        _replyingTo.value = message
+    }
+
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
             chatRepository.getMessages(senderId, receiverId).collect { list ->
-                // Sắp xếp tin nhắn từ cũ đến mới (từ trên xuống dưới)
-                _messages.value = list.sortedBy { it.timestamp?.seconds ?: 0L }
+                _messages.value = list.sortedWith { m1, m2 ->
+                    val t1 = m1.timestamp
+                    val t2 = m2.timestamp
+                    when {
+                        t1 == null && t2 == null -> 0
+                        t1 == null -> 1
+                        t2 == null -> -1
+                        else -> {
+                            if (t1.seconds != t2.seconds) {
+                                t1.seconds.compareTo(t2.seconds)
+                            } else {
+                                t1.nanoseconds.compareTo(t2.nanoseconds)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -49,20 +71,51 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    fun markAsRead(userId: String, otherUserId: String) {
+        viewModelScope.launch {
+            chatRepository.markAsRead(userId, otherUserId)
+        }
+    }
+
+    fun hasUnreadMessages(userId: String): StateFlow<Boolean> {
+        return lastMessages.map { messages ->
+            messages.any { it.receiverId == userId && !it.read }
+        }.let { flow ->
+            val state = MutableStateFlow(false)
+            viewModelScope.launch {
+                flow.collect { state.value = it }
+            }
+            state.asStateFlow()
+        }
+    }
+
     fun sendMessage(
         senderId: String,
         receiverId: String,
         messageText: String,
-        imageUrl: String? = null
+        imageUrl: String? = null,
+        replyTo: ChatMessage? = null
     ) {
         viewModelScope.launch {
             val chatMessage = ChatMessage(
                 senderId = senderId,
                 receiverId = receiverId,
                 messageText = messageText,
-                imageUrl = imageUrl
+                imageUrl = imageUrl,
+                read = false,
+                replyToId = replyTo?.id,
+                replyToText = replyTo?.messageText,
+                replyToName = if (replyTo?.senderId == senderId) "Bạn" else null,
+                replyToImageUrl = replyTo?.imageUrl
             )
             chatRepository.sendMessage(chatMessage)
+            _replyingTo.value = null
+        }
+    }
+
+    fun deleteMessage(messageId: String) {
+        viewModelScope.launch {
+            chatRepository.deleteMessage(messageId)
         }
     }
 

@@ -24,6 +24,7 @@ fun CommunityScreen(
 ) {
     val feedPosts by viewModel.posts
     val currentUser by authViewModel.currentUser
+    val allComments = viewModel.postComments
 
     Scaffold(
         topBar = {
@@ -49,14 +50,18 @@ fun CommunityScreen(
             items(feedPosts, key = { it.id }) { post ->
                 CommunityCard(
                     post = post,
+                    comments = allComments[post.id] ?: emptyList(), // TRUYỀN DANH SÁCH BÌNH LUẬN Ở ĐÂY
                     onLikeClick = { viewModel.toggleLike(post.id) },
-                    onCommentClick = { comment -> 
+                    onOpenComments = { viewModel.loadComments(post.id) }, // LOAD BÌNH LUẬN KHI MỞ
+                    onCommentClick = { content, parentId, replyToUserName -> 
                         viewModel.addComment(
                             post.id, 
                             currentUser?.userId ?: "", 
                             currentUser?.anonymousName ?: "User", 
                             currentUser?.avatarUrl, 
-                            comment
+                            content,
+                            parentId,
+                            replyToUserName
                         ) 
                     },
                     onLikeComment = { commentId -> viewModel.toggleCommentLike(post.id, commentId) },
