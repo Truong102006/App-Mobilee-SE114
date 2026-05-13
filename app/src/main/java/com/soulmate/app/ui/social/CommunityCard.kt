@@ -2,7 +2,10 @@ package com.soulmate.app.ui.social
 
 import android.text.TextUtils
 import android.widget.TextView
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -144,6 +147,9 @@ fun CommunityCard(
     var showCommentsModal by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var editedText by remember { mutableStateOf(post.textContent) }
+    
+    // State to handle full screen image viewing
+    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
     Card(
         modifier = modifier
@@ -301,7 +307,8 @@ fun CommunityCard(
                             modifier = Modifier
                                 .size(120.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.05f), RoundedCornerShape(12.dp)),
+                                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                                .clickable { fullScreenImageUrl = imageUrl }, // Bấm để xem full
                             contentScale = ContentScale.Crop
                         )
                     }
@@ -359,6 +366,43 @@ fun CommunityCard(
                         fontSize = 13.sp,
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f),
                         fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+
+    // --- FULL SCREEN IMAGE VIEW ---
+    if (fullScreenImageUrl != null) {
+        Dialog(
+            onDismissRequest = { fullScreenImageUrl = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .clickable { fullScreenImageUrl = null }
+            ) {
+                AsyncImage(
+                    model = fullScreenImageUrl,
+                    contentDescription = "Full Image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+                IconButton(
+                    onClick = { fullScreenImageUrl = null },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.TopStart)
+                        .statusBarsPadding()
+                        .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
