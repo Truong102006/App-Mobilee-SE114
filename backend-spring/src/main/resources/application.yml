@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: soulmate-backend-spring
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+firebase:
+  project-id: ${FIREBASE_PROJECT_ID:}
+  storage-bucket: ${FIREBASE_STORAGE_BUCKET:}
+
+backend:
+  security:
+    require-app-check: ${BACKEND_SECURITY_REQUIRE_APP_CHECK:true}
+    firebase-project-number: ${BACKEND_SECURITY_FIREBASE_PROJECT_NUMBER:}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-1.5-flash}
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+    upload-folder: ${CLOUDINARY_UPLOAD_FOLDER:soulmate_uploads}

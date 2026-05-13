@@ -1,10 +1,13 @@
 package com.soulmate.app.di
 
-import com.google.ai.client.generativeai.GenerativeModel
+import com.soulmate.app.BuildConfig
+import com.soulmate.app.data.remote.api.BackendApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -13,10 +16,16 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideGenerativeModel(): GenerativeModel {
-        return GenerativeModel(
-            modelName = "gemini-1.5-flash",
-            apiKey = "AIzaSyBx0JTRxdQi1CPqKtR-BZdj5QyPWuV57qM"
-        )
+    fun provideRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.BACKEND_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBackendApiService(retrofit: Retrofit): BackendApiService {
+        return retrofit.create(BackendApiService::class.java)
     }
 }

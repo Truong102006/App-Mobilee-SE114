@@ -1,101 +1,112 @@
-package com.soulmate.app.data.repository
+﻿package com.soulmate.app.data.repository
 
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.data.remote.api.BackendApiService
+import com.soulmate.app.data.remote.dto.ChatMessageItemDto
+import com.soulmate.app.data.remote.dto.SendChatMessageRequestDto
 import com.soulmate.app.domain.model.ChatMessage
 import com.soulmate.app.domain.repository.IChatRepository
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ChatRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val backendApiService: BackendApiService,
+    private val auth: FirebaseAuth
 ) : IChatRepository {
 
-    private val chatCollection = firestore.collection("chats")
+    companion object {
+        private const val POLL_INTERVAL_MS = 2000L
+    }
 
-    override suspend fun sendMessage(message: ChatMessage): Result<Unit> = try {
-        val messageData = hashMapOf(
-            "senderId" to message.senderId,
-            "receiverId" to message.receiverId,
-            "messageText" to message.messageText,
-            "imageUrl" to message.imageUrl,
-            "timestamp" to (message.timestamp ?: Timestamp.now())
+    private suspend fun requireIdToken(): String {
+        val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
+        return currentUser.getIdToken(true).await().token
+            ?: throw IllegalStateException("Cannot get Firebase ID token")
+    }
+
+    private fun mapMessage(item: ChatMessageItemDto): ChatMessage {
+        val timestamp = item.timestamp?.let { Timestamp(Date(it)) }
+        return ChatMessage(
+            id = item.id,
+            senderId = item.senderId,
+            receiverId = item.receiverId,
+            messageText = item.messageText,
+            imageUrl = item.imageUrl,
+            timestamp = timestamp
         )
-        chatCollection.add(messageData).await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
     }
 
-    override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = callbackFlow {
-        val subscription = chatCollection
-            .whereIn("senderId", listOf(senderId, receiverId))
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val messages = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
-                    }.filter { 
-                        (it.senderId == senderId && it.receiverId == receiverId) ||
-                        (it.senderId == receiverId && it.receiverId == senderId)
-                    }.sortedBy { it.timestamp?.seconds ?: 0L }
-                    
-                    trySend(messages)
-                }
-            }
-        awaitClose { subscription.remove() }
+    override suspend fun sendMessage(message: ChatMessage): Result<Unit> = runCatching {
+        require(message.receiverId.isNotBlank()) { "receiverId is required" }
+        require(message.senderId.isNotBlank()) { "senderId is required" }
+        require(message.messageText.isNotBlank() || !message.imageUrl.isNullOrBlank()) {
+            "messageText or imageUrl is required"
+        }
+
+        val idToken = requireIdToken()
+        backendApiService.sendChatMessage(
+            authorization = "Bearer $idToken",
+            request = SendChatMessageRequestDto(
+                receiverId = message.receiverId,
+                messageText = message.messageText.ifBlank { null },
+                imageUrl = message.imageUrl
+            )
+        )
     }
 
-    override fun getLastMessages(userId: String): Flow<List<ChatMessage>> = callbackFlow {
-        val subscription = chatCollection
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val allMessages = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
-                    }.filter { it.senderId == userId || it.receiverId == userId }
+    override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = flow {
+        while (currentCoroutineContext().isActive) {
+            val idToken = requireIdToken()
+            val currentUid = auth.currentUser?.uid.orEmpty()
+            val otherUserId = if (currentUid == senderId) receiverId else senderId
 
-                    val lastMessages = allMessages.groupBy { 
-                        if (it.senderId == userId) it.receiverId else it.senderId 
-                    }.map { it.value.first() }
-                    
-                    trySend(lastMessages)
-                }
-            }
-        awaitClose { subscription.remove() }
-    }
+            val messages = backendApiService
+                .listConversation(
+                    authorization = "Bearer $idToken",
+                    otherUserId = otherUserId,
+                    limit = 200
+                )
+                .messages
+                .map(::mapMessage)
+                .sortedBy { it.timestamp?.seconds ?: 0L }
 
-    override suspend fun deleteConversation(userId: String, otherUserId: String): Result<Unit> = try {
-        val messages = chatCollection
-            .whereIn("senderId", listOf(userId, otherUserId))
-            .get()
-            .await()
-            .documents
-            .filter { doc ->
-                val senderId = doc.getString("senderId")
-                val receiverId = doc.getString("receiverId")
-                (senderId == userId && receiverId == otherUserId) ||
-                (senderId == otherUserId && receiverId == userId)
-            }
-        
-        firestore.runBatch { batch ->
-            messages.forEach { batch.delete(it.reference) }
-        }.await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+            emit(messages)
+            delay(POLL_INTERVAL_MS)
+        }
+    }.distinctUntilChanged()
+
+    override fun getLastMessages(userId: String): Flow<List<ChatMessage>> = flow {
+        while (currentCoroutineContext().isActive) {
+            val idToken = requireIdToken()
+            val messages = backendApiService
+                .listInbox(
+                    authorization = "Bearer $idToken",
+                    limit = 100
+                )
+                .messages
+                .map(::mapMessage)
+                .sortedByDescending { it.timestamp?.seconds ?: 0L }
+
+            emit(messages)
+            delay(POLL_INTERVAL_MS)
+        }
+    }.distinctUntilChanged()
+
+    override suspend fun deleteConversation(userId: String, otherUserId: String): Result<Unit> = runCatching {
+        val idToken = requireIdToken()
+        backendApiService.deleteConversation(
+            authorization = "Bearer $idToken",
+            otherUserId = otherUserId
+        )
     }
 }

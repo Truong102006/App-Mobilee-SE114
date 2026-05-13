@@ -1,66 +1,45 @@
-package com.soulmate.app.data.repository
+﻿package com.soulmate.app.data.repository
 
 import android.net.Uri
 import android.util.Log
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.soulmate.app.data.remote.api.BackendApiService
+import com.soulmate.app.data.remote.dto.SaveDiaryRequestDto
 import com.soulmate.app.domain.model.Diary
 import com.soulmate.app.domain.repository.IDiaryRepository
 import com.soulmate.app.utils.CloudinaryHelper
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DiaryRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
+    private val backendApiService: BackendApiService,
     private val auth: FirebaseAuth
 ) : IDiaryRepository {
+
     companion object {
         private const val TAG = "DiaryRepositoryImpl"
+        private const val POLL_INTERVAL_MS = 3000L
     }
 
-    private val diariesCollection = firestore.collection("diaries")
-
-    private val fieldUserId = "user_id"
-    private val fieldTimestamp = "timestamp"
+    override fun getDiaries(userId: String): Flow<List<Diary>> = flow {
+        while (currentCoroutineContext().isActive) {
+            val diaries = loadDiaries().getOrDefault(emptyList())
+            emit(diaries)
+            delay(POLL_INTERVAL_MS)
+        }
+    }.distinctUntilChanged()
 
     private fun isRemoteHttpUrl(value: String): Boolean {
         return value.startsWith("http://", ignoreCase = true) ||
             value.startsWith("https://", ignoreCase = true)
-    }
-
-    override fun getDiaries(userId: String): Flow<List<Diary>> = callbackFlow {
-        val subscription = diariesCollection
-            .whereEqualTo(fieldUserId, userId)
-            .orderBy(fieldTimestamp, Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val diaries = snapshot.documents.mapNotNull { doc ->
-                        try {
-                            val diary = doc.toObject(Diary::class.java)
-                            val firebaseTimestamp = doc.get(fieldTimestamp) as? Timestamp
-                            diary?.copy(
-                                diaryId = doc.id,
-                                createdAt = firebaseTimestamp?.toDate()?.time ?: System.currentTimeMillis()
-                            )
-                        } catch (_: Exception) {
-                            null
-                        }
-                    }
-                    trySend(diaries)
-                }
-            }
-        awaitClose { subscription.remove() }
     }
 
     private suspend fun uploadToCloudinary(imagePath: String): String {
@@ -71,134 +50,114 @@ class DiaryRepositoryImpl @Inject constructor(
                 CloudinaryHelper.uploadImageSuspend(Uri.parse(imagePath))
             } catch (e: Exception) {
                 Log.e(TAG, "Cloudinary upload failed for $imagePath", e)
-                imagePath // Fallback to local path if upload fails
+                imagePath
             }
         }
     }
 
-    override suspend fun saveDiary(diary: Diary): Result<Unit> = try {
-        val currentUserUid = auth.currentUser?.uid ?: throw Exception("User not logged in")
+    private suspend fun requireIdToken(): String {
+        val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
+        return currentUser.getIdToken(true).await().token
+            ?: throw IllegalStateException("Cannot get Firebase ID token")
+    }
 
-        // Upload images to Cloudinary and get secure_urls
+    private fun mapDiary(diary: com.soulmate.app.data.remote.dto.DiaryItemDto): Diary {
+        return Diary(
+            diaryId = diary.diaryId,
+            userId = diary.userId,
+            title = diary.title,
+            content = diary.text,
+            imageUrls = diary.imageUrls,
+            audioUrl = diary.audioUrl,
+            moodTag = diary.moodTag,
+            createdAt = diary.createdAt ?: diary.updatedAt ?: System.currentTimeMillis(),
+            updatedAt = diary.updatedAt ?: diary.createdAt ?: System.currentTimeMillis()
+        )
+    }
+
+    override suspend fun saveDiary(diary: Diary): Result<Unit> = runCatching {
+        val idToken = requireIdToken()
+
         val uploadedUrls = diary.imageUrls.map { path ->
             uploadToCloudinary(path)
         }
 
-        val docRef = if (diary.diaryId.isEmpty()) {
-            diariesCollection.document()
-        } else {
-            diariesCollection.document(diary.diaryId)
-        }
-
-        val now = System.currentTimeMillis()
-
-        val diaryData = hashMapOf(
-            "diary_id" to docRef.id,
-            "user_id" to currentUserUid,
-            "text" to diary.content,
-            "mood_tag" to (diary.moodTag ?: "Neutral"),
-            "image_urls" to uploadedUrls,
-            "audio_url" to diary.audioUrl,
-            "timestamp" to Timestamp.now(),
-            "updated_at" to now
+        backendApiService.saveDiary(
+            authorization = "Bearer $idToken",
+            request = SaveDiaryRequestDto(
+                diaryId = diary.diaryId.ifBlank { null },
+                title = diary.title,
+                text = diary.content,
+                moodTag = diary.moodTag,
+                imageUrls = uploadedUrls,
+                audioUrl = diary.audioUrl
+            )
         )
-
-        docRef.set(diaryData).await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Log.e(TAG, "Save diary failed", e)
-        Result.failure(e)
     }
 
-    override suspend fun loadDiaries(): Result<List<Diary>> = try {
-        val uid = auth.currentUser?.uid ?: throw Exception("User not logged in")
+    override suspend fun loadDiaries(): Result<List<Diary>> = runCatching {
+        val idToken = requireIdToken()
+        backendApiService
+            .listMyDiaries(authorization = "Bearer $idToken")
+            .diaries
+            .map(::mapDiary)
+            .sortedByDescending { it.createdAt }
+    }
 
-        val snapshot = diariesCollection
-            .whereEqualTo(fieldUserId, uid)
-            .orderBy(fieldTimestamp, Query.Direction.DESCENDING)
-            .get()
-            .await()
+    override suspend fun loadDiaryById(diaryId: String): Result<Diary?> = runCatching {
+        if (diaryId.isBlank()) return@runCatching null
+        val diaries = loadDiaries().getOrThrow()
+        diaries.firstOrNull { it.diaryId == diaryId }
+    }
 
-        val listDiary = snapshot.documents.mapNotNull { doc ->
-            val diary = doc.toObject(Diary::class.java)
-            val firebaseTimestamp = doc.get(fieldTimestamp) as? Timestamp
-            diary?.copy(
-                diaryId = doc.id,
-                createdAt = firebaseTimestamp?.toDate()?.time ?: 0L
+    override suspend fun patchDiary(diaryId: String, updates: Map<String, Any?>): Result<Unit> = runCatching {
+        val existingDiary = loadDiaryById(diaryId).getOrThrow()
+            ?: throw IllegalStateException("Diary not found")
+
+        val mergedTitle = updates["title"] as? String ?: existingDiary.title
+        val mergedText = updates["text"] as? String ?: existingDiary.content
+
+        val mergedMood = when {
+            updates.containsKey("moodTag") -> updates["moodTag"] as? String
+            updates.containsKey("mood_tag") -> updates["mood_tag"] as? String
+            else -> existingDiary.moodTag
+        }
+
+        val mergedImageUrls = when {
+            updates.containsKey("imageUrls") -> extractStringList(updates["imageUrls"])
+            updates.containsKey("image_urls") -> extractStringList(updates["image_urls"])
+            else -> existingDiary.imageUrls
+        }
+
+        val mergedAudioUrl = when {
+            updates.containsKey("audioUrl") -> updates["audioUrl"] as? String
+            updates.containsKey("audio_url") -> updates["audio_url"] as? String
+            else -> existingDiary.audioUrl
+        }
+
+        saveDiary(
+            existingDiary.copy(
+                diaryId = diaryId,
+                title = mergedTitle,
+                content = mergedText,
+                moodTag = mergedMood,
+                imageUrls = mergedImageUrls,
+                audioUrl = mergedAudioUrl,
+                updatedAt = System.currentTimeMillis()
             )
-        }
-        Result.success(listDiary)
-    } catch (e: Exception) {
-        Result.failure(e)
+        ).getOrThrow()
     }
 
-    override suspend fun loadDiaryById(diaryId: String): Result<Diary?> = try {
-        val uid = auth.currentUser?.uid ?: throw Exception("User not logged in")
-        val snapshot = diariesCollection.document(diaryId).get().await()
-
-        if (!snapshot.exists()) {
-            Result.success(null)
-        } else {
-            val diary = snapshot.toObject(Diary::class.java)
-            val firebaseTimestamp = snapshot.get(fieldTimestamp) as? Timestamp
-            val finalDiary = diary?.copy(
-                diaryId = snapshot.id,
-                createdAt = firebaseTimestamp?.toDate()?.time ?: 0L
-            )
-
-            if (finalDiary?.userId != uid) {
-                Result.failure(Exception("Permission denied"))
-            } else {
-                Result.success(finalDiary)
-            }
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    override suspend fun deleteDiary(diaryId: String): Result<Unit> = runCatching {
+        val idToken = requireIdToken()
+        backendApiService.deleteDiary(
+            authorization = "Bearer $idToken",
+            diaryId = diaryId
+        )
     }
 
-    override suspend fun patchDiary(diaryId: String, updates: Map<String, Any?>): Result<Unit> = try {
-        val uid = auth.currentUser?.uid ?: throw Exception("User not logged in")
-        val docRef = diariesCollection.document(diaryId)
-        val snapshot = docRef.get().await()
-
-        if (!snapshot.exists()) {
-            throw Exception("Diary not found")
-        }
-
-        val diary = snapshot.toObject(Diary::class.java)
-        if (diary?.userId != uid) {
-            throw Exception("Permission denied")
-        }
-
-        val safeUpdates = updates.toMutableMap().apply {
-            remove("diaryId")
-            remove("diary_id")
-            remove("userId")
-            remove("user_id")
-            remove("createdAt")
-            remove("timestamp")
-            put("updated_at", System.currentTimeMillis())
-        }
-
-        docRef.update(safeUpdates).await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
-    }
-
-    override suspend fun deleteDiary(diaryId: String): Result<Unit> = try {
-        val uid = auth.currentUser?.uid ?: throw Exception("User not logged in")
-        val docRef = diariesCollection.document(diaryId)
-
-        val snapshot = docRef.get().await()
-        val diary = snapshot.toObject(Diary::class.java)
-        if (diary?.userId != uid) {
-            throw Exception("Permission denied")
-        }
-
-        docRef.delete().await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+    private fun extractStringList(value: Any?): List<String> {
+        if (value !is List<*>) return emptyList()
+        return value.filterIsInstance<String>().map { it.trim() }.filter { it.isNotBlank() }
     }
 }

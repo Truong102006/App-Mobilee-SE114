@@ -92,3 +92,23 @@ obj/
 
 # Captures (Android Studio Profiler)
 /captures
+
+# Environment / secrets
+.env
+.env.*
+functions/.env
+functions/.env.*
+!.env.example
+!functions/.env.example
+
+# Functions build artifacts
+functions/lib/
+functions/node_modules/
+
+# Spring backend build artifacts
+backend-spring/target/
+backend-spring/.env
+backend-spring/.env.*
+!backend-spring/.env.example
+backend-spring/.id_token.tmp
+backend-spring/.id_token.*
