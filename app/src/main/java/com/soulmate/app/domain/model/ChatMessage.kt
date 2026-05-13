@@ -12,5 +12,6 @@ data class ChatMessage(
     val read: Boolean = false,
     val replyToId: String? = null,
     val replyToText: String? = null,
-    val replyToName: String? = null
+    val replyToName: String? = null,
+    val replyToImageUrl: String? = null
 )

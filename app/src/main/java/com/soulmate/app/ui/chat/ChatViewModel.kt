@@ -105,7 +105,8 @@ class ChatViewModel @Inject constructor(
                 read = false,
                 replyToId = replyTo?.id,
                 replyToText = replyTo?.messageText,
-                replyToName = if (replyTo?.senderId == senderId) "Bạn" else null // We'll handle the name in UI if null
+                replyToName = if (replyTo?.senderId == senderId) "Bạn" else null,
+                replyToImageUrl = replyTo?.imageUrl
             )
             chatRepository.sendMessage(chatMessage)
             _replyingTo.value = null
