@@ -1,0 +1,10 @@
+target/
+.idea/
+*.iml
+.env
+.env.*
+!*.env.example
+.id_token.tmp
+.id_token.*
+secrets/
+.run-*.log
