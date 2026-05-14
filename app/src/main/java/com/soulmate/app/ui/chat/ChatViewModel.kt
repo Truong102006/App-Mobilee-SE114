@@ -1,5 +1,6 @@
 package com.soulmate.app.ui.chat
 
+import android.util.Log
 import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +10,7 @@ import com.soulmate.app.domain.model.ChatMessage
 import com.soulmate.app.domain.repository.IChatRepository
 import com.soulmate.app.utils.CloudinaryHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +22,9 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     private val chatRepository: IChatRepository
 ) : ViewModel() {
+    companion object {
+        private const val TAG = "ChatViewModel"
+    }
 
     private val _uploadProgress = mutableStateOf(0.0)
     val uploadProgress: State<Double> = _uploadProgress
@@ -42,32 +47,40 @@ class ChatViewModel @Inject constructor(
 
     fun loadMessages(senderId: String, receiverId: String) {
         viewModelScope.launch {
-            chatRepository.getMessages(senderId, receiverId).collect { list ->
-                _messages.value = list.sortedWith { m1, m2 ->
-                    val t1 = m1.timestamp
-                    val t2 = m2.timestamp
-                    when {
-                        t1 == null && t2 == null -> 0
-                        t1 == null -> 1
-                        t2 == null -> -1
-                        else -> {
-                            if (t1.seconds != t2.seconds) {
-                                t1.seconds.compareTo(t2.seconds)
-                            } else {
-                                t1.nanoseconds.compareTo(t2.nanoseconds)
+            chatRepository
+                .getMessages(senderId, receiverId)
+                .catch { e ->
+                    Log.w(TAG, "loadMessages failed: senderId=$senderId receiverId=$receiverId", e)
+                }
+                .collect { list ->
+                    _messages.value = list.sortedWith { m1, m2 ->
+                        val t1 = m1.timestamp
+                        val t2 = m2.timestamp
+                        when {
+                            t1 == null && t2 == null -> 0
+                            t1 == null -> 1
+                            t2 == null -> -1
+                            else -> {
+                                if (t1.seconds != t2.seconds) {
+                                    t1.seconds.compareTo(t2.seconds)
+                                } else {
+                                    t1.nanoseconds.compareTo(t2.nanoseconds)
+                                }
                             }
                         }
                     }
                 }
-            }
         }
     }
 
     fun loadLastMessages(userId: String) {
         viewModelScope.launch {
-            chatRepository.getLastMessages(userId).collect { list ->
-                _lastMessages.value = list
-            }
+            chatRepository
+                .getLastMessages(userId)
+                .catch { e -> Log.w(TAG, "loadLastMessages failed: userId=$userId", e) }
+                .collect { list ->
+                    _lastMessages.value = list
+                }
         }
     }
 

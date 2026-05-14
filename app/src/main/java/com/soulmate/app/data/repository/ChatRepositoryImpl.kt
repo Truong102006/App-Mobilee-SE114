@@ -68,38 +68,46 @@ class ChatRepositoryImpl @Inject constructor(
 
     override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = flow {
         while (currentCoroutineContext().isActive) {
-            val idToken = requireIdToken()
-            val currentUid = auth.currentUser?.uid.orEmpty()
-            val otherUserId = if (currentUid == senderId) receiverId else senderId
+            try {
+                val idToken = requireIdToken()
+                val currentUid = auth.currentUser?.uid.orEmpty()
+                val otherUserId = if (currentUid == senderId) receiverId else senderId
 
-            val messages = backendApiService
-                .listConversation(
-                    authorization = "Bearer $idToken",
-                    otherUserId = otherUserId,
-                    limit = 200
-                )
-                .messages
-                .map(::mapMessage)
-                .sortedBy { it.timestamp?.seconds ?: 0L }
+                val messages = backendApiService
+                    .listConversation(
+                        authorization = "Bearer $idToken",
+                        otherUserId = otherUserId,
+                        limit = 200
+                    )
+                    .messages
+                    .map(::mapMessage)
+                    .sortedBy { it.timestamp?.seconds ?: 0L }
 
-            emit(messages)
+                emit(messages)
+            } catch (e: Exception) {
+                Log.w(TAG, "Unable to load chat messages: senderId=$senderId receiverId=$receiverId", e)
+            }
             delay(POLL_INTERVAL_MS)
         }
     }.distinctUntilChanged()
 
     override fun getLastMessages(userId: String): Flow<List<ChatMessage>> = flow {
         while (currentCoroutineContext().isActive) {
-            val idToken = requireIdToken()
-            val messages = backendApiService
-                .listInbox(
-                    authorization = "Bearer $idToken",
-                    limit = 100
-                )
-                .messages
-                .map(::mapMessage)
-                .sortedByDescending { it.timestamp?.seconds ?: 0L }
+            try {
+                val idToken = requireIdToken()
+                val messages = backendApiService
+                    .listInbox(
+                        authorization = "Bearer $idToken",
+                        limit = 100
+                    )
+                    .messages
+                    .map(::mapMessage)
+                    .sortedByDescending { it.timestamp?.seconds ?: 0L }
 
-            emit(messages)
+                emit(messages)
+            } catch (e: Exception) {
+                Log.w(TAG, "Unable to load chat inbox: userId=$userId", e)
+            }
             delay(POLL_INTERVAL_MS)
         }
     }.distinctUntilChanged()
