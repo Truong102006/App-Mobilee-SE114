@@ -32,6 +32,10 @@ Thumbs.db
 
 # Firebase / Google Services (nếu có file riêng)
 google-services.json
+google-services*.json
+app/google-services*.json
+service-account*.json
+backend-spring/service-account*.json
 
 # Keystore (rất quan trọng)
 *.jks
@@ -112,3 +116,8 @@ backend-spring/.env.*
 !backend-spring/.env.example
 backend-spring/.id_token.tmp
 backend-spring/.id_token.*
+
+# AI Agents / Tools
+.agent/
+.gemini/
+
