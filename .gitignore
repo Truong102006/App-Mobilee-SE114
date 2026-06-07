@@ -120,4 +120,5 @@ backend-spring/.id_token.*
 # AI Agents / Tools
 .agent/
 .gemini/
+docs/
 

@@ -4,3 +4,9 @@ lib/
 .env.*
 !.env.example
 npm-debug.log*
+.agent/
+.docs/
+.service-account.json/
+.firebase/
+.firebase-debug.log*
+.firebase-debug.*.log
