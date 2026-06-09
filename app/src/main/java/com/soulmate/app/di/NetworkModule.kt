@@ -1,7 +1,7 @@
 package com.soulmate.app.di
 
-import com.soulmate.app.BuildConfig
 import com.soulmate.app.data.remote.api.BackendApiService
+import com.soulmate.app.utils.BackendUrlResolver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,7 +18,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.BACKEND_BASE_URL)
+            .baseUrl(BackendUrlResolver.resolveBaseUrl())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
