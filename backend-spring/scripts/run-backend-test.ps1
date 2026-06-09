@@ -7,6 +7,25 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+function Resolve-MavenCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectRoot
+    )
+
+    $wrapperPath = Join-Path $ProjectRoot "mvnw.cmd"
+    if (Test-Path -LiteralPath $wrapperPath) {
+        return $wrapperPath
+    }
+
+    $maven = Get-Command mvn -ErrorAction SilentlyContinue
+    if ($maven) {
+        return $maven.Source
+    }
+
+    throw "Neither Maven Wrapper nor mvn was found. Run scripts\\setup-dev-machine.ps1 or install Maven first."
+}
+
 $projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 Set-Location -LiteralPath $projectRoot
 
@@ -31,4 +50,9 @@ if (-not $env:CLOUDINARY_API_KEY) { $env:CLOUDINARY_API_KEY = "demo-key" }
 if (-not $env:CLOUDINARY_API_SECRET) { $env:CLOUDINARY_API_SECRET = "demo-secret" }
 if (-not $env:CLOUDINARY_UPLOAD_FOLDER) { $env:CLOUDINARY_UPLOAD_FOLDER = "soulmate_uploads" }
 
-mvn spring-boot:run
+$mavenCommand = Resolve-MavenCommand -ProjectRoot $projectRoot
+& $mavenCommand "spring-boot:run"
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Backend test launcher failed with exit code $LASTEXITCODE."
+}

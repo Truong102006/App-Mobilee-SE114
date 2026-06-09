@@ -5,7 +5,6 @@ import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.soulmate.app.BuildConfig
 import com.soulmate.app.data.remote.dto.SignUploadResponseDto
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -89,7 +88,7 @@ object CloudinaryHelper {
         val requestJson = gson.toJson(mapOf("publicId" to null, "context" to "source=android"))
 
         val request = Request.Builder()
-            .url(BuildConfig.BACKEND_BASE_URL + "api/secure/cloudinary/sign-upload")
+            .url(BackendUrlResolver.buildEndpoint("api/secure/cloudinary/sign-upload"))
             .addHeader("Authorization", "Bearer $idToken")
             .post(requestJson.toRequestBody("application/json".toMediaType()))
             .build()
