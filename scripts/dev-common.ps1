@@ -29,6 +29,14 @@ function Resolve-BackendStdErrPath {
     Join-Path (Ensure-LocalDevDir) "backend.stderr.log"
 }
 
+function Resolve-EmulatorStdOutPath {
+    Join-Path (Ensure-LocalDevDir) "emulator.stdout.log"
+}
+
+function Resolve-EmulatorStdErrPath {
+    Join-Path (Ensure-LocalDevDir) "emulator.stderr.log"
+}
+
 function Convert-GradlePathToWindowsPath {
     param(
         [Parameter(Mandatory = $true)]
@@ -91,6 +99,19 @@ function Resolve-EmulatorPath {
     $emulatorPath
 }
 
+function Get-EmulatorCandidatePaths {
+    $candidates = New-Object System.Collections.Generic.List[string]
+    $primaryPath = Resolve-EmulatorPath
+    $candidates.Add($primaryPath)
+
+    $backupPath = Join-Path (Resolve-AndroidSdkDir) "emulator.backup\emulator.exe"
+    if ((Test-Path -LiteralPath $backupPath) -and ($backupPath -ne $primaryPath)) {
+        $candidates.Add($backupPath)
+    }
+
+    $candidates.ToArray()
+}
+
 function Resolve-GradleWrapperPath {
     $gradlePath = Join-Path (Get-RepoRoot) "gradlew.bat"
     if (-not (Test-Path -LiteralPath $gradlePath)) {
@@ -98,6 +119,41 @@ function Resolve-GradleWrapperPath {
     }
 
     $gradlePath
+}
+
+function Resolve-JavaHomeForGradle {
+    $candidates = New-Object System.Collections.Generic.List[string]
+
+    foreach ($value in @(
+        $env:JAVA_HOME,
+        [System.Environment]::GetEnvironmentVariable("JAVA_HOME", "User"),
+        [System.Environment]::GetEnvironmentVariable("JAVA_HOME", "Machine")
+    )) {
+        if ($value) {
+            $candidates.Add($value.TrimEnd('\'))
+        }
+    }
+
+    $javaCommand = Get-Command java -ErrorAction SilentlyContinue
+    if ($javaCommand) {
+        $candidates.Add((Split-Path -Parent (Split-Path -Parent $javaCommand.Source)))
+    }
+
+    $adoptiumRoot = Join-Path $env:ProgramFiles "Eclipse Adoptium"
+    if (Test-Path -LiteralPath $adoptiumRoot) {
+        Get-ChildItem -LiteralPath $adoptiumRoot -Directory -ErrorAction SilentlyContinue |
+            Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "bin\java.exe") } |
+            Sort-Object LastWriteTime -Descending |
+            ForEach-Object { $candidates.Add($_.FullName.TrimEnd('\')) }
+    }
+
+    foreach ($candidate in @($candidates | Select-Object -Unique)) {
+        if ($candidate -and (Test-Path -LiteralPath (Join-Path $candidate "bin\java.exe"))) {
+            return $candidate
+        }
+    }
+
+    throw "Could not resolve a valid JAVA_HOME for Gradle."
 }
 
 function Resolve-DebugApkPath {
@@ -125,7 +181,7 @@ function Get-BackendState {
 function Remove-BackendState {
     $statePath = Resolve-BackendStatePath
     if (Test-Path -LiteralPath $statePath) {
-        Remove-Item -LiteralPath $statePath -Force
+        Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -248,8 +304,9 @@ function Stop-ManagedBackend {
 
     Start-Sleep -Seconds 2
 
-    if ($state.RuntimePid -and [int]$state.RuntimePid -gt 0) {
-        $runtimePid = [int]$state.RuntimePid
+    $runtimePidProperty = $state.PSObject.Properties["RuntimePid"]
+    if ($runtimePidProperty -and $runtimePidProperty.Value -and [int]$runtimePidProperty.Value -gt 0) {
+        $runtimePid = [int]$runtimePidProperty.Value
         if (Get-Process -Id $runtimePid -ErrorAction SilentlyContinue) {
             cmd /c "taskkill /PID $runtimePid /T /F" | Out-Null
         }
@@ -402,13 +459,53 @@ function Invoke-GradleTask {
     )
 
     $gradlePath = Resolve-GradleWrapperPath
+    $javaHome = Resolve-JavaHomeForGradle
+    $previousJavaHome = $env:JAVA_HOME
+    $previousPath = $env:Path
+    $stdoutPath = Join-Path (Ensure-LocalDevDir) "gradle.stdout.log"
+    $stderrPath = Join-Path (Ensure-LocalDevDir) "gradle.stderr.log"
+
     Push-Location (Get-RepoRoot)
     try {
-        & $gradlePath @Tasks
-        if ($LASTEXITCODE -ne 0) {
+        $env:JAVA_HOME = $javaHome
+        $javaBinPath = Join-Path $javaHome "bin"
+        if (-not (($env:Path -split ';') | Where-Object { $_.TrimEnd('\') -ieq $javaBinPath.TrimEnd('\') })) {
+            $env:Path = "$javaBinPath;$($env:Path)"
+        }
+
+        if (Test-Path -LiteralPath $stdoutPath) {
+            Remove-Item -LiteralPath $stdoutPath -Force
+        }
+        if (Test-Path -LiteralPath $stderrPath) {
+            Remove-Item -LiteralPath $stderrPath -Force
+        }
+
+        $quotedJavaHome = '"' + $javaHome + '"'
+        $gradleArguments = @("--no-daemon", "-Dorg.gradle.java.home=$quotedJavaHome") + $Tasks
+
+        $process = Start-Process -FilePath $gradlePath `
+            -ArgumentList $gradleArguments `
+            -WorkingDirectory (Get-RepoRoot) `
+            -RedirectStandardOutput $stdoutPath `
+            -RedirectStandardError $stderrPath `
+            -Wait `
+            -PassThru
+
+        foreach ($line in @(
+            if (Test-Path -LiteralPath $stdoutPath) { Get-Content -LiteralPath $stdoutPath }
+            if (Test-Path -LiteralPath $stderrPath) { Get-Content -LiteralPath $stderrPath }
+        )) {
+            if ($line) {
+                Write-Host $line
+            }
+        }
+
+        if ($process.ExitCode -ne 0) {
             throw "Gradle task failed: $($Tasks -join ' ')"
         }
     } finally {
+        $env:JAVA_HOME = $previousJavaHome
+        $env:Path = $previousPath
         Pop-Location
     }
 }
@@ -419,7 +516,7 @@ function Build-DebugApk {
     )
 
     if (-not $SkipBuild) {
-        Invoke-GradleTask -Tasks @(":app:assembleDebug")
+        $null = Invoke-GradleTask -Tasks @(":app:assembleDebug")
     }
 
     $apkPath = Resolve-DebugApkPath
@@ -479,6 +576,81 @@ function Get-AvailableAvdNames {
     )
 }
 
+function Resolve-AvdDirectory {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AvdName
+    )
+
+    Join-Path $env:USERPROFILE ".android\avd\$AvdName.avd"
+}
+
+function Get-EmulatorProcessesForAvd {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AvdName
+    )
+
+    $escapedAvdName = [regex]::Escape($AvdName)
+    @(
+        Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+            Where-Object {
+                ($_.Name -ieq "emulator.exe" -or $_.Name -like "qemu-system*") -and
+                $_.CommandLine -and
+                $_.CommandLine -match "(?i)(^|\s)-avd\s+`"?$escapedAvdName`"?(\s|$)"
+            }
+    )
+}
+
+function Stop-EmulatorProcessesForAvd {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AvdName
+    )
+
+    $processes = @(Get-EmulatorProcessesForAvd -AvdName $AvdName)
+    if ($processes.Count -eq 0) {
+        return
+    }
+
+    $processIds = @($processes | Select-Object -ExpandProperty ProcessId -Unique)
+    foreach ($processId in $processIds) {
+        if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
+            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    Start-Sleep -Seconds 2
+}
+
+function Remove-AvdLockFiles {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AvdName
+    )
+
+    $avdDirectory = Resolve-AvdDirectory -AvdName $AvdName
+    if (-not (Test-Path -LiteralPath $avdDirectory)) {
+        return
+    }
+
+    Get-ChildItem -LiteralPath $avdDirectory -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "*.lock" } |
+        ForEach-Object {
+            Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        }
+}
+
+function Reset-StaleEmulatorState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AvdName
+    )
+
+    Stop-EmulatorProcessesForAvd -AvdName $AvdName
+    Remove-AvdLockFiles -AvdName $AvdName
+}
+
 function Wait-ForAndroidBoot {
     param(
         [Parameter(Mandatory = $true)]
@@ -504,6 +676,76 @@ function Wait-ForAndroidBoot {
     }
 
     throw "Device $Serial did not finish booting within $TimeoutSeconds seconds."
+}
+
+function Wait-ForEmulatorConnection {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AvdName,
+        [string[]]$ExistingSerials = @(),
+        [int]$ProcessId = 0,
+        [string]$StdOutPath = "",
+        [string]$StdErrPath = "",
+        [int]$TimeoutSeconds = 240
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        $stdoutTail = if ($StdOutPath) { Get-LogTail -Path $StdOutPath -LineCount 60 } else { "" }
+        $stderrTail = if ($StdErrPath) { Get-LogTail -Path $StdErrPath -LineCount 60 } else { "" }
+        $combinedTail = ($stdoutTail + [Environment]::NewLine + $stderrTail).Trim()
+        if (
+            $combinedTail -match "Showing crashdialog to get consent" -or
+            $combinedTail -match "Failed to load opengl32sw" -or
+            $combinedTail -match "Running multiple emulators with the same AVD"
+        ) {
+            $message = "Emulator '$AvdName' reported a startup failure."
+            if ($stdoutTail) {
+                $message += [Environment]::NewLine + $stdoutTail
+            }
+            if ($stderrTail) {
+                $message += [Environment]::NewLine + $stderrTail
+            }
+            throw $message
+        }
+
+        $currentEmulators = @(
+            Get-ConnectedAndroidDevices |
+                Where-Object { $_.IsEmulator } |
+                Select-Object -ExpandProperty Serial
+        )
+
+        $newEmulators = @($currentEmulators | Where-Object { $ExistingSerials -notcontains $_ })
+        if ($newEmulators.Count -gt 0) {
+            $serial = $newEmulators[0]
+            Wait-ForAndroidBoot -Serial $serial
+            return $serial
+        }
+
+        if ($ProcessId -gt 0 -and -not (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)) {
+            $message = "Emulator '$AvdName' exited before it connected to adb."
+            if ($stdoutTail) {
+                $message += [Environment]::NewLine + $stdoutTail
+            }
+            if ($stderrTail) {
+                $message += [Environment]::NewLine + $stderrTail
+            }
+            throw $message
+        }
+
+        Start-Sleep -Seconds 3
+    }
+
+    $stdoutTail = if ($StdOutPath) { Get-LogTail -Path $StdOutPath -LineCount 60 } else { "" }
+    $stderrTail = if ($StdErrPath) { Get-LogTail -Path $StdErrPath -LineCount 60 } else { "" }
+    $message = "Timed out waiting for emulator '$AvdName' to connect."
+    if ($stdoutTail) {
+        $message += [Environment]::NewLine + $stdoutTail
+    }
+    if ($stderrTail) {
+        $message += [Environment]::NewLine + $stderrTail
+    }
+    throw $message
 }
 
 function Start-Or-ResolveEmulator {
@@ -536,28 +778,49 @@ function Start-Or-ResolveEmulator {
         throw "AVD '$AvdName' was not found. Available AVDs: $($availableAvds -join ', ')"
     }
 
-    $emulatorPath = Resolve-EmulatorPath
-    Start-Process -FilePath $emulatorPath -ArgumentList @("-avd", $AvdName) | Out-Null
+    $emulatorCandidates = @(Get-EmulatorCandidatePaths)
+    $stdoutPath = Resolve-EmulatorStdOutPath
+    $stderrPath = Resolve-EmulatorStdErrPath
+    $lastErrorMessage = ""
 
-    $deadline = (Get-Date).AddSeconds(240)
-    while ((Get-Date) -lt $deadline) {
-        $currentEmulators = @(
-            Get-ConnectedAndroidDevices |
-                Where-Object { $_.IsEmulator } |
-                Select-Object -ExpandProperty Serial
-        )
+    for ($index = 0; $index -lt $emulatorCandidates.Count; $index++) {
+        $emulatorPath = $emulatorCandidates[$index]
+        $isFallback = $index -gt 0
 
-        $newEmulators = @($currentEmulators | Where-Object { $runningEmulators -notcontains $_ })
-        if ($newEmulators.Count -gt 0) {
-            $serial = $newEmulators[0]
-            Wait-ForAndroidBoot -Serial $serial
-            return $serial
+        Reset-StaleEmulatorState -AvdName $AvdName
+
+        if (Test-Path -LiteralPath $stdoutPath) {
+            Remove-Item -LiteralPath $stdoutPath -Force
+        }
+        if (Test-Path -LiteralPath $stderrPath) {
+            Remove-Item -LiteralPath $stderrPath -Force
         }
 
-        Start-Sleep -Seconds 3
+        if ($isFallback) {
+            Write-Host "Primary emulator launch failed. Retrying with fallback emulator binary..."
+        }
+
+        $process = Start-Process -FilePath $emulatorPath `
+            -ArgumentList @("-avd", $AvdName, "-no-snapshot-load") `
+            -RedirectStandardOutput $stdoutPath `
+            -RedirectStandardError $stderrPath `
+            -PassThru
+
+        try {
+            return (Wait-ForEmulatorConnection `
+                -AvdName $AvdName `
+                -ExistingSerials $runningEmulators `
+                -ProcessId $process.Id `
+                -StdOutPath $stdoutPath `
+                -StdErrPath $stderrPath `
+                -TimeoutSeconds 90)
+        } catch {
+            $lastErrorMessage = $_.Exception.Message
+            Reset-StaleEmulatorState -AvdName $AvdName
+        }
     }
 
-    throw "Timed out waiting for emulator '$AvdName' to connect."
+    throw $lastErrorMessage
 }
 
 function Resolve-PhysicalDeviceSerial {

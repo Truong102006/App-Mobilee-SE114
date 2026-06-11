@@ -16,12 +16,12 @@ if (-not (Test-Path -LiteralPath $backendScript)) {
 
 $env:SERVER_PORT = "$Port"
 
-$argumentList = @()
+$argumentList = @{}
 if ($EnvFile) {
-    $argumentList += @("-EnvFile", $EnvFile)
+    $argumentList["EnvFile"] = $EnvFile
 }
 if ($DisableAppCheck) {
-    $argumentList += "-DisableAppCheck"
+    $argumentList["DisableAppCheck"] = $true
 }
 
 & $backendScript @argumentList
