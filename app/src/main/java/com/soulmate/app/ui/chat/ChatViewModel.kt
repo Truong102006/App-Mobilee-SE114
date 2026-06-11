@@ -1,7 +1,7 @@
 package com.soulmate.app.ui.chat
 
-import android.util.Log
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -10,11 +10,11 @@ import com.soulmate.app.domain.model.ChatMessage
 import com.soulmate.app.domain.repository.IChatRepository
 import com.soulmate.app.utils.CloudinaryHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,35 +38,39 @@ class ChatViewModel @Inject constructor(
     private val _lastMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val lastMessages: StateFlow<List<ChatMessage>> = _lastMessages.asStateFlow()
 
+    private val _hasUnreadMessages = MutableStateFlow(false)
+
     private val _replyingTo = mutableStateOf<ChatMessage?>(null)
     val replyingTo: State<ChatMessage?> = _replyingTo
+
+    private var messagesJob: Job? = null
+    private var lastMessagesJob: Job? = null
+    private var activeConversation: Pair<String, String>? = null
+    private var activeInboxUserId: String? = null
 
     fun setReplyingTo(message: ChatMessage?) {
         _replyingTo.value = message
     }
 
     fun loadMessages(senderId: String, receiverId: String) {
-        viewModelScope.launch {
+        activeConversation = senderId to receiverId
+        messagesJob?.cancel()
+        messagesJob = viewModelScope.launch {
             chatRepository
                 .getMessages(senderId, receiverId)
-                .catch { e ->
-                    Log.w(TAG, "loadMessages failed: senderId=$senderId receiverId=$receiverId", e)
+                .catch { error ->
+                    Log.w(TAG, "loadMessages failed: senderId=$senderId receiverId=$receiverId", error)
                 }
                 .collect { list ->
-                    _messages.value = list.sortedWith { m1, m2 ->
-                        val t1 = m1.timestamp
-                        val t2 = m2.timestamp
+                    _messages.value = list.sortedWith { left, right ->
+                        val leftTime = left.timestamp
+                        val rightTime = right.timestamp
                         when {
-                            t1 == null && t2 == null -> 0
-                            t1 == null -> 1
-                            t2 == null -> -1
-                            else -> {
-                                if (t1.seconds != t2.seconds) {
-                                    t1.seconds.compareTo(t2.seconds)
-                                } else {
-                                    t1.nanoseconds.compareTo(t2.nanoseconds)
-                                }
-                            }
+                            leftTime == null && rightTime == null -> 0
+                            leftTime == null -> 1
+                            rightTime == null -> -1
+                            leftTime.seconds != rightTime.seconds -> leftTime.seconds.compareTo(rightTime.seconds)
+                            else -> leftTime.nanoseconds.compareTo(rightTime.nanoseconds)
                         }
                     }
                 }
@@ -74,12 +78,17 @@ class ChatViewModel @Inject constructor(
     }
 
     fun loadLastMessages(userId: String) {
-        viewModelScope.launch {
+        activeInboxUserId = userId
+        lastMessagesJob?.cancel()
+        lastMessagesJob = viewModelScope.launch {
             chatRepository
                 .getLastMessages(userId)
-                .catch { e -> Log.w(TAG, "loadLastMessages failed: userId=$userId", e) }
+                .catch { error ->
+                    Log.w(TAG, "loadLastMessages failed: userId=$userId", error)
+                }
                 .collect { list ->
                     _lastMessages.value = list
+                    _hasUnreadMessages.value = list.any { it.receiverId == userId && !it.read }
                 }
         }
     }
@@ -91,15 +100,8 @@ class ChatViewModel @Inject constructor(
     }
 
     fun hasUnreadMessages(userId: String): StateFlow<Boolean> {
-        return lastMessages.map { messages ->
-            messages.any { it.receiverId == userId && !it.read }
-        }.let { flow ->
-            val state = MutableStateFlow(false)
-            viewModelScope.launch {
-                flow.collect { state.value = it }
-            }
-            state.asStateFlow()
-        }
+        _hasUnreadMessages.value = _lastMessages.value.any { it.receiverId == userId && !it.read }
+        return _hasUnreadMessages.asStateFlow()
     }
 
     fun sendMessage(
@@ -118,11 +120,19 @@ class ChatViewModel @Inject constructor(
                 read = false,
                 replyToId = replyTo?.id,
                 replyToText = replyTo?.messageText,
-                replyToName = if (replyTo?.senderId == senderId) "Bạn" else null,
+                replyToName = if (replyTo?.senderId == senderId) "B\u1EA1n" else null,
                 replyToImageUrl = replyTo?.imageUrl
             )
+
             chatRepository.sendMessage(chatMessage)
-            _replyingTo.value = null
+                .onSuccess {
+                    _replyingTo.value = null
+                    refreshConversation()
+                    refreshInbox()
+                }
+                .onFailure { error ->
+                    Log.w(TAG, "sendMessage failed: senderId=$senderId receiverId=$receiverId", error)
+                }
         }
     }
 
@@ -135,6 +145,14 @@ class ChatViewModel @Inject constructor(
     fun deleteConversation(userId: String, otherUserId: String) {
         viewModelScope.launch {
             chatRepository.deleteConversation(userId, otherUserId)
+                .onSuccess {
+                    _messages.value = emptyList()
+                    refreshConversation()
+                    refreshInbox()
+                }
+                .onFailure { error ->
+                    Log.w(TAG, "deleteConversation failed: userId=$userId otherUserId=$otherUserId", error)
+                }
         }
     }
 
@@ -150,13 +168,23 @@ class ChatViewModel @Inject constructor(
             onProgress = { progress ->
                 _uploadProgress.value = progress
             },
-            onSuccess = { imageUrl ->
+            onSuccess = { uploadedImageUrl ->
                 _isUploading.value = false
-                sendMessage(senderId, receiverId, messageText, imageUrl)
+                sendMessage(senderId, receiverId, messageText, uploadedImageUrl)
             },
             onError = {
                 _isUploading.value = false
             }
         )
+    }
+
+    private fun refreshConversation() {
+        activeConversation?.let { (senderId, receiverId) ->
+            loadMessages(senderId, receiverId)
+        }
+    }
+
+    private fun refreshInbox() {
+        activeInboxUserId?.let(::loadLastMessages)
     }
 }

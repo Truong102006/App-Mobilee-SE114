@@ -4,6 +4,9 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.soulmate.backend.dto.chat.*;
 import com.soulmate.backend.exception.ApiException;
+import com.soulmate.backend.exception.FirestoreApiExceptionMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -13,6 +16,8 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class ChatService {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     private final Firestore firestore;
 
@@ -49,7 +54,12 @@ public class ChatService {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send chat message.");
+            log.error("Failed to send chat message for uid={} receiverId={}", uid, receiverId, e);
+            throw FirestoreApiExceptionMapper.map(
+                e,
+                "Failed to send chat message.",
+                "Firestore quota exceeded. Please try again later."
+            );
         }
     }
 
@@ -79,7 +89,12 @@ public class ChatService {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to list conversation.");
+            log.error("Failed to list conversation for uid={} otherUserId={}", uid, otherUserId, e);
+            throw FirestoreApiExceptionMapper.map(
+                e,
+                "Failed to list conversation.",
+                "Firestore quota exceeded. Please try again later."
+            );
         }
     }
 
@@ -126,7 +141,12 @@ public class ChatService {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to list inbox.");
+            log.error("Failed to list inbox for uid={}", uid, e);
+            throw FirestoreApiExceptionMapper.map(
+                e,
+                "Failed to list inbox.",
+                "Firestore quota exceeded. Please try again later."
+            );
         }
     }
 
@@ -165,7 +185,12 @@ public class ChatService {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete conversation.");
+            log.error("Failed to delete conversation for uid={} otherUserId={}", uid, otherUserId, e);
+            throw FirestoreApiExceptionMapper.map(
+                e,
+                "Failed to delete conversation.",
+                "Firestore quota exceeded. Please try again later."
+            );
         }
     }
 
