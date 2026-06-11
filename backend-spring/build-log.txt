@@ -1,0 +1,186 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.soulmate:backend-spring >---------------------
+[INFO] Building backend-spring 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.5.0:run (default-cli) > test-compile @ backend-spring >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend-spring ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ backend-spring ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ backend-spring ---
+[INFO] skip non existing resourceDirectory D:\App-Mobilee-SE114\backend-spring\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ backend-spring ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.5.0:run (default-cli) < test-compile @ backend-spring <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.5.0:run (default-cli) @ backend-spring ---
+[INFO] Attaching agents: []
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.0)
+
+2026-06-11T01:33:15.062+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] c.s.backend.SoulMateBackendApplication   : Starting SoulMateBackendApplication using Java 21.0.10 with PID 26912 (D:\App-Mobilee-SE114\backend-spring\target\classes started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
+2026-06-11T01:33:15.063+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] c.s.backend.SoulMateBackendApplication   : The following 1 profile is active: "dev"
+2026-06-11T01:33:15.955+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-06-11T01:33:15.967+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-11T01:33:15.968+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2026-06-11T01:33:16.018+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-06-11T01:33:16.019+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 921 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-06-11T01:33:16.116+07:00 ERROR 26912 --- [soulmate-backend-spring] [           main] o.s.b.web.embedded.tomcat.TomcatStarter  : Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'firebaseSecurityFilter' defined in file [D:\App-Mobilee-SE114\backend-spring\target\classes\com\soulmate\backend\security\FirebaseSecurityFilter.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'firebaseAuth' defined in class path resource [com/soulmate/backend/config/FirebaseAdminConfig.class]: Unsatisfied dependency expressed through method 'firebaseAuth' parameter 0: Error creating bean with name 'firebaseApp' defined in class path resource [com/soulmate/backend/config/FirebaseAdminConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'firebaseApp' threw exception with message: Error reading credential file from environment variable GOOGLE_APPLICATION_CREDENTIALS, value 'd:/App-Mobilee-SE114/backend-spring/service-account.json': File does not exist.
+2026-06-11T01:33:16.132+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-06-11T01:33:16.136+07:00  WARN 26912 --- [soulmate-backend-spring] [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Unable to start web server
+2026-06-11T01:33:16.143+07:00  INFO 26912 --- [soulmate-backend-spring] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-06-11T01:33:16.155+07:00 ERROR 26912 --- [soulmate-backend-spring] [           main] o.s.boot.SpringApplication               : Application run failed
+
+org.springframework.context.ApplicationContextException: Unable to start web server
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:170) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621) ~[spring-context-6.2.7.jar:6.2.7]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1362) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1351) ~[spring-boot-3.5.0.jar:3.5.0]
+	at com.soulmate.backend.SoulMateBackendApplication.main(SoulMateBackendApplication.java:12) ~[classes/:na]
+Caused by: org.springframework.boot.web.server.WebServerException: Unable to start embedded Tomcat
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:147) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.<init>(TomcatWebServer.java:107) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getTomcatWebServer(TomcatServletWebServerFactory.java:517) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getWebServer(TomcatServletWebServerFactory.java:219) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.createWebServer(ServletWebServerApplicationContext.java:193) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:167) ~[spring-boot-3.5.0.jar:3.5.0]
+	... 8 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'firebaseSecurityFilter' defined in file [D:\App-Mobilee-SE114\backend-spring\target\classes\com\soulmate\backend\security\FirebaseSecurityFilter.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'firebaseAuth' defined in class path resource [com/soulmate/backend/config/FirebaseAdminConfig.class]: Unsatisfied dependency expressed through method 'firebaseAuth' parameter 0: Error creating bean with name 'firebaseApp' defined in class path resource [com/soulmate/backend/config/FirebaseAdminConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'firebaseApp' threw exception with message: Error reading credential file from environment variable GOOGLE_APPLICATION_CREDENTIALS, value 'd:/App-Mobilee-SE114/backend-spring/service-account.json': File does not exist.
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:804) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:240) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1395) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1232) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:207) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.getOrderedBeansOfType(ServletContextInitializerBeans.java:230) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAsRegistrationBean(ServletContextInitializerBeans.java:184) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAsRegistrationBean(ServletContextInitializerBeans.java:179) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAdaptableBeans(ServletContextInitializerBeans.java:164) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.<init>(ServletContextInitializerBeans.java:96) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.getServletContextInitializerBeans(ServletWebServerApplicationContext.java:271) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.selfInitialize(ServletWebServerApplicationContext.java:245) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.web.embedded.tomcat.TomcatStarter.onStartup(TomcatStarter.java:52) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4464) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1203) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1193) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[na:na]
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:75) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:749) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardHost.startInternal(StandardHost.java:772) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1203) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1193) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[na:na]
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:75) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:749) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardEngine.startInternal(StandardEngine.java:203) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardService.startInternal(StandardService.java:412) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.core.StandardServer.startInternal(StandardServer.java:870) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:164) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.apache.catalina.startup.Tomcat.start(Tomcat.java:438) ~[tomcat-embed-core-10.1.41.jar:10.1.41]
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:128) ~[spring-boot-3.5.0.jar:3.5.0]
+	... 13 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'firebaseAuth' defined in class path resource [com/soulmate/backend/config/FirebaseAdminConfig.class]: Unsatisfied dependency expressed through method 'firebaseAuth' parameter 0: Error creating bean with name 'firebaseApp' defined in class path resource [com/soulmate/backend/config/FirebaseAdminConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'firebaseApp' threw exception with message: Error reading credential file from environment variable GOOGLE_APPLICATION_CREDENTIALS, value 'd:/App-Mobilee-SE114/backend-spring/service-account.json': File does not exist.
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:804) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:546) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1375) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1205) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1682) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1628) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:913) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791) ~[spring-beans-6.2.7.jar:6.2.7]
+	... 54 common frames omitted
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'firebaseApp' defined in class path resource [com/soulmate/backend/config/FirebaseAdminConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'firebaseApp' threw exception with message: Error reading credential file from environment variable GOOGLE_APPLICATION_CREDENTIALS, value 'd:/App-Mobilee-SE114/backend-spring/service-account.json': File does not exist.
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:657) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:645) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1375) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1205) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1682) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1628) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:913) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791) ~[spring-beans-6.2.7.jar:6.2.7]
+	... 67 common frames omitted
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'firebaseApp' threw exception with message: Error reading credential file from environment variable GOOGLE_APPLICATION_CREDENTIALS, value 'd:/App-Mobilee-SE114/backend-spring/service-account.json': File does not exist.
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:199) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiateWithFactoryMethod(SimpleInstantiationStrategy.java:88) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:168) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653) ~[spring-beans-6.2.7.jar:6.2.7]
+	... 80 common frames omitted
+Caused by: java.io.IOException: Error reading credential file from environment variable GOOGLE_APPLICATION_CREDENTIALS, value 'd:/App-Mobilee-SE114/backend-spring/service-account.json': File does not exist.
+	at com.google.auth.oauth2.DefaultCredentialsProvider.getDefaultCredentialsUnsynchronized(DefaultCredentialsProvider.java:157) ~[google-auth-library-oauth2-http-1.42.1.jar:1.42.1]
+	at com.google.auth.oauth2.DefaultCredentialsProvider.getDefaultCredentials(DefaultCredentialsProvider.java:120) ~[google-auth-library-oauth2-http-1.42.1.jar:1.42.1]
+	at com.google.auth.oauth2.GoogleCredentials.getApplicationDefault(GoogleCredentials.java:191) ~[google-auth-library-oauth2-http-1.42.1.jar:1.42.1]
+	at com.google.auth.oauth2.GoogleCredentials.getApplicationDefault(GoogleCredentials.java:163) ~[google-auth-library-oauth2-http-1.42.1.jar:1.42.1]
+	at com.soulmate.backend.config.FirebaseAdminConfig.firebaseApp(FirebaseAdminConfig.java:27) ~[classes/:na]
+	at com.soulmate.backend.config.FirebaseAdminConfig$$SpringCGLIB$$0.CGLIB$firebaseApp$1(<generated>) ~[classes/:na]
+	at com.soulmate.backend.config.FirebaseAdminConfig$$SpringCGLIB$$FastClass$$1.invoke(<generated>) ~[classes/:na]
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258) ~[spring-core-6.2.7.jar:6.2.7]
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:393) ~[spring-context-6.2.7.jar:6.2.7]
+	at com.soulmate.backend.config.FirebaseAdminConfig$$SpringCGLIB$$0.firebaseApp(<generated>) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.lambda$instantiate$0(SimpleInstantiationStrategy.java:171) ~[spring-beans-6.2.7.jar:6.2.7]
+	... 83 common frames omitted
+Caused by: java.io.IOException: File does not exist.
+	at com.google.auth.oauth2.DefaultCredentialsProvider.getDefaultCredentialsUnsynchronized(DefaultCredentialsProvider.java:145) ~[google-auth-library-oauth2-http-1.42.1.jar:1.42.1]
+	... 95 common frames omitted
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.850 s
+[INFO] Finished at: 2026-06-11T01:33:16+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.5.0:run (default-cli) on project backend-spring: Process terminated with exit code: 1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
