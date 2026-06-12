@@ -24,6 +24,9 @@ import com.soulmate.app.ui.chat.ChatViewModel
 import com.soulmate.app.ui.home.components.*
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.AuthViewModel
+import com.soulmate.app.ui.pet.PetViewModel
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.unit.IntOffset
 import com.soulmate.app.ui.social.Comment
 import com.soulmate.app.ui.social.CommunityCard
 import com.soulmate.app.ui.social.CommunityViewModel
@@ -35,12 +38,15 @@ fun HomeScreen(
     historyViewModel: HistoryViewModel,
     communityViewModel: CommunityViewModel = hiltViewModel(),
     chatViewModel: ChatViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
     onChatBubbleClick: () -> Unit = {},
     onNavigateToChat: (String, String, String?) -> Unit = { _, _, _ -> },
-    onNavigateToDiary: (String) -> Unit = {}
+    onNavigateToDiary: (String) -> Unit = {},
+    onNavigateToPet: () -> Unit = {}
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val currentUserId = remember { FirebaseAuth.getInstance().currentUser?.uid ?: "" }
+    val homeUiState by homeViewModel.uiState.collectAsState()
 
     val songs = musicViewModel.songs
     val currentPlayingSong by musicViewModel.currentPlayingSong
@@ -130,7 +136,10 @@ fun HomeScreen(
         onChatBubbleClick = onChatBubbleClick,
         onUserClick = onNavigateToChat,
         hasUnread = hasUnread,
-        onNavigateToDiary = onNavigateToDiary
+        onNavigateToDiary = onNavigateToDiary,
+        onNavigateToPet = onNavigateToPet,
+        petLevel = homeUiState.petLevel,
+        isPetLoading = homeUiState.isLoading
     )
 }
 
@@ -164,7 +173,10 @@ fun HomeScreenContent(
     onChatBubbleClick: () -> Unit,
     onUserClick: (String, String, String?) -> Unit = { _, _, _ -> },
     hasUnread: Boolean = false,
-    onNavigateToDiary: (String) -> Unit = {}
+    onNavigateToDiary: (String) -> Unit = {},
+    onNavigateToPet: () -> Unit = {},
+    petLevel: Int = 1,
+    isPetLoading: Boolean = false
 ) {
     val virtualCount = 50000
 
@@ -274,14 +286,47 @@ fun HomeScreenContent(
         var offsetX by remember { mutableFloatStateOf(0f) }
         var offsetY by remember { mutableFloatStateOf(0f) }
 
+        var petZIndex by remember { mutableFloatStateOf(10f) }
+        var chatZIndex by remember { mutableFloatStateOf(10f) }
+
+        var petOffsetX by remember { mutableFloatStateOf(0f) }
+        var petOffsetY by remember { mutableFloatStateOf(0f) }
+
+        FloatingPetButton(
+            petLevel = petLevel,
+            isLoading = isPetLoading,
+            onClick = {
+                petZIndex = 11f
+                chatZIndex = 10f
+                onNavigateToPet()
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 190.dp)
+                .offset { IntOffset(petOffsetX.roundToInt(), petOffsetY.roundToInt()) }
+                .zIndex(petZIndex)
+                .pointerInput(Unit) {
+                    detectDragGesturesAfterLongPress { change, dragAmount ->
+                        change.consume()
+                        petZIndex = 11f
+                        chatZIndex = 10f
+                        petOffsetX += dragAmount.x
+                        petOffsetY += dragAmount.y
+                    }
+                }
+        )
+
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 20.dp, bottom = 120.dp)
                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                .zIndex(chatZIndex)
                 .pointerInput(Unit) {
                     detectDragGesturesAfterLongPress { change, dragAmount ->
                         change.consume()
+                        chatZIndex = 11f
+                        petZIndex = 10f
                         offsetX += dragAmount.x
                         offsetY += dragAmount.y
                     }
@@ -290,7 +335,11 @@ fun HomeScreenContent(
                 .shadow(elevation = 8.dp, shape = CircleShape)
                 .clip(CircleShape)
                 .background(Color.White)
-                .clickable { onChatBubbleClick() },
+                .clickable {
+                    chatZIndex = 11f
+                    petZIndex = 10f
+                    onChatBubbleClick()
+                },
             contentAlignment = Alignment.Center
         ) {
             Image(

@@ -44,6 +44,7 @@ import com.soulmate.app.ui.theme.SoulMateTheme
 import com.soulmate.app.ui.chat.ChatListScreen
 import com.soulmate.app.ui.chat.ChatDetailScreen
 import com.soulmate.app.ui.chat.ChatViewModel
+import com.soulmate.app.ui.pet.PetScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -118,8 +119,16 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToDiary = { content ->
                                     val encodedContent = Uri.encode(content)
                                     navController.navigate(Screen.Diary.route + "?content=$encodedContent")
+                                },
+                                onNavigateToPet = {
+                                    navController.navigate(Screen.Pet.route)
                                 }
                             ) 
+                        }
+                        composable(Screen.Pet.route) {
+                            PetScreen(
+                                viewModel = hiltViewModel()
+                            )
                         }
                         composable(
                             route = Screen.Diary.route + "?diaryId={diaryId}&content={content}",
