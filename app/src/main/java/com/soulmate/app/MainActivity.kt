@@ -114,15 +114,28 @@ class MainActivity : ComponentActivity() {
                                     val encodedName = Uri.encode(name)
                                     val encodedUrl = if (avatarUrl != null) Uri.encode(avatarUrl) else "none"
                                     navController.navigate("${Screen.ChatDetail.route}?userId=$userId&userName=$encodedName&avatarUrl=$encodedUrl")
+                                },
+                                onNavigateToDiary = { content ->
+                                    val encodedContent = Uri.encode(content)
+                                    navController.navigate(Screen.Diary.route + "?content=$encodedContent")
                                 }
                             ) 
                         }
                         composable(
-                            route = Screen.Diary.route + "?diaryId={diaryId}",
-                            arguments = listOf(navArgument("diaryId") { type = NavType.StringType; nullable = true; defaultValue = null })
+                            route = Screen.Diary.route + "?diaryId={diaryId}&content={content}",
+                            arguments = listOf(
+                                navArgument("diaryId") { type = NavType.StringType; nullable = true; defaultValue = null },
+                                navArgument("content") { type = NavType.StringType; nullable = true; defaultValue = null }
+                            )
                         ) { backStackEntry ->
                             val diaryId = backStackEntry.arguments?.getString("diaryId")
-                            MultimediaEditor(diaryId = diaryId, historyViewModel = hiltViewModel(), onBackClick = { navController.popBackStack() })
+                            val content = backStackEntry.arguments?.getString("content")
+                            MultimediaEditor(
+                                diaryId = diaryId,
+                                prefilledContent = content,
+                                historyViewModel = hiltViewModel(),
+                                onBackClick = { navController.popBackStack() }
+                            )
                         }
                         composable(Screen.History.route) { 
                             HistoryScreen(

@@ -1,6 +1,7 @@
 package com.soulmate.app.ui.home.components
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -40,11 +41,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.soulmate.app.R
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "recording_notes_prefs")
+private val RECORDING_NOTES_KEY = stringPreferencesKey("recording_notes")
 
 // Model dữ liệu cập nhật
 data class RecordingNote(
@@ -59,10 +72,40 @@ data class RecordingNote(
 )
 
 @Composable
-fun MoodCard(historyViewModel: HistoryViewModel? = null) {
+fun MoodCard(
+    historyViewModel: HistoryViewModel? = null,
+    onNavigateToDiary: (String) -> Unit = {}
+) {
     var showRecordingScreen by remember { mutableStateOf(false) }
     var recordingNotes by remember { mutableStateOf(listOf<RecordingNote>()) }
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        try {
+            val prefs = context.dataStore.data.first()
+            val json = prefs[RECORDING_NOTES_KEY]
+            if (!json.isNullOrEmpty()) {
+                val listType = object : TypeToken<List<RecordingNote>>() {}.type
+                recordingNotes = Gson().fromJson(json, listType)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    val updateNotes = { newList: List<RecordingNote> ->
+        recordingNotes = newList
+        scope.launch {
+            try {
+                context.dataStore.edit { prefs ->
+                    prefs[RECORDING_NOTES_KEY] = Gson().toJson(newList)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -114,15 +157,16 @@ fun MoodCard(historyViewModel: HistoryViewModel? = null) {
             onPost = { newText ->
                 val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                 val newNote = RecordingNote(dateTime = sdf.format(Date()), text = newText)
-                recordingNotes = listOf(newNote) + recordingNotes
+                updateNotes(listOf(newNote) + recordingNotes)
             },
             onDelete = { note ->
-                recordingNotes = recordingNotes.filter { it.id != note.id }
+                updateNotes(recordingNotes.filter { it.id != note.id })
             },
             onSave = { note ->
                 historyViewModel?.addNote(note)
-                recordingNotes = recordingNotes.filter { it.id != note.id }
+                updateNotes(recordingNotes.filter { it.id != note.id })
             },
+            onNavigateToDiary = onNavigateToDiary,
             history = recordingNotes
         )
     }
@@ -134,6 +178,7 @@ fun RecordingOverlay(
     onPost: (String) -> Unit,
     onDelete: (RecordingNote) -> Unit,
     onSave: (RecordingNote) -> Unit,
+    onNavigateToDiary: (String) -> Unit,
     history: List<RecordingNote>
 ) {
     val context = LocalContext.current
@@ -219,7 +264,8 @@ fun RecordingOverlay(
                                 onDelete = { noteToDelete = item },
                                 onSave = { 
                                     showSaveSuccess = true
-                                }
+                                },
+                                onNavigateToDiary = { onNavigateToDiary(item.text) }
                             )
                         }
                     }
@@ -406,7 +452,8 @@ fun SaveSuccessNotification(onAnimationFinish: () -> Unit) {
 fun SwipeableDiaryItem(
     item: RecordingNote,
     onDelete: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    onNavigateToDiary: () -> Unit
 ) {
     val density = LocalDensity.current
     val swipeLimit = with(density) { 100.dp.toPx() }
@@ -465,13 +512,16 @@ fun SwipeableDiaryItem(
                 .offset { IntOffset(swipeableState.offset.value.toInt(), 0) }
                 .fillMaxWidth()
         ) {
-            DiaryPostItem(item)
+            DiaryPostItem(item, onNavigateToDiary = onNavigateToDiary)
         }
     }
 }
 
 @Composable
-fun DiaryPostItem(item: RecordingNote) {
+fun DiaryPostItem(
+    item: RecordingNote,
+    onNavigateToDiary: () -> Unit = {}
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -490,10 +540,28 @@ fun DiaryPostItem(item: RecordingNote) {
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(text = item.userName, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colors.onSurface)
-                    Text(text = item.dateTime, fontSize = 11.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = item.dateTime, fontSize = 11.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        IconButton(
+                            onClick = onNavigateToDiary,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit in Diary",
+                                tint = MaterialTheme.colors.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = item.text, fontSize = 14.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))

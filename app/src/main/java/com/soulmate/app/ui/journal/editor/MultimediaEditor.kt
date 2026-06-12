@@ -54,6 +54,7 @@ import androidx.core.net.toUri
 @Composable
 fun MultimediaEditor(
     diaryId: String? = null,
+    prefilledContent: String? = null,
     viewModel: DiaryViewModel = hiltViewModel(),
     historyViewModel: HistoryViewModel? = null,
     onBackClick: () -> Unit = {}
@@ -72,7 +73,7 @@ fun MultimediaEditor(
         viewModel.onImagesChanged(selectedImages.map { it.toString() })
     }
 
-    LaunchedEffect(diaryId) {
+    LaunchedEffect(diaryId, prefilledContent) {
         if (diaryId != null && historyViewModel != null) {
             val existingNote = historyViewModel.getNoteById(diaryId)
             if (existingNote != null) {
@@ -93,6 +94,8 @@ fun MultimediaEditor(
                 viewModel.onMoodSelected(existingNote.moodTag)
                 selectedImages = existingNote.imageUrls.map { it.toUri() }
             }
+        } else if (prefilledContent != null) {
+            richTextState.setHtml(prefilledContent)
         }
     }
     

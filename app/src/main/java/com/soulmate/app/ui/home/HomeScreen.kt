@@ -36,7 +36,8 @@ fun HomeScreen(
     communityViewModel: CommunityViewModel = hiltViewModel(),
     chatViewModel: ChatViewModel = hiltViewModel(),
     onChatBubbleClick: () -> Unit = {},
-    onNavigateToChat: (String, String, String?) -> Unit = { _, _, _ -> }
+    onNavigateToChat: (String, String, String?) -> Unit = { _, _, _ -> },
+    onNavigateToDiary: (String) -> Unit = {}
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val currentUserId = remember { FirebaseAuth.getInstance().currentUser?.uid ?: "" }
@@ -128,7 +129,8 @@ fun HomeScreen(
         onEditClick = { postId, content -> communityViewModel.updatePostContent(postId, content) },
         onChatBubbleClick = onChatBubbleClick,
         onUserClick = onNavigateToChat,
-        hasUnread = hasUnread
+        hasUnread = hasUnread,
+        onNavigateToDiary = onNavigateToDiary
     )
 }
 
@@ -161,7 +163,8 @@ fun HomeScreenContent(
     onEditClick: (String, String) -> Unit,
     onChatBubbleClick: () -> Unit,
     onUserClick: (String, String, String?) -> Unit = { _, _, _ -> },
-    hasUnread: Boolean = false
+    hasUnread: Boolean = false,
+    onNavigateToDiary: (String) -> Unit = {}
 ) {
     val virtualCount = 50000
 
@@ -192,7 +195,7 @@ fun HomeScreenContent(
             ) {
                 HeaderSection(user = currentUser)
                 Spacer(modifier = Modifier.height(16.dp))
-                MoodCard(historyViewModel)
+                MoodCard(historyViewModel, onNavigateToDiary = onNavigateToDiary)
                 Spacer(modifier = Modifier.height(18.dp))
                 
                 Text(

@@ -30,6 +30,7 @@ import com.soulmate.app.domain.model.User
 import com.soulmate.app.ui.login.AuthViewModel
 import java.util.Locale
 import androidx.core.net.toUri
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SettingScreen(
@@ -43,6 +44,12 @@ fun SettingScreen(
     val currentUser by authViewModel.currentUser
     val notificationEnabled by settingsViewModel.notificationEnabled.collectAsState()
     var showEditProfileDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        authViewModel.error.collectLatest { errorMsg ->
+            android.widget.Toast.makeText(context, errorMsg, android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Column(
         modifier = Modifier
