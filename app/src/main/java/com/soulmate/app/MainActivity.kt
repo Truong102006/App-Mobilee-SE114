@@ -127,7 +127,10 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Screen.Pet.route) {
                             PetScreen(
-                                viewModel = hiltViewModel()
+                                viewModel = hiltViewModel(),
+                                onBackClick = {
+                                    navController.popBackStack()
+                                }
                             )
                         }
                         composable(

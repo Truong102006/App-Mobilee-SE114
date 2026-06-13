@@ -74,12 +74,21 @@ fun CustomBottomNav(navController: NavController) {
                         selectedContentColor = MaterialTheme.colors.primary,
                         unselectedContentColor = Color.Gray,
                         onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            if (screen.route == Screen.Home.route) {
+                                navController.navigate(screen.route) {
+                                    popUpTo(Screen.Home.route) {
+                                        inclusive = false
+                                    }
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                            } else {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
                         }
                     )
