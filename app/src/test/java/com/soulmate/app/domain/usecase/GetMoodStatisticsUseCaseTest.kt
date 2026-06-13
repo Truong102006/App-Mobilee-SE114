@@ -63,7 +63,6 @@ class GetMoodStatisticsUseCaseTest {
         override suspend fun patchDiary(diaryId: String, updates: Map<String, Any?>): Result<Unit> = 
             Result.success(Unit)
 
-        override suspend fun deleteDiary(diaryId: String): Result<Unit> =
-            Result.success(Unit)
+        override suspend fun deleteDiary(diaryId: String): Result<Unit> = Result.success(Unit)
     }
 }

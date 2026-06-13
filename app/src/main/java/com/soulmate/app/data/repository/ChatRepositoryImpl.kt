@@ -8,12 +8,8 @@ import com.soulmate.app.data.remote.dto.ChatMessageItemDto
 import com.soulmate.app.data.remote.dto.SendChatMessageRequestDto
 import com.soulmate.app.domain.model.ChatMessage
 import com.soulmate.app.domain.repository.IChatRepository
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
@@ -27,12 +23,11 @@ class ChatRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "ChatRepositoryImpl"
-        private const val POLL_INTERVAL_MS = 2000L
     }
 
     private suspend fun requireIdToken(): String {
         val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
-        return currentUser.getIdToken(true).await().token
+        return currentUser.getIdToken(false).await().token
             ?: throw IllegalStateException("Cannot get Firebase ID token")
     }
 
@@ -67,50 +62,36 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = flow {
-        while (currentCoroutineContext().isActive) {
-            try {
-                val idToken = requireIdToken()
-                val currentUid = auth.currentUser?.uid.orEmpty()
-                val otherUserId = if (currentUid == senderId) receiverId else senderId
+        val idToken = requireIdToken()
+        val currentUid = auth.currentUser?.uid.orEmpty()
+        val otherUserId = if (currentUid == senderId) receiverId else senderId
 
-                val messages = backendApiService
-                    .listConversation(
-                        authorization = "Bearer $idToken",
-                        otherUserId = otherUserId,
-                        limit = 200
-                    )
-                    .messages
-                    .map(::mapMessage)
-                    .sortedBy { it.timestamp?.seconds ?: 0L }
+        val messages = backendApiService
+            .listConversation(
+                authorization = "Bearer $idToken",
+                otherUserId = otherUserId,
+                limit = 200
+            )
+            .messages
+            .map(::mapMessage)
+            .sortedBy { it.timestamp?.seconds ?: 0L }
 
-                emit(messages)
-            } catch (e: Exception) {
-                Log.w(TAG, "Unable to load chat messages: senderId=$senderId receiverId=$receiverId", e)
-            }
-            delay(POLL_INTERVAL_MS)
-        }
-    }.distinctUntilChanged()
+        emit(messages)
+    }
 
     override fun getLastMessages(userId: String): Flow<List<ChatMessage>> = flow {
-        while (currentCoroutineContext().isActive) {
-            try {
-                val idToken = requireIdToken()
-                val messages = backendApiService
-                    .listInbox(
-                        authorization = "Bearer $idToken",
-                        limit = 100
-                    )
-                    .messages
-                    .map(::mapMessage)
-                    .sortedByDescending { it.timestamp?.seconds ?: 0L }
+        val idToken = requireIdToken()
+        val messages = backendApiService
+            .listInbox(
+                authorization = "Bearer $idToken",
+                limit = 100
+            )
+            .messages
+            .map(::mapMessage)
+            .sortedByDescending { it.timestamp?.seconds ?: 0L }
 
-                emit(messages)
-            } catch (e: Exception) {
-                Log.w(TAG, "Unable to load chat inbox: userId=$userId", e)
-            }
-            delay(POLL_INTERVAL_MS)
-        }
-    }.distinctUntilChanged()
+        emit(messages)
+    }
 
     override suspend fun deleteConversation(userId: String, otherUserId: String): Result<Unit> = runCatching {
         val idToken = requireIdToken()

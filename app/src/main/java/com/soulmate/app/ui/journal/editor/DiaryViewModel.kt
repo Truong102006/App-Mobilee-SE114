@@ -7,6 +7,7 @@ import com.soulmate.app.domain.model.Diary
 import com.soulmate.app.domain.usecase.AnalyzeMoodUseCase
 import com.soulmate.app.domain.usecase.SaveDiaryUseCase
 import com.soulmate.app.domain.usecase.CalculatePetXPUseCase
+import com.soulmate.app.utils.BackendErrorParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,7 +51,10 @@ class DiaryViewModel @Inject constructor(
                     isLoading = false
                 )
             }.onFailure {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = it.message)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = BackendErrorParser.toUserMessage(it)
+                )
             }
         }
     }
@@ -81,7 +85,10 @@ class DiaryViewModel @Inject constructor(
                 calculatePetXPUseCase.addDiaryXP(currentUid)
                 _uiState.value = _uiState.value.copy(isLoading = false, isSaved = true)
             }.onFailure {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = it.message)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = BackendErrorParser.toUserMessage(it)
+                )
             }
         }
     }
