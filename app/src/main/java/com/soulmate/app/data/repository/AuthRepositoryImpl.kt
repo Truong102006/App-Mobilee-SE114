@@ -140,7 +140,25 @@ class AuthRepositoryImpl @Inject constructor(
         Result.failure(e)
     }
 
-    override suspend fun updateUserProfile(user: User): Result<Unit> {
-        TODO("Not yet implemented")
+    override suspend fun updateUserProfile(user: User): Result<Unit> = try {
+        val uid = auth.currentUser?.uid ?: throw Exception("User not logged in")
+        val updates = mapOf(
+            "anonymousName" to user.anonymousName,
+            "avatarUrl" to (user.avatarUrl ?: ""),
+            "phoneNumber" to user.phoneNumber,
+            "gender" to user.gender,
+            "socialMedias" to user.socialMedias,
+            "updatedAt" to System.currentTimeMillis()
+        )
+        usersCollection.document(uid).update(updates).await()
+        
+        // Sync display name to FirebaseAuth
+        val profileUpdate = UserProfileChangeRequest.Builder()
+            .setDisplayName(user.anonymousName)
+            .build()
+        auth.currentUser?.updateProfile(profileUpdate)?.await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 }

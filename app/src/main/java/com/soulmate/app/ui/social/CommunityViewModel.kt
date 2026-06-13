@@ -13,10 +13,13 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
+import com.soulmate.app.domain.usecase.CalculatePetXPUseCase
+
 @HiltViewModel
 class CommunityViewModel @Inject constructor(
     private val repository: ICommunityRepository,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val calculatePetXPUseCase: CalculatePetXPUseCase
 ) : ViewModel() {
     private val _posts = mutableStateOf<List<CommunityPost>>(emptyList())
     val posts: State<List<CommunityPost>> = _posts
@@ -56,14 +59,18 @@ class CommunityViewModel @Inject constructor(
     fun addPost(post: CommunityPost) {
         val userId = currentUserId ?: return
         viewModelScope.launch {
-            repository.addPost(post.copy(userId = userId))
+            repository.addPost(post.copy(userId = userId)).onSuccess {
+                calculatePetXPUseCase.addCommunityXP(userId, "post")
+            }
         }
     }
 
     fun toggleLike(postId: String) {
         val userId = currentUserId ?: return
         viewModelScope.launch {
-            repository.toggleLike(postId, userId)
+            repository.toggleLike(postId, userId).onSuccess {
+                calculatePetXPUseCase.addCommunityXP(userId, "like")
+            }
         }
     }
 
@@ -87,7 +94,9 @@ class CommunityViewModel @Inject constructor(
             replyToUserName = replyToUserName
         )
         viewModelScope.launch {
-            repository.addComment(postId, newComment)
+            repository.addComment(postId, newComment).onSuccess {
+                calculatePetXPUseCase.addCommunityXP(userId, "comment")
+            }
         }
     }
 

@@ -118,6 +118,8 @@ backend-spring/.id_token.tmp
 backend-spring/.id_token.*
 
 # AI Agents / Tools
-.agent/
+.agents/
 .gemini/
+docs/
+Plan/
 

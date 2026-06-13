@@ -8,3 +8,4 @@ target/
 .id_token.*
 secrets/
 .run-*.log
+.vscode/

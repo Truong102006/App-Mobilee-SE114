@@ -32,7 +32,23 @@ class AuthViewModel @Inject constructor(
     val currentUser: State<User?> = _currentUser
 
     init {
-        _currentUser.value = authRepository.getCurrentUser()
+        val localUser = authRepository.getCurrentUser()
+        _currentUser.value = localUser
+        if (localUser != null) {
+            fetchUserProfile(localUser.userId)
+        }
+    }
+
+    fun fetchUserProfile(userId: String) {
+        viewModelScope.launch {
+            authRepository.getUserProfile(userId)
+                .onSuccess {
+                    _currentUser.value = it
+                }
+                .onFailure {
+                    _error.emit(it.localizedMessage ?: "Không thể tải thông tin profile từ database")
+                }
+        }
     }
 
     fun login(email: String, password: String) {

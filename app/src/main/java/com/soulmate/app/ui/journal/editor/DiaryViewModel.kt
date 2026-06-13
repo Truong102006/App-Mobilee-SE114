@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.domain.model.Diary
 import com.soulmate.app.domain.usecase.AnalyzeMoodUseCase
 import com.soulmate.app.domain.usecase.SaveDiaryUseCase
+import com.soulmate.app.domain.usecase.CalculatePetXPUseCase
 import com.soulmate.app.utils.BackendErrorParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DiaryViewModel @Inject constructor(
     private val analyzeMoodUseCase: AnalyzeMoodUseCase,
-    private val saveDiaryUseCase: SaveDiaryUseCase
+    private val saveDiaryUseCase: SaveDiaryUseCase,
+    private val calculatePetXPUseCase: CalculatePetXPUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DiaryUiState())
@@ -80,6 +82,7 @@ class DiaryViewModel @Inject constructor(
             
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             saveDiaryUseCase(diary).onSuccess {
+                calculatePetXPUseCase.addDiaryXP(currentUid)
                 _uiState.value = _uiState.value.copy(isLoading = false, isSaved = true)
             }.onFailure {
                 _uiState.value = _uiState.value.copy(

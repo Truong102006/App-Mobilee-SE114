@@ -9,6 +9,16 @@ service cloud.firestore {
       return isSignedIn() && resource.data[fieldName] == request.auth.uid;
     }
 
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /pets/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
     match /diaries/{diaryId} {
       // Diary data must go through backend (Firebase Admin SDK), not direct client access.
       allow read, write: if false;
