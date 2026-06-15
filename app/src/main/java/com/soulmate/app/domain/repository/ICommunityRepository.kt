@@ -13,4 +13,7 @@ interface ICommunityRepository {
     suspend fun toggleCommentLike(postId: String, commentId: String, userId: String): Result<Unit>
     suspend fun deletePost(postId: String): Result<Unit>
     suspend fun updatePostContent(postId: String, newContent: String): Result<Unit>
+    suspend fun reportPost(postId: String): Result<Unit>
+    suspend fun getReportedPosts(): Flow<List<CommunityPost>>
+    suspend fun resolveReport(postId: String, action: String): Result<Unit>
 }

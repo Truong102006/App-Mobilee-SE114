@@ -1,5 +1,7 @@
 package com.soulmate.app.data.remote.dto
 
+import com.soulmate.app.ui.social.CommunityPost
+
 data class SaveDiaryRequestDto(
     val diaryId: String? = null,
     val title: String? = null,
@@ -83,4 +85,18 @@ data class SignUploadResponseDto(
     val publicId: String? = null,
     val context: String? = null,
     val uploadUrl: String = ""
+)
+
+data class CommonResponseDto(
+    val success: Boolean = true,
+    val message: String = ""
+)
+
+data class ListReportedPostsResponseDto(
+    val posts: List<CommunityPost> = emptyList()
+)
+
+data class ResolveReportRequestDto(
+    val postId: String,
+    val action: String // "delete" or "ignore"
 )
