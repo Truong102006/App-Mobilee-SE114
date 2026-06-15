@@ -12,12 +12,12 @@ public class UserService {
         this.firestore = firestore;
     }
 
-    public CommonResponse toggleSocialBan(java.lang.String userId, boolean isBanned) {
+    public CommonResponse toggleSocialBan(String userId, boolean isBanned) {
         try {
             firestore.collection("users").document(userId)
                     .update("isSocialBanned", isBanned).get();
             return new CommonResponse(true, "Cập nhật trạng thái ban thành công");
-        } catch (java.lang.Exception e) {
+        } catch (Exception e) {
             return new CommonResponse(false, e.getMessage());
         }
     }
