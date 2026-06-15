@@ -20,7 +20,10 @@ data class User(
     val currentMood: String? = null,
     val totalDiaries: Int = 0,
     val status: String = "active",
-    val isProfileCompleted: Boolean = false
+    val isProfileCompleted: Boolean = false,
+
+    val isSocialBanned: Boolean = false,
+    val hiddenPostIds: List<String> = emptyList()
 ) {
     // Hàm helper để convert sang Map khi update Firestore (nếu cần)
     fun toMap(): Map<String, Any?> {
@@ -44,7 +47,10 @@ data class User(
             "currentMood" to currentMood,
             "totalDiaries" to totalDiaries,
             "status" to status,
-            "isProfileCompleted" to isProfileCompleted
+            "isProfileCompleted" to isProfileCompleted,
+
+            "isSocialBanned" to isSocialBanned,
+            "hiddenPostIds" to hiddenPostIds,
         )
     }
 }
