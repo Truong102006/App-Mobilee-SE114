@@ -194,6 +194,80 @@ public class ChatService {
         }
     }
 
+    public Map<String, Object> markAsRead(String uid, String otherUserId) {
+        if (!StringUtils.hasText(otherUserId)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "otherUserId is required.");
+        }
+        String conversationId = buildConversationId(uid, otherUserId.trim());
+
+        // Mark all messages sent BY other user TO this user as read
+        Query query = firestore.collection("chats")
+            .whereEqualTo("conversationId", conversationId)
+            .whereEqualTo("senderId", otherUserId.trim())
+            .whereEqualTo("receiverId", uid);
+
+        try {
+            QuerySnapshot snapshot = query.get().get();
+            WriteBatch batch = firestore.batch();
+            int markedCount = 0;
+
+            for (QueryDocumentSnapshot doc : snapshot.getDocuments()) {
+                Boolean isRead = doc.getBoolean("isRead");
+                if (isRead == null || !isRead) {
+                    batch.update(doc.getReference(), "isRead", true);
+                    markedCount++;
+                }
+            }
+
+            if (markedCount > 0) {
+                batch.commit().get();
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("conversationId", conversationId);
+            result.put("markedCount", markedCount);
+            return result;
+        } catch (ExecutionException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            log.error("Failed to mark messages as read for uid={} otherUserId={}", uid, otherUserId, e);
+            throw FirestoreApiExceptionMapper.map(e, "Failed to mark messages as read.", "Firestore quota exceeded.");
+        }
+    }
+
+    public Map<String, Object> deleteMessage(String uid, String messageId) {
+        if (!StringUtils.hasText(messageId)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "messageId is required.");
+        }
+
+        DocumentReference docRef = firestore.collection("chats").document(messageId);
+        try {
+            DocumentSnapshot snapshot = docRef.get().get();
+            if (!snapshot.exists()) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "Message not found.");
+            }
+
+            String senderId = snapshot.getString("senderId");
+            if (!Objects.equals(senderId, uid)) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "You can only delete your own messages.");
+            }
+
+            docRef.delete().get();
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("deleted", true);
+            result.put("messageId", messageId);
+            return result;
+        } catch (ExecutionException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            log.error("Failed to delete message={} for uid={}", messageId, uid, e);
+            throw FirestoreApiExceptionMapper.map(e, "Failed to delete message.", "Firestore quota exceeded.");
+        }
+    }
+
     private ChatMessageItemResponse toMessage(QueryDocumentSnapshot doc) {
         Map<String, Object> data = doc.getData();
         return new ChatMessageItemResponse(

@@ -13,6 +13,13 @@ object BackendErrorParser {
 
     fun toUserMessage(throwable: Throwable): String {
         if (throwable is HttpException) {
+            val code = throwable.code()
+
+            // Handle rate limiting (Firestore quota exhaustion) with a friendly message
+            if (code == 429) {
+                return "Hệ thống đang quá tải. Vui lòng thử lại sau vài giây."
+            }
+
             val errorBody = runCatching {
                 throwable.response()?.errorBody()?.string().orEmpty()
             }.getOrDefault("")
@@ -31,3 +38,4 @@ object BackendErrorParser {
         return throwable.message ?: "Unexpected error"
     }
 }
+

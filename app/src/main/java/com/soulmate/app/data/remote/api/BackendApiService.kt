@@ -13,11 +13,16 @@ import com.soulmate.app.data.remote.dto.SendChatMessageRequestDto
 import com.soulmate.app.data.remote.dto.SendChatMessageResponseDto
 import com.soulmate.app.data.remote.dto.SignUploadRequestDto
 import com.soulmate.app.data.remote.dto.SignUploadResponseDto
+import com.soulmate.app.data.remote.dto.CreatePostRequestDto
+import com.soulmate.app.data.remote.dto.CreatePostResponseDto
+import com.soulmate.app.data.remote.dto.CreateCommentRequestDto
+import com.soulmate.app.data.remote.dto.CreateCommentResponseDto
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -75,4 +80,55 @@ interface BackendApiService {
         @Header("Authorization") authorization: String,
         @Body request: SignUploadRequestDto
     ): SignUploadResponseDto
+
+    @POST("api/secure/community/posts")
+    suspend fun createCommunityPost(
+        @Header("Authorization") authorization: String,
+        @Body request: CreatePostRequestDto
+    ): CreatePostResponseDto
+
+    @GET("api/secure/community/posts")
+    suspend fun listCommunityPosts(
+        @Header("Authorization") authorization: String
+    ): List<CreatePostResponseDto>
+
+    @PUT("api/secure/community/posts/{id}")
+    suspend fun updateCommunityPost(
+        @Header("Authorization") authorization: String,
+        @Path("id") id: String,
+        @Body request: CreatePostRequestDto
+    ): CreatePostResponseDto
+
+    @DELETE("api/secure/community/posts/{id}")
+    suspend fun deleteCommunityPost(
+        @Header("Authorization") authorization: String,
+        @Path("id") id: String
+    ): Unit
+
+    @POST("api/secure/community/posts/{id}/like")
+    suspend fun toggleCommunityPostLike(
+        @Header("Authorization") authorization: String,
+        @Path("id") id: String
+    ): Unit
+
+    @POST("api/secure/community/posts/{id}/comments/{commentId}/like")
+    suspend fun toggleCommunityCommentLike(
+        @Header("Authorization") authorization: String,
+        @Path("id") id: String,
+        @Path("commentId") commentId: String
+    ): Unit
+
+    @POST("api/secure/community/posts/{id}/comments")
+    suspend fun addCommunityComment(
+        @Header("Authorization") authorization: String,
+        @Path("id") id: String,
+        @Body request: CreateCommentRequestDto
+    ): CreateCommentResponseDto
+
+    @GET("api/secure/community/posts/{id}/comments")
+    suspend fun listCommunityComments(
+        @Header("Authorization") authorization: String,
+        @Path("id") id: String
+    ): List<CreateCommentResponseDto>
 }
+

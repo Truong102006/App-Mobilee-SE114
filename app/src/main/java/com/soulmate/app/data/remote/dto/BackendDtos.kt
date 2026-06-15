@@ -84,3 +84,44 @@ data class SignUploadResponseDto(
     val context: String? = null,
     val uploadUrl: String = ""
 )
+
+data class CreatePostRequestDto(
+    val mood: String? = null,
+    val textContent: String,
+    val imageUrls: List<String> = emptyList()
+)
+
+data class CreatePostResponseDto(
+    val id: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val userAvatarUrl: String? = null,
+    val isVerified: Boolean? = false,
+    val mood: String = "Neutral",
+    val textContent: String = "",
+    val imageUrls: List<String> = emptyList(),
+    val likeCount: Int = 0,
+    val commentCount: Int = 0,
+    val viewCount: Int = 0,
+    val likedBy: List<String> = emptyList(),
+    val timestamp: Long = 0L
+)
+
+data class CreateCommentRequestDto(
+    val content: String,
+    val parentId: String? = null,
+    val replyToUserName: String? = null
+)
+
+data class CreateCommentResponseDto(
+    val id: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val userAvatarUrl: String? = null,
+    val content: String = "",
+    val timestamp: Long = 0L,
+    val likedBy: List<String> = emptyList(),
+    val parentId: String? = null,
+    val replyToUserName: String? = null
+)
+

@@ -1,0 +1,22 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.soulmate:backend-spring >---------------------
+[INFO] Building backend-spring 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ backend-spring ---
+[INFO] Deleting D:\App-Mobilee-SE114\backend-spring\target
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.136 s
+[INFO] Finished at: 2026-06-16T01:09:24+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-clean-plugin:3.4.1:clean (default-clean) on project backend-spring: Failed to clean project: Failed to delete D:\App-Mobilee-SE114\backend-spring\target\backend-spring-1.0.0.jar: D:\App-Mobilee-SE114\backend-spring\target\backend-spring-1.0.0.jar: The process cannot access the file because it is being used by another process -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
