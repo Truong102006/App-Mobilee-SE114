@@ -5,6 +5,9 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.soulmate.backend.dto.diary.*;
 import com.soulmate.backend.exception.ApiException;
+import com.soulmate.backend.exception.FirestoreApiExceptionMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -14,6 +17,8 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class DiaryService {
+
+    private static final Logger log = LoggerFactory.getLogger(DiaryService.class);
 
     private final Firestore firestore;
 
@@ -54,8 +59,15 @@ public class DiaryService {
             docRef.set(diaryData, SetOptions.merge()).get();
             return new SaveDiaryResponse(docRef.getId(), now);
         } catch (ExecutionException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save diary.");
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            log.error("Failed to save diary for uid={} diaryId={}", uid, docRef.getId(), e);
+            throw FirestoreApiExceptionMapper.map(
+                e,
+                "Failed to save diary.",
+                "Firestore quota exceeded. Please try again later."
+            );
         }
     }
 
@@ -71,8 +83,15 @@ public class DiaryService {
                 .toList();
             return new ListDiariesResponse(diaries);
         } catch (ExecutionException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to list diaries.");
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            log.error("Failed to list diaries for uid={}", uid, e);
+            throw FirestoreApiExceptionMapper.map(
+                e,
+                "Failed to list diaries.",
+                "Firestore quota exceeded. Please try again later."
+            );
         }
     }
 
@@ -93,8 +112,15 @@ public class DiaryService {
             docRef.delete().get();
             return new DeleteDiaryResponse(true, diaryId.trim());
         } catch (ExecutionException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete diary.");
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            log.error("Failed to delete diary for uid={} diaryId={}", uid, diaryId, e);
+            throw FirestoreApiExceptionMapper.map(
+                e,
+                "Failed to delete diary.",
+                "Firestore quota exceeded. Please try again later."
+            );
         }
     }
 

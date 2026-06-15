@@ -6,10 +6,17 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
-def backendBaseUrl = (project.findProperty("BACKEND_BASE_URL") ?: System.getenv("BACKEND_BASE_URL") ?: "http://10.0.2.2:8080/").toString()
-if (!backendBaseUrl.endsWith("/")) {
-    backendBaseUrl += "/"
+def normalizeBaseUrl = { value ->
+    def normalized = value.toString().trim()
+    if (normalized && !normalized.endsWith("/")) {
+        normalized += "/"
+    }
+    normalized
 }
+
+def backendBaseUrlOverride = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL") ?: System.getenv("BACKEND_BASE_URL") ?: "")
+def backendDeviceBaseUrl = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL_DEVICE") ?: System.getenv("BACKEND_BASE_URL_DEVICE") ?: "http://localhost:8080/")
+def backendEmulatorBaseUrl = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL_EMULATOR") ?: System.getenv("BACKEND_BASE_URL_EMULATOR") ?: "http://10.0.2.2:8080/")
 
 android {
     namespace 'com.soulmate.app'
@@ -28,7 +35,9 @@ android {
             useSupportLibrary true
         }
 
-        buildConfigField "String", "BACKEND_BASE_URL", "\"${backendBaseUrl}\""
+        buildConfigField "String", "BACKEND_BASE_URL", "\"${backendBaseUrlOverride}\""
+        buildConfigField "String", "BACKEND_BASE_URL_DEVICE", "\"${backendDeviceBaseUrl}\""
+        buildConfigField "String", "BACKEND_BASE_URL_EMULATOR", "\"${backendEmulatorBaseUrl}\""
     }
 
     buildTypes {

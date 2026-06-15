@@ -8,12 +8,11 @@ import com.soulmate.app.data.remote.dto.SaveDiaryRequestDto
 import com.soulmate.app.domain.model.Diary
 import com.soulmate.app.domain.repository.IDiaryRepository
 import com.soulmate.app.utils.CloudinaryHelper
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,16 +25,24 @@ class DiaryRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "DiaryRepositoryImpl"
-        private const val POLL_INTERVAL_MS = 3000L
     }
 
-    override fun getDiaries(userId: String): Flow<List<Diary>> = flow {
-        while (currentCoroutineContext().isActive) {
-            val diaries = loadDiaries().getOrDefault(emptyList())
-            emit(diaries)
-            delay(POLL_INTERVAL_MS)
-        }
-    }.distinctUntilChanged()
+    private val diaryRefreshes = MutableSharedFlow<Unit>(replay = 1, extraBufferCapacity = 1)
+
+    init {
+        diaryRefreshes.tryEmit(Unit)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getDiaries(userId: String): Flow<List<Diary>> =
+        diaryRefreshes
+            .mapLatest {
+                loadDiaries().getOrElse { error ->
+                    Log.w(TAG, "Unable to load diaries for userId=$userId", error)
+                    emptyList()
+                }
+            }
+            .distinctUntilChanged()
 
     private fun isRemoteHttpUrl(value: String): Boolean {
         return value.startsWith("http://", ignoreCase = true) ||
@@ -57,7 +64,7 @@ class DiaryRepositoryImpl @Inject constructor(
 
     private suspend fun requireIdToken(): String {
         val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
-        return currentUser.getIdToken(true).await().token
+        return currentUser.getIdToken(false).await().token
             ?: throw IllegalStateException("Cannot get Firebase ID token")
     }
 
@@ -93,6 +100,7 @@ class DiaryRepositoryImpl @Inject constructor(
                 audioUrl = diary.audioUrl
             )
         )
+        notifyDiariesChanged()
     }
 
     override suspend fun loadDiaries(): Result<List<Diary>> = runCatching {
@@ -154,10 +162,15 @@ class DiaryRepositoryImpl @Inject constructor(
             authorization = "Bearer $idToken",
             diaryId = diaryId
         )
+        notifyDiariesChanged()
     }
 
     private fun extractStringList(value: Any?): List<String> {
         if (value !is List<*>) return emptyList()
         return value.filterIsInstance<String>().map { it.trim() }.filter { it.isNotBlank() }
+    }
+
+    private fun notifyDiariesChanged() {
+        diaryRefreshes.tryEmit(Unit)
     }
 }
