@@ -20,7 +20,7 @@ public class FirebaseAdminConfig {
     public FirebaseApp firebaseApp(FirebaseProperties firebaseProperties) throws IOException {
         List<FirebaseApp> existingApps = FirebaseApp.getApps();
         if (!existingApps.isEmpty()) {
-            return existingApps.getFirst();
+            return existingApps.get(0);
         }
 
         FirebaseOptions.Builder optionsBuilder = FirebaseOptions.builder()

@@ -5,3 +5,15 @@
 # directive in build.gradle.
 
 -keep class com.soulmate.app.data.local.entity.** { *; }
+
+# Keep domain models
+-keep class com.soulmate.app.domain.model.** { *; }
+
+# Keep Firebase Auth and Firestore models/classes
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+
+# Keep Attributes
+-keepattributes Signature
+-keepattributes *Annotation*
+-keepattributes InnerClasses,EnclosingMethod

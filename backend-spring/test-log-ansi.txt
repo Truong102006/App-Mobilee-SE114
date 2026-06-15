@@ -1,0 +1,71 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.soulmate:backend-spring >---------------------
+[INFO] Building backend-spring 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ backend-spring ---
+[INFO] Deleting D:\App-Mobilee-SE114\backend-spring\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend-spring ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ backend-spring ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 38 source files with javac [debug parameters release 17] to target\classes
+[INFO] /D:/App-Mobilee-SE114/backend-spring/src/main/java/com/soulmate/backend/security/FirebaseJwtAppCheckVerifier.java: D:\App-Mobilee-SE114\backend-spring\src\main\java\com\soulmate\backend\security\FirebaseJwtAppCheckVerifier.java uses or overrides a deprecated API.
+[INFO] /D:/App-Mobilee-SE114/backend-spring/src/main/java/com/soulmate/backend/security/FirebaseJwtAppCheckVerifier.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ backend-spring ---
+[INFO] skip non existing resourceDirectory D:\App-Mobilee-SE114\backend-spring\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ backend-spring ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug parameters release 17] to target\test-classes
+[WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/DiaryControllerTest.java:[44,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/DiaryControllerTest.java:[47,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/DiaryControllerTest.java:[50,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/DiaryControllerTest.java:[53,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/DiaryControllerTest.java:[56,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ backend-spring ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.soulmate.backend.controller.DiaryControllerTest
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+13:43:10.387 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.soulmate.backend.controller.DiaryControllerTest]: DiaryControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+13:43:10.666 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.DiaryControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.0)
+
+2026-06-15T13:43:11.223+07:00  INFO 33468 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : Starting DiaryControllerTest using Java 17.0.12 with PID 33468 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
+2026-06-15T13:43:11.225+07:00  INFO 33468 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-15T13:43:17.239+07:00  INFO 33468 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-06-15T13:43:17.239+07:00  INFO 33468 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-06-15T13:43:17.259+07:00  INFO 33468 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-06-15T13:43:17.292+07:00  INFO 33468 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 45 ms
+2026-06-15T13:43:17.542+07:00  INFO 33468 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : Started DiaryControllerTest in 6.729 seconds (process running for 8.138)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.110 s -- in com.soulmate.backend.controller.DiaryControllerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  19.802 s
+[INFO] Finished at: 2026-06-15T13:43:18+07:00
+[INFO] ------------------------------------------------------------------------

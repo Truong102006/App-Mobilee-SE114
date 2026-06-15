@@ -26,4 +26,7 @@ interface IAuthRepository {
     
     // Lấy thông tin chi tiết User từ Firestore
     suspend fun getUserProfile(uid: String): Result<User>
+
+    // Gửi email khôi phục mật khẩu
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit>
 }
