@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -78,6 +79,22 @@ fun CommunityScreen(
                     }
                 )
             }
+        }
+
+        val showBannedDialog by viewModel.showBannedDialog
+
+        if (showBannedDialog) {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissBannedDialog() },
+                title = { Text("Hành động bị từ chối", fontWeight = FontWeight.Bold) },
+                text = { Text("Tài khoản của bạn hiện đang bị hạn chế các tính năng cộng đồng do vi phạm tiêu chuẩn cộng đồng.") },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.dismissBannedDialog() }) {
+                        Text("Tôi đã hiểu")
+                    }
+                },
+                shape = RoundedCornerShape(16.dp)
+            )
         }
     }
 }

@@ -29,6 +29,12 @@ class CommunityViewModel @Inject constructor(
     private val _postComments = mutableStateMapOf<String, List<Comment>>()
     val postComments: Map<String, List<Comment>> = _postComments
 
+    private val _isUserBanned = mutableStateOf(false)
+    val isUserBanned: State<Boolean> = _isUserBanned
+
+    private val _showBannedDialog = mutableStateOf(false)
+    val showBannedDialog: State<Boolean> = _showBannedDialog
+
     private val currentUserId: String?
         get() = auth.currentUser?.uid
 
@@ -40,6 +46,9 @@ class CommunityViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = currentUserId
             val userProfile = userId?.let { authRepository.getUserProfile(it).getOrNull() }
+
+            _isUserBanned.value = userProfile?.isSocialBanned ?: false
+
             val hiddenIds = userProfile?.hiddenPostIds ?: emptyList()
 
             repository.getPosts().collectLatest { allPosts ->
@@ -65,6 +74,7 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun addPost(post: CommunityPost) {
+        if (!checkActionPermission()) return
         val userId = currentUserId ?: return
         viewModelScope.launch {
             repository.addPost(post.copy(userId = userId)).onSuccess {
@@ -74,6 +84,7 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun toggleLike(postId: String) {
+        if (!checkActionPermission()) return
         val userId = currentUserId ?: return
         viewModelScope.launch {
             repository.toggleLike(postId, userId).onSuccess {
@@ -91,6 +102,7 @@ class CommunityViewModel @Inject constructor(
         parentId: String? = null,
         replyToUserName: String? = null
     ) {
+        if (!checkActionPermission()) return
         val newComment = Comment(
             id = UUID.randomUUID().toString(),
             userId = userId,
@@ -109,6 +121,7 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun toggleCommentLike(postId: String, commentId: String) {
+        if (!checkActionPermission()) return
         val userId = currentUserId ?: return
         viewModelScope.launch {
             repository.toggleCommentLike(postId, commentId, userId)
@@ -142,5 +155,17 @@ class CommunityViewModel @Inject constructor(
                 hidePost(postId)
             }
         }
+    }
+
+    private fun checkActionPermission(): Boolean {
+        return if (_isUserBanned.value) {_showBannedDialog.value = true // Kích hoạt hiển thị Dialog lỗi
+            false
+        } else {
+            true
+        }
+    }
+
+    fun dismissBannedDialog() {
+        _showBannedDialog.value = false
     }
 }
