@@ -1,4 +1,4 @@
-﻿package com.soulmate.app.data.repository
+﻿    package com.soulmate.app.data.repository
 
 import android.net.Uri
 import android.util.Log
@@ -34,15 +34,43 @@ class DiaryRepositoryImpl @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun getDiaries(userId: String): Flow<List<Diary>> =
-        diaryRefreshes
+    override fun getDiaries(userId: String): Flow<List<Diary>> = kotlinx.coroutines.flow.flow {
+        val ticker = kotlinx.coroutines.flow.flow {
+            while (true) {
+                kotlinx.coroutines.delay(15000L) // Periodic fallback update every 15s
+                emit(Unit)
+            }
+        }
+
+        kotlinx.coroutines.flow.merge(diaryRefreshes, ticker)
             .mapLatest {
-                loadDiaries().getOrElse { error ->
-                    Log.w(TAG, "Unable to load diaries for userId=$userId", error)
+                var attempts = 0
+                var result: Result<List<Diary>>
+                var delayMs = 3000L
+                while (true) {
+                    result = loadDiaries()
+                    if (result.isSuccess) {
+                        break
+                    }
+                    attempts++
+                    val error = result.exceptionOrNull()
+                    if (attempts >= 3) {
+                        break
+                    }
+                    // On HTTP 429, use longer delay but still retry
+                    if (error is retrofit2.HttpException && error.code() == 429) {
+                        delayMs = 5000L
+                    }
+                    Log.d(TAG, "Load diaries failed (attempt $attempts), retrying in ${delayMs}ms...", error)
+                    kotlinx.coroutines.delay(delayMs)
+                }
+                result.getOrElse { error ->
+                    Log.w(TAG, "Unable to load diaries for userId=$userId after retries", error)
                     emptyList()
                 }
             }
-            .distinctUntilChanged()
+            .collect { emit(it) }
+    }
 
     private fun isRemoteHttpUrl(value: String): Boolean {
         return value.startsWith("http://", ignoreCase = true) ||
@@ -62,10 +90,20 @@ class DiaryRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun requireIdToken(): String {
+    private suspend fun <T> executeWithToken(forceRefresh: Boolean = false, block: suspend (String) -> T): T {
         val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
-        return currentUser.getIdToken(false).await().token
+        val token = currentUser.getIdToken(forceRefresh).await().token
             ?: throw IllegalStateException("Cannot get Firebase ID token")
+        return try {
+            block(token)
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 401 && !forceRefresh) {
+                Log.d(TAG, "Token expired (401), force-refreshing token and retrying...")
+                executeWithToken(forceRefresh = true, block)
+            } else {
+                throw e
+            }
+        }
     }
 
     private fun mapDiary(diary: com.soulmate.app.data.remote.dto.DiaryItemDto): Diary {
@@ -83,33 +121,34 @@ class DiaryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveDiary(diary: Diary): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-
         val uploadedUrls = diary.imageUrls.map { path ->
             uploadToCloudinary(path)
         }
 
-        backendApiService.saveDiary(
-            authorization = "Bearer $idToken",
-            request = SaveDiaryRequestDto(
-                diaryId = diary.diaryId.ifBlank { null },
-                title = diary.title,
-                text = diary.content,
-                moodTag = diary.moodTag,
-                imageUrls = uploadedUrls,
-                audioUrl = diary.audioUrl
+        executeWithToken { idToken ->
+            backendApiService.saveDiary(
+                authorization = "Bearer $idToken",
+                request = SaveDiaryRequestDto(
+                    diaryId = diary.diaryId.ifBlank { null },
+                    title = diary.title,
+                    text = diary.content,
+                    moodTag = diary.moodTag,
+                    imageUrls = uploadedUrls,
+                    audioUrl = diary.audioUrl
+                )
             )
-        )
+        }
         notifyDiariesChanged()
     }
 
     override suspend fun loadDiaries(): Result<List<Diary>> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService
-            .listMyDiaries(authorization = "Bearer $idToken")
-            .diaries
-            .map(::mapDiary)
-            .sortedByDescending { it.createdAt }
+        executeWithToken { idToken ->
+            backendApiService
+                .listMyDiaries(authorization = "Bearer $idToken")
+                .diaries
+                .map(::mapDiary)
+                .sortedByDescending { it.createdAt }
+        }
     }
 
     override suspend fun loadDiaryById(diaryId: String): Result<Diary?> = runCatching {
@@ -157,11 +196,12 @@ class DiaryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteDiary(diaryId: String): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService.deleteDiary(
-            authorization = "Bearer $idToken",
-            diaryId = diaryId
-        )
+        executeWithToken { idToken ->
+            backendApiService.deleteDiary(
+                authorization = "Bearer $idToken",
+                diaryId = diaryId
+            )
+        }
         notifyDiariesChanged()
     }
 

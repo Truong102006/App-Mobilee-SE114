@@ -75,6 +75,18 @@ interface BackendApiService {
         @Path("otherUserId") otherUserId: String
     ): DeleteConversationResponseDto
 
+    @POST("api/secure/chats/conversation/{otherUserId}/read")
+    suspend fun markAsRead(
+        @Header("Authorization") authorization: String,
+        @Path("otherUserId") otherUserId: String
+    ): Map<String, Any>
+
+    @DELETE("api/secure/chats/messages/{messageId}")
+    suspend fun deleteMessage(
+        @Header("Authorization") authorization: String,
+        @Path("messageId") messageId: String
+    ): Map<String, Any>
+
     @POST("api/secure/cloudinary/sign-upload")
     suspend fun signUpload(
         @Header("Authorization") authorization: String,

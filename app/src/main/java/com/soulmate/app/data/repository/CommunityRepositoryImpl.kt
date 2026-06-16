@@ -31,7 +31,7 @@ class CommunityRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "CommunityRepositoryImpl"
-        private const val POLL_INTERVAL_MS = 3000L
+        private const val POLL_INTERVAL_MS = 10000L
     }
 
     private fun formatTimeAgo(timestampMs: Long): String {
@@ -67,120 +67,164 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun requireIdToken(): String {
+    private suspend fun <T> executeWithToken(forceRefresh: Boolean = false, block: suspend (String) -> T): T {
         val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
-        return currentUser.getIdToken(true).await().token
+        val token = currentUser.getIdToken(forceRefresh).await().token
             ?: throw IllegalStateException("Cannot get Firebase ID token")
+        return try {
+            block(token)
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 401 && !forceRefresh) {
+                Log.d(TAG, "Token expired (401), force-refreshing token and retrying...")
+                executeWithToken(forceRefresh = true, block)
+            } else {
+                throw e
+            }
+        }
     }
 
     override fun getPosts(): Flow<List<CommunityPost>> = flow {
+        var currentDelay = POLL_INTERVAL_MS
         while (currentCoroutineContext().isActive) {
+            var success = false
             val posts = try {
-                val idToken = requireIdToken()
-                backendApiService.listCommunityPosts("Bearer $idToken").map { doc ->
-                    CommunityPost(
-                        id = doc.id,
-                        userId = doc.userId,
-                        userName = doc.userName,
-                        userAvatarUrl = doc.userAvatarUrl,
-                        isVerified = doc.isVerified ?: false,
-                        mood = doc.mood,
-                        timeAgo = formatTimeAgo(doc.timestamp),
-                        textContent = doc.textContent,
-                        imageUrls = doc.imageUrls,
-                        likeCount = doc.likeCount,
-                        commentCount = doc.commentCount,
-                        viewCount = doc.viewCount,
-                        likedBy = doc.likedBy
-                    )
+                executeWithToken { idToken ->
+                    val result = backendApiService.listCommunityPosts("Bearer $idToken").map { doc ->
+                        CommunityPost(
+                            id = doc.id,
+                            userId = doc.userId,
+                            userName = doc.userName,
+                            userAvatarUrl = doc.userAvatarUrl,
+                            isVerified = doc.isVerified ?: false,
+                            mood = doc.mood,
+                            timeAgo = formatTimeAgo(doc.timestamp),
+                            textContent = doc.textContent,
+                            imageUrls = doc.imageUrls,
+                            likeCount = doc.likeCount,
+                            commentCount = doc.commentCount,
+                            viewCount = doc.viewCount,
+                            likedBy = doc.likedBy
+                        )
+                    }
+                    success = true
+                    result
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load posts", e)
-                emptyList()
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                    currentDelay = (currentDelay * 2).coerceAtMost(30000L)
+                    Log.d(TAG, "HTTP 429: Backed off post poll interval to ${currentDelay}ms")
+                }
+                null
             }
-            emit(posts)
-            delay(POLL_INTERVAL_MS)
+            if (posts != null) {
+                emit(posts)
+                if (success) {
+                    currentDelay = POLL_INTERVAL_MS
+                }
+            }
+            delay(currentDelay)
         }
-    }.distinctUntilChanged()
+    }
 
     override fun getComments(postId: String): Flow<List<Comment>> = flow {
+        var currentDelay = POLL_INTERVAL_MS
         while (currentCoroutineContext().isActive) {
+            var success = false
             val comments = try {
-                val idToken = requireIdToken()
-                backendApiService.listCommunityComments("Bearer $idToken", postId).map { doc ->
-                    Comment(
-                        id = doc.id,
-                        userId = doc.userId,
-                        userName = doc.userName,
-                        userAvatarUrl = doc.userAvatarUrl,
-                        content = doc.content,
-                        timeAgo = formatTimeAgo(doc.timestamp),
-                        likeCount = doc.likedBy.size,
-                        likedBy = doc.likedBy,
-                        parentId = doc.parentId,
-                        replyToUserName = doc.replyToUserName
-                    )
+                executeWithToken { idToken ->
+                    val result = backendApiService.listCommunityComments("Bearer $idToken", postId).map { doc ->
+                        Comment(
+                            id = doc.id,
+                            userId = doc.userId,
+                            userName = doc.userName,
+                            userAvatarUrl = doc.userAvatarUrl,
+                            content = doc.content,
+                            timeAgo = formatTimeAgo(doc.timestamp),
+                            likeCount = doc.likedBy.size,
+                            likedBy = doc.likedBy,
+                            parentId = doc.parentId,
+                            replyToUserName = doc.replyToUserName
+                        )
+                    }
+                    success = true
+                    result
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load comments for $postId", e)
-                emptyList()
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                    currentDelay = (currentDelay * 2).coerceAtMost(30000L)
+                    Log.d(TAG, "HTTP 429: Backed off comment poll interval to ${currentDelay}ms")
+                }
+                null
             }
-            emit(comments)
-            delay(POLL_INTERVAL_MS)
+            if (comments != null) {
+                emit(comments)
+                if (success) {
+                    currentDelay = POLL_INTERVAL_MS
+                }
+            }
+            delay(currentDelay)
         }
-    }.distinctUntilChanged()
+    }
 
     override suspend fun addPost(post: CommunityPost): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
         val uploadedUrls = post.imageUrls.map { path ->
             uploadToCloudinary(path)
         }
-        backendApiService.createCommunityPost(
-            authorization = "Bearer $idToken",
-            request = CreatePostRequestDto(
-                mood = post.mood,
-                textContent = post.textContent,
-                imageUrls = uploadedUrls
+        executeWithToken { idToken ->
+            backendApiService.createCommunityPost(
+                authorization = "Bearer $idToken",
+                request = CreatePostRequestDto(
+                    mood = post.mood,
+                    textContent = post.textContent,
+                    imageUrls = uploadedUrls
+                )
             )
-        )
+        }
     }
 
     override suspend fun toggleLike(postId: String, userId: String): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService.toggleCommunityPostLike("Bearer $idToken", postId)
+        executeWithToken { idToken ->
+            backendApiService.toggleCommunityPostLike("Bearer $idToken", postId)
+        }
     }
 
     override suspend fun addComment(postId: String, comment: Comment): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService.addCommunityComment(
-            authorization = "Bearer $idToken",
-            id = postId,
-            request = CreateCommentRequestDto(
-                content = comment.content,
-                parentId = comment.parentId,
-                replyToUserName = comment.replyToUserName
+        executeWithToken { idToken ->
+            backendApiService.addCommunityComment(
+                authorization = "Bearer $idToken",
+                id = postId,
+                request = CreateCommentRequestDto(
+                    content = comment.content,
+                    parentId = comment.parentId,
+                    replyToUserName = comment.replyToUserName
+                )
             )
-        )
+        }
     }
 
     override suspend fun toggleCommentLike(postId: String, commentId: String, userId: String): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService.toggleCommunityCommentLike("Bearer $idToken", postId, commentId)
+        executeWithToken { idToken ->
+            backendApiService.toggleCommunityCommentLike("Bearer $idToken", postId, commentId)
+        }
     }
 
     override suspend fun deletePost(postId: String): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService.deleteCommunityPost("Bearer $idToken", postId)
+        executeWithToken { idToken ->
+            backendApiService.deleteCommunityPost("Bearer $idToken", postId)
+        }
     }
 
     override suspend fun updatePostContent(postId: String, newContent: String): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService.updateCommunityPost(
-            authorization = "Bearer $idToken",
-            id = postId,
-            request = CreatePostRequestDto(
-                textContent = newContent
+        executeWithToken { idToken ->
+            backendApiService.updateCommunityPost(
+                authorization = "Bearer $idToken",
+                id = postId,
+                request = CreatePostRequestDto(
+                    textContent = newContent
+                )
             )
-        )
+        }
     }
 }
