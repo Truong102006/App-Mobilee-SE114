@@ -1,9 +1,9 @@
 {
-    "Pid":  2300,
-    "RuntimePid":  11356,
+    "Pid":  4440,
+    "RuntimePid":  1456,
     "Port":  8080,
     "StdOut":  "D:\\Bi\\UIT\\SE114_Nhap_mon_Mobile\\App-Mobilee-SE114\\.agent\\local-dev\\backend.stdout.log",
     "StdErr":  "D:\\Bi\\UIT\\SE114_Nhap_mon_Mobile\\App-Mobilee-SE114\\.agent\\local-dev\\backend.stderr.log",
     "DisableAppCheck":  true,
-    "StartedAt":  "2026-06-15T10:56:46.2092456+07:00"
+    "StartedAt":  "2026-06-16T12:26:59.5545033+07:00"
 }

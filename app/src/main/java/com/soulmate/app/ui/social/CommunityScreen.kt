@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,9 +51,11 @@ fun CommunityScreen(
             items(feedPosts, key = { it.id }) { post ->
                 CommunityCard(
                     post = post,
-                    comments = allComments[post.id] ?: emptyList(), // TRUYỀN DANH SÁCH BÌNH LUẬN Ở ĐÂY
+                    comments = allComments[post.id] ?: emptyList(),
                     onLikeClick = { viewModel.toggleLike(post.id) },
-                    onOpenComments = { viewModel.loadComments(post.id) }, // LOAD BÌNH LUẬN KHI MỞ
+                    onOpenComments = { viewModel.loadComments(post.id) },
+                    onHideClick = { viewModel.hidePost(post.id) },
+                    onReportClick = { viewModel.reportPost(post.id) },
                     onCommentClick = { content, parentId, replyToUserName -> 
                         viewModel.addComment(
                             post.id, 
@@ -76,6 +79,22 @@ fun CommunityScreen(
                     }
                 )
             }
+        }
+
+        val showBannedDialog by viewModel.showBannedDialog
+
+        if (showBannedDialog) {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissBannedDialog() },
+                title = { Text("Hành động bị từ chối", fontWeight = FontWeight.Bold) },
+                text = { Text("Tài khoản của bạn hiện đang bị hạn chế các tính năng cộng đồng do vi phạm tiêu chuẩn cộng đồng.") },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.dismissBannedDialog() }) {
+                        Text("Tôi đã hiểu")
+                    }
+                },
+                shape = RoundedCornerShape(16.dp)
+            )
         }
     }
 }

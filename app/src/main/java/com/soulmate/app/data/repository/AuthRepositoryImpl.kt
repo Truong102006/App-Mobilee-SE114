@@ -190,4 +190,13 @@ class AuthRepositoryImpl @Inject constructor(
     } catch (e: Exception) {
         Result.failure(e)
     }
+    override suspend fun hidePost(userId: String, postId: String): Result<Unit> = try {
+        usersCollection.document(userId)
+            .update("hiddenPostIds", com.google.firebase.firestore.FieldValue.arrayUnion(postId))
+            .await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
 }

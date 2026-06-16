@@ -13,8 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-//@RequestMapping("/api/secure/admin")
-@RequestMapping("/api/admin")
+@RequestMapping("/api/secure/admin")
 public class AdminController {
 
     private final CommunityService communityService;
@@ -27,31 +26,30 @@ public class AdminController {
 
     @GetMapping("/community/reported-posts")
     public java.util.List<CommunityPostDto> getReportedPosts(HttpServletRequest request) {
-//        validateAdmin(request);
+        validateAdmin(request);
         return communityService.getReportedPosts();
     }
 
     @PostMapping("/community/resolve-report")
     public CommonResponse resolveReport(HttpServletRequest request, @RequestBody ResolveReportRequest body) {
-//        validateAdmin(request);
+        validateAdmin(request);
         return communityService.resolveReport(body.postId(), body.action());
     }
 
     @PostMapping("/users/social-ban")
     public CommonResponse toggleBan(
-//            HttpServletRequest request,
-            @RequestParam String targetUserId,
+            HttpServletRequest request,
+            @RequestParam java.lang.String targetUserId,
             @RequestParam boolean isBanned
     ) {
-//        validateAdmin(request);
+        validateAdmin(request);
         return userService.toggleSocialBan(targetUserId, isBanned);
     }
 
     private void validateAdmin(HttpServletRequest request) {
-//        var auth = AuthContextHolder.getRequired(request);
-//        if (!"admin".equalsIgnoreCase(auth.role())) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền Admin");
-//        }
-        System.out.println(">>> Admin API được gọi - Đã bỏ qua bảo mật để test");
+        var auth = AuthContextHolder.getRequired(request);
+        if (!"admin".equalsIgnoreCase(auth.role())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền Admin");
+        }
     }
 }

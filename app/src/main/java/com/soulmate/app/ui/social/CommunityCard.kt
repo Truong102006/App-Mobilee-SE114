@@ -29,6 +29,9 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -135,6 +138,8 @@ fun CommunityCard(
     onLikeComment: (String) -> Unit,
     onOpenComments: () -> Unit = {},
     onDeleteClick: () -> Unit,
+    onHideClick: () -> Unit,
+    onReportClick: () -> Unit,
     onEditClick: (String) -> Unit,
     currentUserAvatarUrl: String?,
     currentUserName: String,
@@ -154,7 +159,11 @@ fun CommunityCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .border(1.5.dp, MaterialTheme.colors.primary.copy(alpha = 0.5f), RoundedCornerShape(20.dp)),
+            .border(
+                1.5.dp,
+                MaterialTheme.colors.primary.copy(alpha = 0.5f),
+                RoundedCornerShape(20.dp)
+            ),
         shape = RoundedCornerShape(24.dp),
         backgroundColor = MaterialTheme.colors.surface,
         elevation = 2.dp
@@ -170,7 +179,9 @@ fun CommunityCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    modifier = Modifier.weight(1f).clickable { onUserClick() },
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { onUserClick() },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (post.userAvatarUrl != null) {
@@ -256,6 +267,22 @@ fun CommunityCard(
                         }
                         DropdownMenuItem(onClick = {
                             showMenu = false
+                            onHideClick()
+                        }) {
+                            Icon(Icons.Default.VisibilityOff, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.Gray)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Ẩn bài viết")
+                        }
+                        DropdownMenuItem(onClick = {
+                            showMenu = false
+                            onReportClick()
+                        }) {
+                            Icon(Icons.Default.Flag, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.Red)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Báo cáo vi phạm", color = Color.Red)
+                        }
+                        DropdownMenuItem(onClick = {
+                            showMenu = false
                             showDeleteDialog = true
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
@@ -307,7 +334,11 @@ fun CommunityCard(
                             modifier = Modifier
                                 .size(120.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colors.onSurface.copy(alpha = 0.05f),
+                                    RoundedCornerShape(12.dp)
+                                )
                                 .clickable { fullScreenImageUrl = imageUrl }, // Bấm để xem full
                             contentScale = ContentScale.Crop
                         )
@@ -342,7 +373,9 @@ fun CommunityCard(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(32.dp).clip(CircleShape)) {
+                IconButton(onClick = { /* TODO */ }, modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)) {
                     Icon(
                         imageVector = Icons.Outlined.Share,
                         contentDescription = "Share",
@@ -432,7 +465,10 @@ fun CommunityCard(
                 },
                 backgroundColor = Color(0xFF18191A)
             ) { padding ->
-                Box(modifier = Modifier.fillMaxSize().padding(padding).background(Color(0xFF18191A))) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .background(Color(0xFF18191A))) {
                     CommentSection(
                         comments = comments,
                         postAuthorId = post.userId, // BỔ SUNG THIẾU SÓT QUAN TRỌNG
@@ -478,7 +514,9 @@ fun CommunityCard(
                     OutlinedTextField(
                         value = editedText,
                         onValueChange = { editedText = it },
-                        modifier = Modifier.fillMaxWidth().height(150.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp),
                         placeholder = { Text("Edit your content...") }
                     )
                 }
