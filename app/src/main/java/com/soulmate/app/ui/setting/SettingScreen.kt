@@ -147,7 +147,7 @@ fun SettingScreen(
         if (currentUser?.role == "admin") {
             SettingItem(
                 icon = Icons.Default.SettingsSystemDaydream,
-                title = "🛠️ Admin Control Panel",
+                title = "Admin Control Panel",
                 onClick = {
                     navController.navigate("admin_dashboard")
                 }
