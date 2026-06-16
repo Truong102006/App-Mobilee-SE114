@@ -61,13 +61,15 @@ public class FirebaseSecurityFilter extends OncePerRequestFilter {
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken, true);
             String uid = decodedToken.getUid();
 
+            String role = (String) decodedToken.getClaims().getOrDefault("role", "user");
+
             String appId = null;
             if (backendProperties.getSecurity().isRequireAppCheck()) {
                 String appCheckToken = request.getHeader(APP_CHECK_HEADER);
                 appId = appCheckVerifier.verifyAndGetAppId(appCheckToken);
             }
 
-            AuthContextHolder.set(request, new AuthContext(uid, appId));
+            AuthContextHolder.set(request, new AuthContext(uid, appId, role));
             filterChain.doFilter(request, response);
         } catch (FirebaseAuthException | AppCheckVerificationException | IllegalArgumentException e) {
             writeUnauthorized(response, e.getMessage());
