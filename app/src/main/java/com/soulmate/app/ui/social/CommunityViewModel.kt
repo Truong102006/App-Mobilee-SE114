@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.domain.repository.IAuthRepository
 import com.soulmate.app.domain.repository.ICommunityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -18,6 +19,7 @@ import com.soulmate.app.domain.usecase.CalculatePetXPUseCase
 @HiltViewModel
 class CommunityViewModel @Inject constructor(
     private val repository: ICommunityRepository,
+    private val authRepository: IAuthRepository,
     private val auth: FirebaseAuth,
     private val calculatePetXPUseCase: CalculatePetXPUseCase
 ) : ViewModel() {
@@ -36,11 +38,17 @@ class CommunityViewModel @Inject constructor(
 
     private fun observePosts() {
         viewModelScope.launch {
+            val userId = currentUserId
+            val userProfile = userId?.let { authRepository.getUserProfile(it).getOrNull() }
+            val hiddenIds = userProfile?.hiddenPostIds ?: emptyList()
+
             repository.getPosts().collectLatest { allPosts ->
-                _posts.value = allPosts.map { post ->
-                    val isLiked = currentUserId?.let { post.likedBy.contains(it) } ?: false
-                    post.copy(isLiked = isLiked)
-                }
+                _posts.value = allPosts
+                    .filter { it.id !in hiddenIds }
+                    .map { post ->
+                        val isLiked = userId?.let { post.likedBy.contains(it) } ?: false
+                        post.copy(isLiked = isLiked)
+                    }
             }
         }
     }
@@ -116,6 +124,23 @@ class CommunityViewModel @Inject constructor(
     fun updatePostContent(postId: String, newContent: String) {
         viewModelScope.launch {
             repository.updatePostContent(postId, newContent)
+        }
+    }
+
+    fun hidePost(postId: String) {
+        val userId = currentUserId ?: return
+        viewModelScope.launch {
+            authRepository.hidePost(userId, postId).onSuccess {
+                _posts.value = _posts.value.filter { it.id != postId }
+            }
+        }
+    }
+
+    fun reportPost(postId: String) {
+        viewModelScope.launch {
+            repository.reportPost(postId).onSuccess {
+                hidePost(postId)
+            }
         }
     }
 }

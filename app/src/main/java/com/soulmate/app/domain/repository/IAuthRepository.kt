@@ -20,4 +20,5 @@ interface IAuthRepository {
     suspend fun getUserProfile(uid: String): Result<User>
     suspend fun searchUsers(query: String): Result<List<User>>
     suspend fun toggleSocialBan(targetUserId: String, isBanned: Boolean): Result<Unit>
+    suspend fun hidePost(userId: String, postId: String): Result<Unit>
 }

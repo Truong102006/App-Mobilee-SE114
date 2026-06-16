@@ -30,6 +30,7 @@ import com.soulmate.app.domain.model.User
 import com.soulmate.app.ui.login.AuthViewModel
 import java.util.Locale
 import androidx.core.net.toUri
+import androidx.navigation.NavController
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -37,6 +38,7 @@ fun SettingScreen(
     themeViewModel: ThemeViewModel,
     authViewModel: AuthViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
+    navController: NavController,
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -66,12 +68,10 @@ fun SettingScreen(
             modifier = Modifier.padding(vertical = 16.dp)
         )
 
-        // --- SECTION: PROFILE ---
         ProfileSection(user = currentUser)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- SECTION: GENERAL ---
         SettingSectionTitle("General")
         SettingItem(
             icon = Icons.Default.Brightness4,
@@ -101,7 +101,6 @@ fun SettingScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- SECTION: ACCOUNT & SECURITY ---
         SettingSectionTitle("Account")
         SettingItem(
             icon = Icons.Default.Person,
@@ -117,7 +116,6 @@ fun SettingScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- SECTION: SUPPORT ---
         SettingSectionTitle("Support")
         SettingItem(
             icon = Icons.Default.Info,
@@ -146,10 +144,18 @@ fun SettingScreen(
                 }
             }
         )
+        if (currentUser?.role == "admin") {
+            SettingItem(
+                icon = Icons.Default.SettingsSystemDaydream,
+                title = "🛠️ Admin Control Panel",
+                onClick = {
+                    navController.navigate("admin_dashboard")
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- LOGOUT BUTTON ---
         Button(
             onClick = {
                 authViewModel.logout()
@@ -167,8 +173,7 @@ fun SettingScreen(
         Spacer(modifier = Modifier.height(40.dp))
     }
 
-    // Hiển thị Dialog Edit Profile
-    val authLoading by authViewModel.isLoading // Lấy state loading
+    val authLoading by authViewModel.isLoading
 
     if (showEditProfileDialog && currentUser != null) {
         EditProfileDialog(
@@ -176,7 +181,6 @@ fun SettingScreen(
             isLoading = authLoading,
             onDismiss = { showEditProfileDialog = false },
             onSave = { updatedUser, imageUri ->
-                // Gọi hàm update mới
                 authViewModel.updateProfileWithImage(updatedUser, imageUri)
 
                 showEditProfileDialog = false
@@ -239,6 +243,21 @@ fun ProfileSection(user: User?) {
                 color = Color.Gray,
                 fontSize = 14.sp
             )
+            if (user?.isSocialBanned == true) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Surface(
+                    color = Color(0xFFFFEBEE),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = "🚫 Tài khoản bị hạn chế cộng đồng",
+                        color = Color.Red,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
         }
     }
 }

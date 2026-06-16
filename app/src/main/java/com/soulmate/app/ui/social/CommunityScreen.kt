@@ -50,9 +50,11 @@ fun CommunityScreen(
             items(feedPosts, key = { it.id }) { post ->
                 CommunityCard(
                     post = post,
-                    comments = allComments[post.id] ?: emptyList(), // TRUYỀN DANH SÁCH BÌNH LUẬN Ở ĐÂY
+                    comments = allComments[post.id] ?: emptyList(),
                     onLikeClick = { viewModel.toggleLike(post.id) },
-                    onOpenComments = { viewModel.loadComments(post.id) }, // LOAD BÌNH LUẬN KHI MỞ
+                    onOpenComments = { viewModel.loadComments(post.id) },
+                    onHideClick = { viewModel.hidePost(post.id) },
+                    onReportClick = { viewModel.reportPost(post.id) },
                     onCommentClick = { content, parentId, replyToUserName -> 
                         viewModel.addComment(
                             post.id, 
