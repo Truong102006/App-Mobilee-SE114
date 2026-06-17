@@ -53,7 +53,6 @@ class MainActivity : ComponentActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
-    private val communityViewModel: CommunityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +109,7 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 musicViewModel = musicViewModel, 
                                 historyViewModel = hiltViewModel(),
-                                communityViewModel = communityViewModel,
+                                communityViewModel = hiltViewModel(),
                                 onChatBubbleClick = { navController.navigate(Screen.ChatList.route) },
                                 onNavigateToChat = { userId, name, avatarUrl ->
                                     val encodedName = Uri.encode(name)
@@ -165,7 +164,7 @@ class MainActivity : ComponentActivity() {
                             DiaryDetailScreen(
                                 diaryId = diaryId,
                                 viewModel = hiltViewModel(),
-                                communityViewModel = communityViewModel,
+                                communityViewModel = hiltViewModel(),
                                 onBackClick = { navController.popBackStack() },
                                 onEditClick = { id -> navController.navigate(Screen.Diary.route + "?diaryId=$id") },
                                 onShareSuccess = { navController.navigate(Screen.Home.route) { popUpTo(Screen.Home.route) { inclusive = true } } }
@@ -173,7 +172,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Screen.ChatList.route) {
                             ChatListScreen(
-                                communityViewModel = communityViewModel,
+                                communityViewModel = hiltViewModel(),
                                 onChatClick = { userId, name, avatarUrl ->
                                     val encodedName = Uri.encode(name)
                                     val encodedUrl = if (avatarUrl != null) Uri.encode(avatarUrl) else "none"

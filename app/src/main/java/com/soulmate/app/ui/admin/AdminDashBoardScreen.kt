@@ -30,7 +30,7 @@ fun AdminDashboardScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "🛠️ Admin Control Panel",
+                        "Admin Control Panel",
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -315,42 +315,6 @@ fun UserAdminCard(
                     Text("Hủy")
                 }
             }
-        )
-    }
-}
-@Preview(showBackground = true, name = "Reported Post Card")
-@Composable
-fun ReportedPostCardPreview() {
-    // Dữ liệu giả để test UI card bài viết
-    val dummyPost = com.soulmate.app.ui.social.CommunityPost(
-        id = "1",
-        userName = "Nguyễn Văn A",
-        textContent = "Đây là một nội dung bài viết vi phạm tiêu chuẩn cộng đồng để chúng ta test thử giao diện xem nó hiển thị như thế nào.",
-        reportCount = 12
-    )
-    Box(modifier = Modifier.padding(16.dp)) {
-        ReportedPostCard(
-            post = dummyPost,
-            onDelete = {},
-            onIgnore = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "User Admin Card")
-@Composable
-fun UserAdminCardPreview() {
-    // Dữ liệu giả để test UI card user
-    val dummyUser = com.soulmate.app.domain.model.User(
-        userId = "user123",
-        anonymousName = "Soulmate User Test",
-        email = "test@gmail.com",
-        isSocialBanned = true // Test thử trạng thái bị Ban
-    )
-    Box(modifier = Modifier.padding(16.dp)) {
-        UserAdminCard(
-            user = dummyUser,
-            onToggleBan = {}
         )
     }
 }
