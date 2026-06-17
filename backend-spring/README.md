@@ -33,23 +33,29 @@ Client flow:
 
 1. Copy env template and fill values:
    - `backend-spring/.env.example`
-2. Export env vars into your shell or IDE run config.
-3. Ensure `GOOGLE_APPLICATION_CREDENTIALS` points to service account JSON.
+2. Keep `GOOGLE_APPLICATION_CREDENTIALS` as a repo-relative path, for example:
+   - `secrets/service-account.json`
+3. `backend-spring/.env` is auto-imported on startup, so you do not need to export those values into the shell for local runs.
 4. Ensure App Check project number is configured:
    - `BACKEND_SECURITY_FIREBASE_PROJECT_NUMBER`
 
 ## Run
 
-```bash
-cd backend-spring
-mvn spring-boot:run
+```powershell
+# From the repo root
+powershell -ExecutionPolicy Bypass -File .\scripts\run-backend.ps1
+```
+
+```powershell
+# Or, if you are already inside backend-spring/
+.\mvnw.cmd spring-boot:run
 ```
 
 ## Build
 
-```bash
-cd backend-spring
-mvn clean package
+```powershell
+cd .\backend-spring
+.\mvnw.cmd clean package
 ```
 
 ## Test quickly (PowerShell)
@@ -57,21 +63,20 @@ mvn clean package
 1) Get Firebase ID token from email/password:
 
 ```powershell
-cd backend-spring
+cd .\backend-spring
 $ID_TOKEN = .\scripts\get-firebase-id-token.ps1 -Email "your@email.com" -Password "your_password" -RawTokenOnly
 ```
 
 2) Start backend:
 
 ```powershell
-cd backend-spring
-mvn spring-boot:run
+powershell -ExecutionPolicy Bypass -File .\scripts\run-backend.ps1
 ```
 
 3) In another terminal, run smoke test:
 
 ```powershell
-cd backend-spring
+cd .\backend-spring
 .\scripts\smoke-test.ps1 -IdToken $ID_TOKEN -SkipAi -SkipCloudinary
 ```
 

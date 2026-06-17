@@ -22,7 +22,7 @@ Khi chạy app local, thông thường ta sẽ chạy cả app Android và backe
 Mọi lệnh trong tài liệu này đều nên chạy trong PowerShell, tại thư mục gốc của project:
 
 ```powershell
-cd "C:\Users\ASUS\Documents\KÌ 4-UIT\App-Mobilee-SE114"
+cd .\App-Mobilee-SE114
 ```
 
 Nếu bạn chưa mở PowerShell:
@@ -32,7 +32,7 @@ Nếu bạn chưa mở PowerShell:
 3. Mở `Windows PowerShell` hoặc `PowerShell`.
 4. Dán lệnh `cd` ở trên.
 
-Mẹo: luôn dùng dấu ngoặc kép `"` quanh đường dẫn vì tên thư mục có khoảng trắng.
+Mẹo: nếu repo nằm trong thư mục có khoảng trắng, vẫn nên dùng dấu ngoặc kép `"` quanh đường dẫn khi tự gõ lệnh `cd`.
 
 ## 3. Máy cần có gì trước khi chạy
 
@@ -160,10 +160,10 @@ Bạn cần:
 backend-spring/secrets/service-account.json
 ```
 
-Ngoài ra, trong `backend-spring/.env` cần trỏ `GOOGLE_APPLICATION_CREDENTIALS` tới file này. Ví dụ:
+Ngoài ra, trong `backend-spring/.env` nên trỏ `GOOGLE_APPLICATION_CREDENTIALS` tới file này bằng đường dẫn tương đối. Ví dụ:
 
 ```env
-GOOGLE_APPLICATION_CREDENTIALS=C:/Users/ASUS/Documents/KÌ 4-UIT/App-Mobilee-SE114/backend-spring/secrets/service-account.json
+GOOGLE_APPLICATION_CREDENTIALS=secrets/service-account.json
 ```
 
 ## 5. Cách chạy nhanh nhất trên máy mới hoặc máy cũ
@@ -348,7 +348,12 @@ Phần này dùng khi bạn muốn tự chạy từng bước để debug.
 Mở PowerShell ở thư mục gốc project, rồi chạy:
 
 ```powershell
-cd ".\backend-spring"
+powershell -ExecutionPolicy Bypass -File .\scripts\run-backend.ps1
+```
+
+Hoặc nếu bạn đang đứng sẵn trong thư mục `backend-spring/`:
+
+```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
@@ -429,13 +434,13 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run-phone.ps1 -SkipMachineSet
 Nếu bạn có file env riêng:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\run-emulator.ps1 -EnvFile "C:\duong-dan-toi-file\.env"
+powershell -ExecutionPolicy Bypass -File .\scripts\run-emulator.ps1 -EnvFile ".\backend-spring\.env.local"
 ```
 
 Hoặc:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\run-phone.ps1 -EnvFile "C:\duong-dan-toi-file\.env"
+powershell -ExecutionPolicy Bypass -File .\scripts\run-phone.ps1 -EnvFile ".\backend-spring\.env.local"
 ```
 
 ### 13.2. Bắt script khởi động lại backend
@@ -554,7 +559,7 @@ powershell -ExecutionPolicy Bypass -Command ". .\scripts\dev-common.ps1; Build-D
 2. Vào thư mục project:
 
 ```powershell
-cd "C:\Users\ASUS\Documents\KÌ 4-UIT\App-Mobilee-SE114"
+cd .\App-Mobilee-SE114
 ```
 
 3. Đảm bảo có đủ 3 file:
@@ -573,7 +578,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run-emulator.ps1
 2. Vào thư mục project:
 
 ```powershell
-cd "C:\Users\ASUS\Documents\KÌ 4-UIT\App-Mobilee-SE114"
+cd .\App-Mobilee-SE114
 ```
 
 3. Đảm bảo có đủ 3 file:
@@ -618,7 +623,7 @@ Script của repo không tự:
 Nếu chỉ cần nhớ 3 lệnh:
 
 ```powershell
-cd "C:\Users\ASUS\Documents\KÌ 4-UIT\App-Mobilee-SE114"
+cd .\App-Mobilee-SE114
 ```
 
 ```powershell
