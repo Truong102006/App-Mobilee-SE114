@@ -23,13 +23,18 @@ public class CommunityService {
 
             firestore.runTransaction(transaction -> {
                 DocumentSnapshot postSnap = transaction.get(postRef).get();
-                List<String> reportedBy = (List<String>) postSnap.get("reportedBy");
-                if (reportedBy == null) reportedBy = new ArrayList<>();
+
+                List<String> reportedBy = new ArrayList<>();
+                Object existingReportedBy = postSnap.get("reportedBy");
+                if (existingReportedBy instanceof List) {
+                    reportedBy = (List<String>) existingReportedBy;
+                }
 
                 if (!reportedBy.contains(userId)) {
                     reportedBy.add(userId);
                     transaction.update(postRef, "reportedBy", reportedBy);
-                    transaction.update(postRef, "reportCount", FieldValue.increment(1));
+                    long currentCount = postSnap.getLong("reportCount") != null ? postSnap.getLong("reportCount") : 0;
+                    transaction.update(postRef, "reportCount", currentCount + 1);
                     transaction.update(userRef, "hiddenPostIds", FieldValue.arrayUnion(postId));
                 }
                 return null;
@@ -37,18 +42,31 @@ public class CommunityService {
 
             return new CommonResponse(true, "Đã báo cáo bài viết");
         } catch (Exception e) {
+            e.printStackTrace();
             return new CommonResponse(false, e.getMessage());
         }
     }
 
     public List<CommunityPostDto> getReportedPosts() {
         try {
-            return firestore.collection("community_posts")
+            System.out.println(">>> Đang truy vấn collection: community_posts");
+
+//            return firestore.collection("community_posts")
+//                    .whereGreaterThan("reportCount", 0)
+//                    .orderBy("reportCount", Query.Direction.DESCENDING)
+//                    .get().get()
+//                    .toObjects(CommunityPostDto.class);
+
+            var querySnapshot = firestore.collection("community_posts")
                     .whereGreaterThan("reportCount", 0)
-                    .orderBy("reportCount", Query.Direction.DESCENDING)
-                    .get().get()
-                    .toObjects(CommunityPostDto.class);
+                    .get().get();
+
+            System.out.println(">>> Tìm thấy: " + querySnapshot.size() + " bài viết thỏa mãn reportCount > 0");
+
+            return querySnapshot.toObjects(CommunityPostDto.class);
         } catch (Exception e) {
+            System.err.println(">>> LỖI TRUY VẤN: " + e.getMessage());
+            e.printStackTrace();
             return new ArrayList<>();
         }
     }

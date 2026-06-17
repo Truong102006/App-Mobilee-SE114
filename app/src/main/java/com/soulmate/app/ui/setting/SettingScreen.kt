@@ -134,7 +134,7 @@ fun SettingScreen(
             onClick = {
                 val intent = Intent(Intent.ACTION_SENDTO).apply {
                     data = "mailto:".toUri()
-                    putExtra(Intent.EXTRA_EMAIL, arrayOf("support@soulmate.com")) // TODO: Thay email thật của nhóm
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf("support@soulmate.com")) // TODO: Thay email
                     putExtra(Intent.EXTRA_SUBJECT, "Feedback/Support for SoulMate App")
                 }
                 try {
