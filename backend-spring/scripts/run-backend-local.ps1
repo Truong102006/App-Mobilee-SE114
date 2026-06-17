@@ -95,6 +95,8 @@ Set-Location -LiteralPath $projectRoot
 
 if (-not $EnvFile) {
     $EnvFile = Join-Path $projectRoot ".env"
+} elseif (-not [System.IO.Path]::IsPathRooted($EnvFile)) {
+    $EnvFile = Join-Path $projectRoot $EnvFile
 }
 
 $configValues = @{}
