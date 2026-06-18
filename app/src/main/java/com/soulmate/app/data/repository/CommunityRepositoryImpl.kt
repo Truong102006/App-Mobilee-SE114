@@ -91,29 +91,32 @@ class CommunityRepositoryImpl @Inject constructor(
                 executeWithToken { idToken ->
                     val result = backendApiService.listCommunityPosts("Bearer $idToken").map { doc ->
                         CommunityPost(
-                            id = doc.id,
-                            userId = doc.userId,
-                            userName = doc.userName,
+                            id = doc.id ?: "",
+                            userId = doc.userId ?: "",
+                            userName = doc.userName ?: "SoulMate User",
                             userAvatarUrl = doc.userAvatarUrl,
                             isVerified = doc.isVerified ?: false,
-                            mood = doc.mood,
-                            timeAgo = formatTimeAgo(doc.timestamp),
-                            textContent = doc.textContent,
-                            imageUrls = doc.imageUrls,
-                            likeCount = doc.likeCount,
-                            commentCount = doc.commentCount,
-                            viewCount = doc.viewCount,
-                            likedBy = doc.likedBy
+                            mood = doc.mood ?: "Neutral",
+                            timeAgo = formatTimeAgo(doc.timestamp ?: 0L),
+                            textContent = doc.textContent ?: "",
+                            imageUrls = doc.imageUrls ?: emptyList(),
+                            likeCount = doc.likeCount ?: 0,
+                            commentCount = doc.commentCount ?: 0,
+                            viewCount = doc.viewCount ?: 0,
+                            likedBy = doc.likedBy ?: emptyList()
                         )
                     }
                     success = true
                     result
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to load posts", e)
+                Log.e("COMMUNITY_BUG", "❌ Lỗi fetch posts: ${e.javaClass.simpleName}: ${e.message}", e)
+                if (e is retrofit2.HttpException) {
+                    val errBody = try { e.response()?.errorBody()?.string() } catch (_: Exception) { null }
+                    Log.e("COMMUNITY_BUG", "HTTP ${e.code()}: $errBody")
+                }
                 if (e is retrofit2.HttpException && e.code() == 429) {
                     currentDelay = (currentDelay * 2).coerceAtMost(30000L)
-                    Log.d(TAG, "HTTP 429: Backed off post poll interval to ${currentDelay}ms")
                 }
                 null
             }

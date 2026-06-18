@@ -1,0 +1,3548 @@
+﻿
+  06-18 23:16:58.760   687 
+ 2096 W ActivityManager: 
+Slow operation: 112ms so 
+far, now at startProcess: 
+done creating new process 
+record
+  06-18 23:16:58.760   687 
+ 2096 W ActivityManager: 
+Slow operation: 142ms so 
+far, now at startProcess: 
+stepping in to startProcess
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:16:58.767 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:16:58.772   687 
+  723 I 
+ActivityTaskManager: 
+Displayed com.soulmate.app/
+.MainActivity for user 0: 
++40s894ms
+  06-18 23:16:58.803 23967 
+23967 I Choreographer: 
+Skipped 476 frames!  The 
+application may be doing 
+too much work on its main 
+thread.
+  06-18 23:16:58.862   687 
+  723 W Looper  : Slow 
+dispatch took 262ms 
+android.fg 
+app=system_server 
+main=false 
+group=FOREGROUND 
+h=android.os.Handler c=com.
+android.server.wm.ActivityM
+etricsLogger$$ExternalSynth
+eticLambda0@da2253b m=0
+  06-18 23:16:58.862   687 
+  723 W Looper  : Slow 
+delivery took 487ms 
+android.fg 
+app=system_server 
+main=false 
+group=FOREGROUND 
+h=android.os.Handler c=com.
+android.server.wm.ActivityM
+etricsLogger$$ExternalSynth
+eticLambda8@c040458 m=0
+  06-18 23:16:58.939   687 
+ 2096 W ActivityManager: 
+Slow operation: 321ms so 
+far, now at startProcess: 
+done starting proc!
+  06-18 23:16:58.939   687 
+ 2096 W 
+ContentProviderHelper: 
+Slow operation: 330ms so 
+far, now at 
+getContentProviderImpl: 
+after start process
+  06-18 23:16:59.005  1956 
+ 1956 I adbd    : adbd 
+service requested 
+'shell,v2,raw:dumpsys 
+package 
+com.google.android.gms'
+  06-18 23:16:59.111   687 
+ 2096 W 
+ContentProviderHelper: 
+Slow operation: 501ms so 
+far, now at 
+getContentProviderImpl: 
+updating data structures
+  06-18 23:17:11.428   687 
+ 1264 W ActivityManager: 
+ProcessRecord{3327f35 0:com
+.google.android.gms.persist
+ent/u0a204} is attached to 
+a previous process 24349
+  06-18 23:17:11.483 23906 
+24152 W 
+ConfigurationContentLdr: 
+Unable to acquire 
+ContentProviderClient, 
+using default values
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:17:11.495 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:17:11.495   687 
+ 1588 W ActivityManager: 
+Unable to start service 
+Intent { act=com.google.and
+roid.gms.potokens.service.S
+TART xflg=0x4 
+pkg=com.google.android.gms 
+} U=0: not found
+  06-18 23:17:11.503   687 
+ 1248 W ActivityManager: 
+Unbind failed: could not 
+find connection for android
+.os.BinderProxy@8c32b3d
+  06-18 23:17:11.517 23922 
+24024 W GmsClient: unable 
+to connect to service: com.
+google.android.gms.common.t
+elemetry.service.START on 
+com.google.android.gms
+  06-18 23:17:11.542 24183 
+24292 W JobInfo : 
+Requested 
+important-while-foreground 
+flag for job17 is ignored 
+and takes no effect
+  06-18 23:17:11.556   687 
+ 1248 W ActivityManager: 
+ProcessRecord{3327f35 0:com
+.google.android.gms.persist
+ent/u0a204} is attached to 
+a previous process 24349
+  06-18 23:17:11.561   687 
+ 2299 W ActivityManager: 
+Unbind failed: could not 
+find connection for android
+.os.BinderProxy@a858483
+  06-18 23:17:11.583 23906 
+24199 W GmsClient: unable 
+to connect to service: com.
+google.android.gms.potokens
+.service.START on 
+com.google.android.gms
+  06-18 23:17:11.612  2644 
+ 2656 I artd    : 
+GetBestInfo: dm (/data/app/
+~~iv7np7erLSerTX22n-K18Q==/
+com.google.android.gms-mpNI
+dYytvpf3t0vs-AqdFw==/split_
+AdsDynamite_installtime.dm)
+ is kOatUpToDate with 
+filter 'verify' executable 
+'false'
+  06-18 23:17:16.900 24427 
+24427 D 
+CompatChangeReporter: 
+Compat change id reported: 
+419020719; UID 10204; 
+state: ENABLED
+  06-18 23:17:16.902 24427 
+24427 D 
+CompatChangeReporter: 
+Compat change id reported: 
+418924588; UID 10204; 
+state: ENABLED
+> 06-18 23:17:16.922  1956 
+ 1956 I adbd    : adbd 
+service requested 'shell,v2
+,TERM=xterm-256color:export
+ ANDROID_LOG_TAGS=''; exec 
+logcat '-d' '-s' 
+'COMMUNITY_BUG''
+  06-18 23:17:16.952 24183 
+24303 I SQLiteConnection: 
+Long db operation: /data/us
+er/0/com.google.android.as/
+databases/nasa.db
+  06-18 23:17:16.979  2644 
+ 2656 I artd    : 
+GetBestInfo: /data/user_de/
+0/com.google.android.gms/ap
+p_chimera/m/0000000e/dl-Pla
+yCloudSearch.optional_26203
+1100000.apk has no usable 
+artifacts
+  06-18 23:17:16.988 24454 
+24454 D 
+ApplicationLoaders: 
+Returning zygote-cached 
+class loader: /system_ext/f
+ramework/androidx.window.ex
+tensions.jar
+  06-18 23:17:16.988 24454 
+24454 D 
+ApplicationLoaders: 
+Returning zygote-cached 
+class loader: /system_ext/f
+ramework/androidx.window.si
+decar.jar
+  06-18 23:17:17.041  2644 
+ 2656 I artd    : 
+GetBestInfo: /data/user_de/
+0/com.google.android.gms/ap
+p_chimera/m/00000001/Cronet
+Dynamite.apk has no usable 
+artifacts
+  06-18 23:17:17.042  2644 
+ 2656 I artd    : 
+GetBestInfo: /data/user_de/
+0/com.google.android.gms/ap
+p_chimera/m/00000002/Dynami
+teLoader.apk has no usable 
+artifacts
+  06-18 23:17:17.043  2644 
+ 2656 I artd    : 
+GetBestInfo: /data/user_de/
+0/com.google.android.gms/ap
+p_chimera/m/0000000f/dl-Tfl
+iteDynamiteDynamite.integ_2
+52130102100800.apk has no 
+usable artifacts
+  06-18 23:17:17.043  2644 
+ 2656 I artd    : 
+GetBestInfo: /data/user_de/
+0/com.google.android.gms/ap
+p_chimera/m/00000005/Google
+Certificates.apk has no 
+usable artifacts
+  06-18 23:17:23.188 24381 
+24561 I Finsky:background: 
+[69] registerListener
+  06-18 23:17:23.188 24381 
+24561 I Finsky:background: 
+[69] DFS: Listener added 
+for apba@6e101f3
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:17:23.215 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:17:23.418 24406 
+24406 D nativeloader: Load 
+/product/priv-app/DeviceInt
+elligenceNetworkPrebuiltAst
+rea/DeviceIntelligenceNetwo
+rkPrebuiltAstrea.apk!/lib/x
+86_64/libpi_client_session_
+config_jni.so using class 
+loader ns product-clns-9 (c
+aller=/product/priv-app/Dev
+iceIntelligenceNetworkPrebu
+iltAstrea/DeviceIntelligenc
+eNetworkPrebuiltAstrea.apk)
+: ok
+  06-18 23:17:23.462 24406 
+24406 D BSA     : Cache 
+jni_bsa_calls method IDs
+  06-18 23:17:23.462 24406 
+24406 D BSA     : Register 
+BSA methods
+  06-18 23:17:23.462 24406 
+24406 D BSA     : Register 
+NativeOnResponse methods
+  06-18 23:17:23.462 24406 
+24406 D BSA     : Register 
+NativeAttestAndSignCallback
+ methods
+  06-18 23:17:23.462 24406 
+24406 D BSA     : Cache jni
+_message_interface_wrapper 
+method IDs
+  06-18 23:17:23.531 24406 
+24413 W .android.as.oss: 
+Suspending all threads 
+took: 13.237ms
+  06-18 23:17:23.627 24435 
+24435 E NetworkScheduler: 
+Compat called without init
+  06-18 23:17:28.081 24381 
+24387 W ding:background: 
+Suspending all threads 
+took: 18.531ms
+  06-18 23:17:28.121 24435 
+24667 I Dtdi    : 
+[LifecycleService] 
+Initializing lifecycle 
+service [CONTEXT 
+service_id=312 ]
+> 06-18 23:17:28.248  1956 
+ 1956 I adbd    : adbd 
+service requested 'shell,v2
+,TERM=xterm-256color:export
+ ANDROID_LOG_TAGS=''; exec 
+logcat '-d' '-s' 
+'COMMUNITY_BUG''
+  06-18 23:17:28.389 24183 
+24303 I AiAiNowPlaying: 
+Registering Now Playing 
+population: 
+NOW_PLAYING_USAGE_WEEKLY
+  06-18 23:17:28.396 24435 
+24586 I NetworkScheduler: 
+Using standalone 
+scheduling engine [CONTEXT 
+service_id=218 ]
+  06-18 23:17:28.412   687 
+ 1089 I HalDevMgr: 
+bestIfaceCreationProposal 
+is null, requestIface=STA, 
+existingIface=[name=wlan0 
+type=STA]
+  06-18 23:17:28.417   687 
+  835 D ActivityManager: 
+freezing 23922 com.google.a
+ndroid.googlequicksearchbox
+:googleapp
+  06-18 23:17:28.418   687 
+  835 D ActivityManager: 
+Reschedule freeze for 
+process 23922 com.google.an
+droid.googlequicksearchbox:
+googleapp (outstanding 
+txns), timeout=2396
+  06-18 23:17:28.433 24183 
+24307 I SP.AiAi : 
+Registering spelling_correc
+tion.22110320, url: https:/
+/www.gstatic.com/nasa/apps/
+pack_spelling_checker_11032
+022/22110320/2/en-us/superp
+acks_manifest.zip, 
+constraints: W:*:I:*, 
+flags: *, requested: 
+22110320, current: -1
+  06-18 23:17:28.434   687 
+ 1118 I 
+AdbWifiNetworkMonitor: 
+Wi-Fi network available
+  06-18 23:17:28.434   687 
+ 1118 I 
+AdbWifiNetworkMonitor: 
+Received the same Wi-Fi 
+SSID. Ignoring.
+  06-18 23:17:33.743  1357 
+ 1530 V 
+SatelliteController: 
+satelliteConfigParser is 
+not ready
+  06-18 23:17:33.743  1357 
+ 1530 D 
+SatelliteController: isSate
+lliteAttachSupportedViaConf
+igupdater: return null 
+(satelliteConfig is null)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:17:33.771 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:17:33.812 23967 
+23988 I om.soulmate.app: 
+Background young 
+concurrent mark compact GC 
+freed 3961KB AllocSpace 
+bytes, 22(960KB) LOS 
+objects, 39% free, 
+7627KB/12MB, paused 
+165us,25.629ms total 
+42.423ms
+  06-18 23:17:33.837 24556 
+24556 D ActivityAllAppsCont
+ainerView: rebindAdapters: 
+force: false
+  06-18 23:17:33.837 24556 
+24556 D ActivityAllAppsCont
+ainerView: rebindAdapters: 
+Not needed.
+  06-18 23:17:33.838 24556 
+24556 D 
+TaskFragmentComponent: 
+Setting valid task 
+fragment surface control 
+in 
+TYPE_TASK_FRAGMENT_APPEARED
+  06-18 23:17:33.841   529 
+  584 I 
+libbinder.BpBinder: 
+onLastStrongRef 
+automatically unlinking 
+death recipients for 
+binder (0x75b39fa52200) 
+with descriptor: '(not 
+cached)'
+  06-18 23:17:33.844   687 
+ 2364 V WindowManager: 
+Queueing transition: 
+TransitionRecord{dc36bdc 
+id=-1 type=CLOSE flags=0x0 
+parallelCollectType=NONE 
+recentsDisplayId=-1}
+  06-18 23:17:33.856   687 
+ 2297 W TransitionChain: 
+Combining tfTransact into 
+#70(CHANGE|R|0x0) from 
+tfTransact
+  06-18 23:17:33.858   687 
+ 2297 V WindowManager: 
+deferTransitionReady 
+deferReadyDepth=1 stack=com
+.android.server.wm.WindowOr
+ganizerController.applyTran
+saction:717 com.android.ser
+ver.wm.WindowOrganizerContr
+oller.applyTaskFragmentTran
+sactionLocked:600 com.andro
+id.server.wm.TaskFragmentOr
+ganizerController.applyTran
+saction:761 com.android.ser
+ver.wm.TaskFragmentOrganize
+rController.onTransactionHa
+ndled:727 android.window.IT
+askFragmentOrganizerControl
+ler$Stub.onTransact:220 
+  06-18 23:17:44.111 24454 
+24454 W 
+NotificationCenter: Notific
+ationCenter$NotificationQue
+ue.notifyPendingNotificatio
+nsOnExecutor():877 Heavy 
+notify work detected on UI 
+thread: [kxi->oik, 
+kxi->oik, kxi->oik, 
+kxi->oik, kxi->oik, 
+kxi->oik, kxi->oik, 
+kxi->oik, kxi->oik, 
+oxv->oik, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+oxv->oik, ody->odx, 
+ody->odx, ody->odx, 
+oxv->oik, ody->odx, 
+ody->odx, ody->odx, 
+kxn->hik, kxn->hik, 
+kxn->hik, kxn->hik, 
+oxv->oik, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, oxv->oik, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, ody->odx, 
+ody->odx, kxn->hik, 
+kxn->hik, kxn->hik, 
+kxn->hik] takes 143ms
+  06-18 23:17:44.184 24435 
+24651 I TetheringManager: r
+egisterTetheringEventCallba
+ck:com.google.android.gms
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:17:44.238 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:17:44.386 23906 
+23906 I Finsky  : [2] 
+setup::RES: shouldRecoverRe
+storedPackages: 
+versionCodeSystem 85072830
+  06-18 23:17:44.431 23906 
+23906 I Finsky  : [2] 
+Detected restoreservicev2:/
+/recovery not needed, will 
+not run
+  06-18 23:17:44.495 24454 
+24940 W System  : 
+ClassLoader referenced 
+unknown path: 
+  06-18 23:17:44.496 24454 
+24454 I 
+GoogleInputMethodService: G
+oogleInputMethodService$Goo
+gleInputMethodImpl.attachTo
+ken():2806 
+  06-18 23:17:44.496 24454 
+24940 D nativeloader: 
+Configuring clns-10 for 
+other apk . 
+target_sdk_version=37, 
+uses_libraries=, library_pa
+th=/data/app/~~iv7np7erLSer
+TX22n-K18Q==/com.google.and
+roid.gms-mpNIdYytvpf3t0vs-A
+qdFw==/lib/x86_64:/data/app
+/~~iv7np7erLSerTX22n-K18Q==
+/com.google.android.gms-mpN
+IdYytvpf3t0vs-AqdFw==/base.
+apk!/lib/x86_64, permitted_
+path=/data:/mnt/expand:/dat
+a/user/0/com.google.android
+.gms
+  06-18 23:17:44.580 24454 
+24464 W putmethod.latin: 
+Suspending all threads 
+took: 45.296ms
+  06-18 23:17:44.664 24454 
+24454 I DisplayManager: 
+Implicitly registering for 
+refresh rate
+  06-18 23:17:44.671 24454 
+24454 W HWUI    : Unknown 
+dataspace 0
+  06-18 23:17:54.756 24912 
+24912 I native  : I0000 
+00:00:1781799474.756840   
+24912 local_pipeline_runner
+.cc:49] Done loading all 
+resources from: {/data/user
+_de/0/com.google.android.tt
+s/files/superpacks/en-us/en
+-us-x-multi-r83}
+  06-18 23:17:54.760   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:17:54.763 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:17:54.786   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:17:54.786   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:17:54.786   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:17:54.826   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:17:54.826   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:17:54.826   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:17:54.831   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:17:54.838 24912 
+25047 W FlagStore: Unable 
+to update local snapshot 
+for com.google.android.gms.
+providerinstaller#com.googl
+e.android.gms, may result 
+in stale flags.
+  06-18 23:18:05.254   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:05.258 24183 
+24266 I AiAiStatsd: 
+Successfully logged 
+feature usage for 
+TEXT_CLASSIFIER.
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:18:05.258 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:18:05.265   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:05.274   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:05.276 24454 
+24966 I SP      : Syncing e
+moticon_content_description
+ (2022081613) with slices: 
+[7a635888cb828dfa2fc744b7b9
+b50f04], metadata: false
+  06-18 23:18:05.281 24454 
+24966 I SP      : Syncing e
+moticon_content_description
+ (2022081613) with slices: 
+[7a635888cb828dfa2fc744b7b9
+b50f04], metadata: false
+  06-18 23:18:05.282 24454 
+24966 I HandwritingSlicingS
+trategy: HandwritingSlicing
+Strategy.getSlices():44 
+getSlices(): 
+handwriting_recognition.94 
+useForeground=true
+  06-18 23:18:05.283 24454 
+24966 I HandwritingSlicingS
+trategy: HandwritingSlicing
+Strategy.getSlices():103 
+getSlices(): result {slices
+=[{handwriting_recognition:
+pack_mapping_v1_lstm_202602
+06, m:*:*:*}, {handwriting_
+recognition:en_us_20251103_
+compact_fst_zip, m:*:*:*}, 
+{handwriting_recognition:tr
+ansformer_latin_seg_tflite_
+20251103_zip, m:*:*:*}, {ha
+ndwriting_recognition:qrnn_
+en-US_reco_20251103_fst_202
+51103_recospec_zip, 
+m:*:*:*}, {handwriting_reco
+gnition:transformer_latin_t
+flite_20251103_zip, 
+m:*:*:*}, {handwriting_reco
+gnition:transformer_latin_c
+onf_tflite_20251103_zip, 
+m:*:*:*}, {handwriting_reco
+gnition:scribe_latin_202508
+29tfreco_tflite_zip, 
+m:*:*:*}, {handwriting_reco
+gnition:scribe_latin_202508
+29tfreco_recospec_zip, 
+m:*:*:*}], last 
+batch=true, sync 
+metadata=false}
+  06-18 23:18:05.283 24454 
+24966 I SP      : Syncing 
+handwriting_recognition 
+(94) with slices: [{pack_ma
+pping_v1_lstm_20260206, 
+m:*:*:*}, {en_us_20251103_c
+ompact_fst_zip, m:*:*:*}, {
+transformer_latin_seg_tflit
+e_20251103_zip, m:*:*:*}, {
+qrnn_en-US_reco_20251103_fs
+t_20251103_recospec_zip, 
+m:*:*:*}, {transformer_lati
+n_tflite_20251103_zip, 
+m:*:*:*}, {transformer_lati
+n_conf_tflite_20251103_zip,
+ m:*:*:*}, {scribe_latin_20
+250829tfreco_tflite_zip, 
+m:*:*:*}, {scribe_latin_202
+50829tfreco_recospec_zip, 
+m:*:*:*}], metadata: false
+  06-18 23:18:05.284 24454 
+24966 I HandwritingSlicingS
+trategy: HandwritingSlicing
+Strategy.getSlices():44 
+getSlices(): 
+handwriting_recognition.94 
+useForeground=true
+  06-18 23:18:15.715   529 
+  600 W skia    : AGTM 
+parsing failed 
+flags.readFromStream(s) at 
+159
+  06-18 23:18:15.717   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:18:15.720 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:18:15.724   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:15.736   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:15.748   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:15.761   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:15.765   687 
+ 1093 I Nl80211Proxy: 
+Received NLMSG_ERROR with 
+error 0 for message 
+GenericNetlinkMsg{ 
+nlHeader{StructNlMsgHdr{ 
+nlmsg_len{56}, 
+nlmsg_type{30()}, nlmsg_fla
+gs{5(NLM_F_REQUEST|NLM_F_AC
+K)}, nlmsg_seq{282}, 
+nlmsg_pid{0} }}, genNlHeade
+r{StructGenNlMsgHdr{ 
+command{33}, version{1}, 
+reserved{0} }}, 
+attributes{[StructNlAttr{ 
+nla_len{8}, 
+nla_type{-32723}, 
+nla_value{04000000}, }, 
+StructNlAttr{ nla_len{8}, 
+nla_type{3}, 
+nla_value{10000000}, }, 
+StructNlAttr{ nla_len{12}, 
+nla_type{-32724}, nla_value
+{080000008F090000}, }, 
+StructNlAttr{ nla_len{8}, 
+nla_type{158}, 
+nla_value{00000000}, }]} }
+  06-18 23:18:15.771   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:15.782   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:15.793   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.135   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.140   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:18:26.141 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:18:26.151   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.164   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.175   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.187   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.198   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.208   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.219   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:26.231   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.643   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.649   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:18:36.651 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:18:36.660   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.671   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.682   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.694   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.705   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.716   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.728   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:36.740   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.077   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.086   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:18:47.089 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:18:47.099   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.109   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.121   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.132   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.144   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.154   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.167   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:47.177   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.612   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.612   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:18:57.661 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:18:57.679   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.679   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.680   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.680   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.702   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.704   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:18:57.706   529 
+  600 W skia    : AGTM 
+parsing failed 
+flags.readFromStream(s) at 
+159
+  06-18 23:18:57.714   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.097   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.104   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:19:08.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:19:08.116   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.127   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.139   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.150   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.160   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.173   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.185   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:08.196   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.607   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.618   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:19:18.620 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:19:18.630   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.640   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.651   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.663   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.673   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.686   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.696   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:18.708   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:29.089   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:29.104   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:19:29.106 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:19:29.111   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:29.117  2644 
+10872 I artd    : 
+GetBestInfo: odex next to 
+the dex file (/data/app/~~i
+v7np7erLSerTX22n-K18Q==/com
+.google.android.gms-mpNIdYy
+tvpf3t0vs-AqdFw==/oat/x86_6
+4/base.odex) is 
+kOatUpToDate with filter 
+'speed-profile' executable 
+'false'
+  06-18 23:19:29.119  2644 
+10872 I artd    : 
+GetBestInfo: dm (/data/app/
+~~iv7np7erLSerTX22n-K18Q==/
+com.google.android.gms-mpNI
+dYytvpf3t0vs-AqdFw==/split_
+AdsDynamite_installtime.dm)
+ is kOatUpToDate with 
+filter 'verify' executable 
+'false'
+  06-18 23:19:29.121  2644 
+10872 I artd    : 
+GetBestInfo: odex next to 
+the dex file (/data/app/~~i
+v7np7erLSerTX22n-K18Q==/com
+.google.android.gms-mpNIdYy
+tvpf3t0vs-AqdFw==/oat/x86_6
+4/split_CronetDynamite_inst
+alltime.odex) is 
+kOatUpToDate with filter 
+'speed-profile' executable 
+'false'
+  06-18 23:19:29.124   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:29.124  2644 
+10872 I artd    : 
+GetBestInfo: dm (/data/app/
+~~iv7np7erLSerTX22n-K18Q==/
+com.google.android.gms-mpNI
+dYytvpf3t0vs-AqdFw==/split_
+DynamiteLoader_installtime.
+dm) is kOatUpToDate with 
+filter 'verify' executable 
+'false'
+  06-18 23:19:29.126  2644 
+10872 I artd    : 
+GetBestInfo: dm (/data/app/
+~~iv7np7erLSerTX22n-K18Q==/
+com.google.android.gms-mpNI
+dYytvpf3t0vs-AqdFw==/split_
+DynamiteModulesA_installtim
+e.dm) is kOatUpToDate with 
+filter 'verify' executable 
+'false'
+  06-18 23:19:29.128  2644 
+10872 I artd    : 
+GetBestInfo: dm (/data/app/
+~~iv7np7erLSerTX22n-K18Q==/
+com.google.android.gms-mpNI
+dYytvpf3t0vs-AqdFw==/split_
+DynamiteModulesC_installtim
+e.dm) is kOatUpToDate with 
+filter 'verify' executable 
+'false'
+  06-18 23:19:39.619   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:39.630   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:19:39.631 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:19:39.641   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:39.652   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:39.654   529 
+  600 W skia    : AGTM 
+parsing failed 
+flags.readFromStream(s) at 
+159
+  06-18 23:19:39.663   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:39.676   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:39.689   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:39.698   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:39.708   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.033   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.044   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:19:50.046 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:19:50.057   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.067   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.079   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.090   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.101   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.112   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.123   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:19:50.135   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.454   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.465   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:20:00.468 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:20:00.477   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.488   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.500   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.511   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.522   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.535   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.544   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:00.556   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.888   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.899   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:20:10.902 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:20:10.910   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.923   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.932   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.945   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.956   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.967   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.978   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:10.990   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.325   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.335   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:20:21.341 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:20:21.346   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.358   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.397   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.397   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.397   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.398   529 
+  600 W skia    : AGTM 
+parsing failed 
+flags.readFromStream(s) at 
+159
+  06-18 23:20:21.403   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:21.414   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.764   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.776   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:20:31.781 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:20:31.788   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.800   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.802 23967 
+23988 I om.soulmate.app: 
+Background young 
+concurrent mark compact GC 
+freed 4879KB AllocSpace 
+bytes, 0(0B) LOS objects, 
+38% free, 7756KB/12MB, 
+paused 153us,13.483ms 
+total 23.067ms
+  06-18 23:20:31.812   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.821   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.833   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.844   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:31.855   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.228   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.238   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:20:42.246 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:20:42.249   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.262   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.273   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.284   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.295   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.307   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.317   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:42.328   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.659   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.669   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:20:52.676 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:20:52.681   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.692   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.705   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.715   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.727   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.738   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.751   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:20:52.761   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.051   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.060   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:21:03.062 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:21:03.071   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.086   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.096   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.106   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.117   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.129   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.140   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:03.153   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.499   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.510   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: Γ¥î 
+Lß╗ùi fetch posts: 
+NullPointerException: 
+Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: java
+.lang.NullPointerException:
+ Parameter specified as 
+non-null is null: method co
+m.soulmate.app.ui.social.Co
+mmunityPost.<init>, 
+parameter userId
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:27)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.ui.social.
+CommunityPost.<init>(Commun
+ityPost.kt:19)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.soulmate.app.data.repos
+itory.CommunityRepositoryIm
+pl$getPosts$1$posts$1.invok
+eSuspend(CommunityRepositor
+yImpl.kt:93)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlin.coroutines.jvm.inter
+nal.BaseContinuationImpl.re
+sumeWith(ContinuationImpl.k
+t:33)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+kotlinx.coroutines.Dispatch
+edTask.run(DispatchedTask.k
+t:104)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.handleCa
+llback(Handler.java:1095)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+MessageImpl(Handler.java:13
+5)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Handler.dispatch
+Message(Handler.java:125)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loopOnce(
+Looper.java:296)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.os.Looper.loop(Loop
+er.java:397)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+android.app.ActivityThread.
+main(ActivityThread.java:95
+23)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+java.lang.reflect.Method.in
+voke(Native Method)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Run
+timeInit$MethodAndArgsCalle
+r.run(RuntimeInit.java:575)
+> 06-18 23:21:13.514 23967 
+23967 E COMMUNITY_BUG: 	at 
+com.android.internal.os.Zyg
+oteInit.main(ZygoteInit.jav
+a:939)
+  06-18 23:21:13.520   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.533   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.544   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.555   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.566   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.579   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+  06-18 23:21:13.584   529 
+  600 W skia    : AGTM 
+parsing failed 
+flags.readFromStream(s) at 
+159
+  06-18 23:21:13.588   479 
+25010 D android.hardware.au
+dio@7.1-impl.ranchu: 544 
+frames of silence written
+
+

@@ -256,6 +256,15 @@ fun CommunityCard(
                         }
                         DropdownMenuItem(onClick = {
                             showMenu = false
+                            editedText = post.textContent
+                            showEditDialog = true
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFFFFA000), modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Edit")
+                        }
+                        DropdownMenuItem(onClick = {
+                            showMenu = false
                             showDeleteDialog = true
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))

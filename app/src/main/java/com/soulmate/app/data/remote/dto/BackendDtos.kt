@@ -92,19 +92,19 @@ data class CreatePostRequestDto(
 )
 
 data class CreatePostResponseDto(
-    val id: String = "",
-    val userId: String = "",
-    val userName: String = "",
+    val id: String? = null,
+    val userId: String? = null,
+    val userName: String? = null,
     val userAvatarUrl: String? = null,
     val isVerified: Boolean? = false,
-    val mood: String = "Neutral",
-    val textContent: String = "",
-    val imageUrls: List<String> = emptyList(),
-    val likeCount: Int = 0,
-    val commentCount: Int = 0,
-    val viewCount: Int = 0,
-    val likedBy: List<String> = emptyList(),
-    val timestamp: Long = 0L
+    val mood: String? = "Neutral",
+    val textContent: String? = "",
+    val imageUrls: List<String>? = emptyList(),
+    val likeCount: Int? = 0,
+    val commentCount: Int? = 0,
+    val viewCount: Int? = 0,
+    val likedBy: List<String>? = emptyList(),
+    val timestamp: Long? = 0L
 )
 
 data class CreateCommentRequestDto(

@@ -275,14 +275,51 @@ public class CommunityService {
         List<String> imageUrls = (List<String>) doc.get("image_urls");
         if (imageUrls == null) imageUrls = Collections.emptyList();
 
+        String userId = doc.getString("user_id");
+        if (userId == null) {
+            userId = doc.getString("userId");
+        }
+        if (userId == null) {
+            userId = "";
+        }
+
+        String userName = doc.getString("user_name");
+        if (userName == null) {
+            userName = doc.getString("userName");
+        }
+        if (userName == null) {
+            userName = "SoulMate User";
+        }
+
+        String mood = doc.getString("mood");
+        if (mood == null) {
+            mood = "Neutral";
+        }
+
+        String textContent = doc.getString("text_content");
+        if (textContent == null) {
+            textContent = doc.getString("textContent");
+        }
+        if (textContent == null) {
+            textContent = "";
+        }
+
+        Boolean isVerified = doc.getBoolean("is_verified");
+        if (isVerified == null) {
+            isVerified = doc.getBoolean("isVerified");
+        }
+        if (isVerified == null) {
+            isVerified = false;
+        }
+
         return new PostResponse(
             doc.getId(),
-            doc.getString("user_id"),
-            doc.getString("user_name"),
-            doc.getString("user_avatar_url"),
-            doc.getBoolean("is_verified"),
-            doc.getString("mood"),
-            doc.getString("text_content"),
+            userId,
+            userName,
+            doc.getString("user_avatar_url") != null ? doc.getString("user_avatar_url") : doc.getString("userAvatarUrl"),
+            isVerified,
+            mood,
+            textContent,
             imageUrls,
             doc.getLong("like_count") != null ? doc.getLong("like_count").intValue() : 0,
             doc.getLong("comment_count") != null ? doc.getLong("comment_count").intValue() : 0,
