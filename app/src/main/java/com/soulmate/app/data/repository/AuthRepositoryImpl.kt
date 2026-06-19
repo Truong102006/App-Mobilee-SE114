@@ -152,7 +152,6 @@ class AuthRepositoryImpl @Inject constructor(
             "updatedAt" to System.currentTimeMillis()
         )
         usersCollection.document(uid).update(updates).await()
-        
         // Sync display name to FirebaseAuth
         val profileUpdate = UserProfileChangeRequest.Builder()
             .setDisplayName(user.anonymousName)

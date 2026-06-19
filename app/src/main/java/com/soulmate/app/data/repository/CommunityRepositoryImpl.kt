@@ -13,8 +13,13 @@ import com.soulmate.app.utils.CloudinaryHelper
 import com.soulmate.app.data.remote.dto.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import java.text.SimpleDateFormat
@@ -33,18 +38,17 @@ class CommunityRepositoryImpl @Inject constructor(
     private val postsCollection = firestore.collection("community_posts")
     private val auth = FirebaseAuth.getInstance()
 
-    private fun formatTimeAgo(timestamp: Timestamp?): String {
-        if (timestamp == null) return "Vừa xong"
+    private fun formatTimeAgo(timestampMs: Long): String {
         val now = System.currentTimeMillis()
-        val diff = now - timestamp.toDate().time
-        
+        val diff = now - timestampMs
+
         return when {
             diff < 60000 -> "Vừa xong"
             diff < 3600000 -> "${diff / 60000} phút trước"
             diff < 86400000 -> "${diff / 3600000} giờ trước"
             else -> {
                 val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                sdf.format(timestamp.toDate())
+                sdf.format(Date(timestampMs))
             }
         }
     }
@@ -61,181 +65,174 @@ class CommunityRepositoryImpl @Inject constructor(
             try {
                 CloudinaryHelper.uploadImageSuspend(imagePath.toUri())
             } catch (e: Exception) {
-                Log.e("CommunityRepo", "Cloudinary upload failed for $imagePath", e)
+                Log.e(TAG, "Cloudinary upload failed for $imagePath", e)
                 imagePath
             }
         }
     }
 
-    override fun getPosts(): Flow<List<CommunityPost>> = callbackFlow {
-        val subscription = postsCollection
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val posts = snapshot.documents.mapNotNull { doc ->
-                        try {
-                            val likedBy = doc.get("liked_by") as? List<String> ?: emptyList()
-                            val timestamp = try { doc.getTimestamp("timestamp") } catch (e: Exception) { null }
-                            
-                            CommunityPost(
-                                id = doc.id,
-                                userId = doc.getString("user_id") ?: "",
-                                userName = doc.getString("user_name") ?: "Người dùng",
-                                userAvatarUrl = doc.getString("user_avatar_url"),
-                                isVerified = doc.getBoolean("is_verified") ?: false,
-                                mood = doc.getString("mood") ?: "Neutral",
-                                timeAgo = formatTimeAgo(timestamp),
-                                textContent = doc.getString("text_content") ?: "",
-                                imageUrls = doc.get("image_urls") as? List<String> ?: emptyList(),
-                                likeCount = doc.getLong("like_count")?.toInt() ?: 0,
-                                commentCount = doc.getLong("comment_count")?.toInt() ?: 0,
-                                viewCount = doc.getLong("view_count")?.toInt() ?: 0,
-                                likedBy = likedBy,
-                                timestamp = timestamp
-                            )
-                        } catch (e: Exception) {
-                            Log.e("CommunityRepo", "Error parsing post ${doc.id}", e)
-                            null
-                        }
-                    }.sortedByDescending { it.timestamp?.seconds ?: 0L }
-                    
-                    trySend(posts)
-                }
+    private suspend fun <T> executeWithToken(forceRefresh: Boolean = false, block: suspend (String) -> T): T {
+        val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
+        val token = currentUser.getIdToken(forceRefresh).await().token
+            ?: throw IllegalStateException("Cannot get Firebase ID token")
+        return try {
+            block(token)
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 401 && !forceRefresh) {
+                Log.d(TAG, "Token expired (401), force-refreshing token and retrying...")
+                executeWithToken(forceRefresh = true, block)
+            } else {
+                throw e
             }
-        awaitClose { subscription.remove() }
+        }
     }
 
-    override fun getComments(postId: String): Flow<List<Comment>> = callbackFlow {
-        val subscription = postsCollection.document(postId).collection("comments")
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    val comments = snapshot.documents.mapNotNull { doc ->
-                        try {
-                            val likedBy = doc.get("liked_by") as? List<String> ?: emptyList()
-                            Comment(
-                                id = doc.id,
-                                userId = doc.getString("user_id") ?: "",
-                                userName = doc.getString("user_name") ?: "Người dùng",
-                                userAvatarUrl = doc.getString("user_avatar_url"),
-                                content = doc.getString("content") ?: "",
-                                timeAgo = formatTimeAgo(doc.getTimestamp("timestamp")),
-                                likeCount = likedBy.size,
-                                likedBy = likedBy,
-                                parentId = doc.getString("parent_id"), // Lấy parent_id
-                                replyToUserName = doc.getString("reply_to_user_name") // Lấy tên người được trả lời
-                            )
-                        } catch (e: Exception) {
-                            null
-                        }
+    override fun getPosts(): Flow<List<CommunityPost>> = flow {
+        var currentDelay = POLL_INTERVAL_MS
+        while (currentCoroutineContext().isActive) {
+            var success = false
+            val posts = try {
+                executeWithToken { idToken ->
+                    val result = backendApiService.listCommunityPosts("Bearer $idToken").map { doc ->
+                        CommunityPost(
+                            id = doc.id ?: "",
+                            userId = doc.userId ?: "",
+                            userName = doc.userName ?: "SoulMate User",
+                            userAvatarUrl = doc.userAvatarUrl,
+                            isVerified = doc.isVerified ?: false,
+                            mood = doc.mood ?: "Neutral",
+                            timeAgo = formatTimeAgo(doc.timestamp ?: 0L),
+                            textContent = doc.textContent ?: "",
+                            imageUrls = doc.imageUrls ?: emptyList(),
+                            likeCount = doc.likeCount ?: 0,
+                            commentCount = doc.commentCount ?: 0,
+                            viewCount = doc.viewCount ?: 0,
+                            likedBy = doc.likedBy ?: emptyList()
+                        )
                     }
-                    trySend(comments)
+                    success = true
+                    result
+                }
+            } catch (e: Exception) {
+                Log.e("COMMUNITY_BUG", "❌ Lỗi fetch posts: ${e.javaClass.simpleName}: ${e.message}", e)
+                if (e is retrofit2.HttpException) {
+                    val errBody = try { e.response()?.errorBody()?.string() } catch (_: Exception) { null }
+                    Log.e("COMMUNITY_BUG", "HTTP ${e.code()}: $errBody")
+                }
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                    currentDelay = (currentDelay * 2).coerceAtMost(30000L)
+                }
+                null
+            }
+            if (posts != null) {
+                emit(posts)
+                if (success) {
+                    currentDelay = POLL_INTERVAL_MS
                 }
             }
-        awaitClose { subscription.remove() }
+            delay(currentDelay)
+        }
     }
 
-    override suspend fun addPost(post: CommunityPost): Result<Unit> = try {
+    override fun getComments(postId: String): Flow<List<Comment>> = flow {
+        var currentDelay = POLL_INTERVAL_MS
+        while (currentCoroutineContext().isActive) {
+            var success = false
+            val comments = try {
+                executeWithToken { idToken ->
+                    val result = backendApiService.listCommunityComments("Bearer $idToken", postId).map { doc ->
+                        Comment(
+                            id = doc.id,
+                            userId = doc.userId,
+                            userName = doc.userName,
+                            userAvatarUrl = doc.userAvatarUrl,
+                            content = doc.content,
+                            timeAgo = formatTimeAgo(doc.timestamp),
+                            likeCount = doc.likedBy.size,
+                            likedBy = doc.likedBy,
+                            parentId = doc.parentId,
+                            replyToUserName = doc.replyToUserName
+                        )
+                    }
+                    success = true
+                    result
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load comments for $postId", e)
+                if (e is retrofit2.HttpException && e.code() == 429) {
+                    currentDelay = (currentDelay * 2).coerceAtMost(30000L)
+                    Log.d(TAG, "HTTP 429: Backed off comment poll interval to ${currentDelay}ms")
+                }
+                null
+            }
+            if (comments != null) {
+                emit(comments)
+                if (success) {
+                    currentDelay = POLL_INTERVAL_MS
+                }
+            }
+            delay(currentDelay)
+        }
+    }
+
+    override suspend fun addPost(post: CommunityPost): Result<Unit> = runCatching {
         val uploadedUrls = post.imageUrls.map { path ->
             uploadToCloudinary(path)
         }
-
-        val postData = hashMapOf(
-            "user_id" to post.userId,
-            "user_name" to post.userName,
-            "user_avatar_url" to post.userAvatarUrl,
-            "is_verified" to post.isVerified,
-            "mood" to post.mood,
-            "timestamp" to FieldValue.serverTimestamp(),
-            "text_content" to post.textContent,
-            "image_urls" to uploadedUrls,
-            "like_count" to 0,
-            "comment_count" to 0,
-            "view_count" to 0,
-            "liked_by" to emptyList<String>()
-        )
-        postsCollection.add(postData).await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+        executeWithToken { idToken ->
+            backendApiService.createCommunityPost(
+                authorization = "Bearer $idToken",
+                request = CreatePostRequestDto(
+                    mood = post.mood,
+                    textContent = post.textContent,
+                    imageUrls = uploadedUrls
+                )
+            )
+        }
     }
 
-    override suspend fun toggleLike(postId: String, userId: String): Result<Unit> = try {
-        val docRef = postsCollection.document(postId)
-        firestore.runTransaction { transaction ->
-            val snapshot = transaction.get(docRef)
-            val likedBy = snapshot.get("liked_by") as? List<String> ?: emptyList()
-            val newLikedBy = if (likedBy.contains(userId)) {
-                likedBy - userId
-            } else {
-                likedBy + userId
-            }
-            transaction.update(docRef, "liked_by", newLikedBy)
-            transaction.update(docRef, "like_count", newLikedBy.size)
-        }.await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+    override suspend fun toggleLike(postId: String, userId: String): Result<Unit> = runCatching {
+        executeWithToken { idToken ->
+            backendApiService.toggleCommunityPostLike("Bearer $idToken", postId)
+        }
     }
 
-    override suspend fun addComment(postId: String, comment: Comment): Result<Unit> = try {
-        val commentData = hashMapOf(
-            "user_id" to comment.userId,
-            "user_name" to comment.userName,
-            "user_avatar_url" to comment.userAvatarUrl,
-            "content" to comment.content,
-            "timestamp" to FieldValue.serverTimestamp(),
-            "liked_by" to emptyList<String>(),
-            "parent_id" to comment.parentId, // Lưu parent_id
-            "reply_to_user_name" to comment.replyToUserName // Lưu tên người được trả lời
-        )
-        val postRef = postsCollection.document(postId)
-        firestore.runBatch { batch ->
-            val commentRef = postRef.collection("comments").document()
-            batch.set(commentRef, commentData)
-            batch.update(postRef, "comment_count", FieldValue.increment(1))
-        }.await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+    override suspend fun addComment(postId: String, comment: Comment): Result<Unit> = runCatching {
+        executeWithToken { idToken ->
+            backendApiService.addCommunityComment(
+                authorization = "Bearer $idToken",
+                id = postId,
+                request = CreateCommentRequestDto(
+                    content = comment.content,
+                    parentId = comment.parentId,
+                    replyToUserName = comment.replyToUserName
+                )
+            )
+        }
     }
 
-    override suspend fun toggleCommentLike(postId: String, commentId: String, userId: String): Result<Unit> = try {
-        val commentRef = postsCollection.document(postId).collection("comments").document(commentId)
-        firestore.runTransaction { transaction ->
-            val snapshot = transaction.get(commentRef)
-            val likedBy = snapshot.get("liked_by") as? List<String> ?: emptyList()
-            val newLikedBy = if (likedBy.contains(userId)) {
-                likedBy - userId
-            } else {
-                likedBy + userId
-            }
-            transaction.update(commentRef, "liked_by", newLikedBy)
-        }.await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+    override suspend fun toggleCommentLike(postId: String, commentId: String, userId: String): Result<Unit> = runCatching {
+        executeWithToken { idToken ->
+            backendApiService.toggleCommunityCommentLike("Bearer $idToken", postId, commentId)
+        }
     }
 
-    override suspend fun deletePost(postId: String): Result<Unit> = try {
-        postsCollection.document(postId).delete().await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+    override suspend fun deletePost(postId: String): Result<Unit> = runCatching {
+        executeWithToken { idToken ->
+            backendApiService.deleteCommunityPost("Bearer $idToken", postId)
+        }
     }
 
-    override suspend fun updatePostContent(postId: String, newContent: String): Result<Unit> = try {
-        postsCollection.document(postId).update("text_content", newContent).await()
-        Result.success(Unit)
-    } catch (e: Exception) {
-        Result.failure(e)
+    override suspend fun updatePostContent(postId: String, newContent: String): Result<Unit> = runCatching {
+        executeWithToken { idToken ->
+            backendApiService.updateCommunityPost(
+                authorization = "Bearer $idToken",
+                id = postId,
+                request = CreatePostRequestDto(
+                    textContent = newContent
+                )
+            )
+        }
     }
 
     private fun requireIdToken(): String {

@@ -57,4 +57,22 @@ public class ChatController {
         String uid = AuthContextHolder.getRequired(request).uid();
         return chatService.deleteConversation(uid, otherUserId);
     }
+
+    @PostMapping("/conversation/{otherUserId}/read")
+    public java.util.Map<String, Object> markAsRead(
+        HttpServletRequest request,
+        @PathVariable String otherUserId
+    ) {
+        String uid = AuthContextHolder.getRequired(request).uid();
+        return chatService.markAsRead(uid, otherUserId);
+    }
+
+    @DeleteMapping("/messages/{messageId}")
+    public java.util.Map<String, Object> deleteMessage(
+        HttpServletRequest request,
+        @PathVariable String messageId
+    ) {
+        String uid = AuthContextHolder.getRequired(request).uid();
+        return chatService.deleteMessage(uid, messageId);
+    }
 }

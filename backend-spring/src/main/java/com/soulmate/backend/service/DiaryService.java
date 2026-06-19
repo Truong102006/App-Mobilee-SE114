@@ -28,47 +28,67 @@ public class DiaryService {
 
     public SaveDiaryResponse saveDiary(String uid, SaveDiaryRequest request) {
         String inputDiaryId = trimToNull(request.diaryId());
-        DocumentReference docRef = inputDiaryId == null
+        boolean isNewEntry = (inputDiaryId == null);
+        DocumentReference docRef = isNewEntry
             ? firestore.collection("diaries").document()
             : firestore.collection("diaries").document(inputDiaryId);
 
-        try {
-            DocumentSnapshot snapshot = docRef.get().get();
-            if (snapshot.exists() && !Objects.equals(snapshot.getString("user_id"), uid)) {
-                throw new ApiException(HttpStatus.FORBIDDEN, "You cannot edit this diary entry.");
-            }
+        int maxRetries = 2;
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                // Only read existing doc for UPDATES (ownership check).
+                // For NEW entries, skip the read entirely to save quota.
+                if (!isNewEntry) {
+                    DocumentSnapshot snapshot = docRef.get().get();
+                    if (snapshot.exists() && !Objects.equals(snapshot.getString("user_id"), uid)) {
+                        throw new ApiException(HttpStatus.FORBIDDEN, "You cannot edit this diary entry.");
+                    }
+                }
 
-            long now = System.currentTimeMillis();
-            Map<String, Object> diaryData = new HashMap<>();
-            diaryData.put("diary_id", docRef.getId());
-            diaryData.put("user_id", uid);
-            diaryData.put("title", trimToEmpty(request.title()));
-            diaryData.put("text", request.text().trim());
-            diaryData.put("mood_tag", StringUtils.hasText(request.moodTag()) ? request.moodTag().trim() : "Neutral");
-            diaryData.put("image_urls", normalizeStringList(request.imageUrls()));
-            diaryData.put("audio_url", trimToNull(request.audioUrl()));
-            diaryData.put("updated_at", now);
-
-            if (snapshot.exists()) {
-                Object existingTimestamp = snapshot.get("timestamp");
-                diaryData.put("timestamp", existingTimestamp != null ? existingTimestamp : FieldValue.serverTimestamp());
-            } else {
+                long now = System.currentTimeMillis();
+                Map<String, Object> diaryData = new HashMap<>();
+                diaryData.put("diary_id", docRef.getId());
+                diaryData.put("user_id", uid);
+                diaryData.put("title", trimToEmpty(request.title()));
+                diaryData.put("text", request.text().trim());
+                diaryData.put("mood_tag", StringUtils.hasText(request.moodTag()) ? request.moodTag().trim() : "Neutral");
+                diaryData.put("image_urls", normalizeStringList(request.imageUrls()));
+                diaryData.put("audio_url", trimToNull(request.audioUrl()));
+                diaryData.put("updated_at", now);
                 diaryData.put("timestamp", FieldValue.serverTimestamp());
-            }
 
-            docRef.set(diaryData, SetOptions.merge()).get();
-            return new SaveDiaryResponse(docRef.getId(), now);
-        } catch (ExecutionException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
+                docRef.set(diaryData, SetOptions.merge()).get();
+                return new SaveDiaryResponse(docRef.getId(), now);
+            } catch (ExecutionException | InterruptedException e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                    throw FirestoreApiExceptionMapper.map(e, "Failed to save diary.", "Firestore quota exceeded. Please try again later.");
+                }
+                if (attempt < maxRetries && isRetryable(e)) {
+                    log.warn("Retryable Firestore error on save diary attempt={}, retrying...", attempt, e);
+                    try { Thread.sleep(500L * (attempt + 1)); } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw FirestoreApiExceptionMapper.map(ie, "Failed to save diary.", "Firestore quota exceeded. Please try again later.");
+                    }
+                    continue;
+                }
+                log.error("Failed to save diary for uid={} diaryId={}", uid, docRef.getId(), e);
+                throw FirestoreApiExceptionMapper.map(e, "Failed to save diary.", "Firestore quota exceeded. Please try again later.");
             }
-            log.error("Failed to save diary for uid={} diaryId={}", uid, docRef.getId(), e);
-            throw FirestoreApiExceptionMapper.map(
-                e,
-                "Failed to save diary.",
-                "Firestore quota exceeded. Please try again later."
-            );
         }
+        throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save diary after retries.");
+    }
+
+    private boolean isRetryable(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof com.google.api.gax.rpc.ResourceExhaustedException
+                || current instanceof com.google.api.gax.rpc.UnavailableException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     public ListDiariesResponse listMyDiaries(String uid) {

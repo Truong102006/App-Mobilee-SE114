@@ -18,7 +18,7 @@
     <description>SoulMate secure backend gateway on Spring Boot</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <firebase-admin.version>9.8.0</firebase-admin.version>
         <nimbus-jose-jwt.version>10.6</nimbus-jose-jwt.version>
     </properties>

@@ -21,6 +21,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -73,6 +74,18 @@ interface BackendApiService {
         @Path("otherUserId") otherUserId: String
     ): DeleteConversationResponseDto
 
+    @POST("api/secure/chats/conversation/{otherUserId}/read")
+    suspend fun markAsRead(
+        @Header("Authorization") authorization: String,
+        @Path("otherUserId") otherUserId: String
+    ): Map<String, Any>
+
+    @DELETE("api/secure/chats/messages/{messageId}")
+    suspend fun deleteMessage(
+        @Header("Authorization") authorization: String,
+        @Path("messageId") messageId: String
+    ): Map<String, Any>
+
     @POST("api/secure/cloudinary/sign-upload")
     suspend fun signUpload(
         @Header("Authorization") authorization: String,
@@ -103,3 +116,4 @@ interface BackendApiService {
         @Query("isBanned") isBanned: Boolean
     ): CommonResponseDto
 }
+

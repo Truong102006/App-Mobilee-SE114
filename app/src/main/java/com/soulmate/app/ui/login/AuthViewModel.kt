@@ -28,6 +28,9 @@ class AuthViewModel @Inject constructor(
     private val _authSuccess = MutableSharedFlow<Unit>()
     val authSuccess = _authSuccess.asSharedFlow()
     
+    private val _resetPasswordSuccess = MutableSharedFlow<String>()
+    val resetPasswordSuccess = _resetPasswordSuccess.asSharedFlow()
+    
     private val _currentUser = mutableStateOf<User?>(null)
     val currentUser: State<User?> = _currentUser
 
@@ -160,6 +163,25 @@ class AuthViewModel @Inject constructor(
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    fun sendPasswordResetEmail(email: String) {
+        val trimmedEmail = email.trim()
+        if (trimmedEmail.isBlank()) {
+            viewModelScope.launch { _error.emit("Vui lòng nhập Email") }
+            return
+        }
+        viewModelScope.launch {
+            _isLoading.value = true
+            authRepository.sendPasswordResetEmail(trimmedEmail)
+                .onSuccess {
+                    _resetPasswordSuccess.emit("Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra hộp thư.")
+                }
+                .onFailure {
+                    _error.emit(it.message ?: "Có lỗi xảy ra, vui lòng thử lại.")
+                }
+            _isLoading.value = false
         }
     }
 }

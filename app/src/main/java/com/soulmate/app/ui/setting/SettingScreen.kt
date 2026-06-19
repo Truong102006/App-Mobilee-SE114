@@ -111,7 +111,11 @@ fun SettingScreen(
                 }
             }
         )
-        SettingItem(icon = Icons.Default.Lock, title = "Privacy & Security")
+        SettingItem(
+            icon = Icons.Default.Lock,
+            title = "Privacy & Security",
+            onClick = { showPrivacyDialog = true }
+        )
         SettingItem(icon = Icons.Default.Language, title = "Language", subtitle = "Vietnamese")
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -120,13 +124,7 @@ fun SettingScreen(
         SettingItem(
             icon = Icons.Default.Info,
             title = "About SoulMate",
-            onClick = {
-                val intent = Intent(
-                    Intent.ACTION_VIEW,
-                    "https://github.com/Truong102006/App-Mobilee-SE114".toUri()
-                )
-                context.startActivity(intent)
-            }
+            onClick = { showAboutDialog = true }
         )
         SettingItem(
             icon = Icons.Default.Help,
@@ -152,6 +150,17 @@ fun SettingScreen(
                     navController.navigate("admin_dashboard")
                 }
             )
+        }
+
+        // dialogs
+        if (showPrivacyDialog) {
+            PrivacyPolicyDialog(onDismiss = { showPrivacyDialog = false })
+        }
+        if (showFAQDialog) {
+            FAQDialog(onDismiss = { showFAQDialog = false })
+        }
+        if (showAboutDialog) {
+            AboutDialog(onDismiss = { showAboutDialog = false })
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -320,6 +329,233 @@ fun SettingItem(
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = null,
                 tint = Color.LightGray
+            )
+        }
+    }
+}
+
+@Composable
+fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Chính sách bảo mật",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colors.onSurface
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    "Chào mừng bạn đến với SoulMate. Quyền riêng tư của bạn là ưu tiên hàng đầu của chúng tôi.",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "1. Thu thập thông tin",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colors.onSurface
+                )
+                Text(
+                    "Chúng tôi thu thập nhật ký viết tay và dữ liệu cảm xúc tự nhập để cung cấp phân tích tâm trạng bằng AI của Gemini. Các dữ liệu này được bảo mật hoàn toàn.",
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "2. Bảo mật dữ liệu",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colors.onSurface
+                )
+                Text(
+                    "Mọi thông tin cá nhân và nhật ký của bạn đều được mã hóa và lưu trữ an toàn trên máy chủ đám mây Firebase Cloud Firestore của Google.",
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "3. Quyền của người dùng",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colors.onSurface
+                )
+                Text(
+                    "Bạn có quyền xem thông tin cá nhân, sửa đổi, cập nhật hoặc xóa hoàn toàn tài khoản và toàn bộ lịch sử nhật ký của mình bất kỳ lúc nào.",
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Đã hiểu", color = MaterialTheme.colors.primary, fontWeight = FontWeight.Bold)
+            }
+        },
+        backgroundColor = MaterialTheme.colors.surface,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun AboutDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Về SoulMate",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colors.onSurface
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colors.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "SoulMate App",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colors.onSurface
+                )
+                Text(
+                    "Phiên bản v1.0.0",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "SoulMate là một ứng dụng di động được xây dựng nhằm hỗ trợ theo dõi tâm trạng, viết ký sự và chăm sóc thú cưng ảo đồng hành, giúp bạn kết nối sâu sắc hơn với nội tâm.",
+                    fontSize = 14.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Phát triển bởi Nhóm 3 - FIS",
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colors.onSurface
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Đóng", color = MaterialTheme.colors.primary, fontWeight = FontWeight.Bold)
+            }
+        },
+        backgroundColor = MaterialTheme.colors.surface,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun FAQDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Trung tâm trợ giúp & FAQ",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colors.onSurface
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+            ) {
+                FAQItem(
+                    question = "SoulMate hoạt động như thế nào?",
+                    answer = "SoulMate giúp bạn ghi lại những rung động cảm xúc qua nhật ký và phân tích chúng bằng trí tuệ nhân tạo Gemini AI."
+                )
+                FAQItem(
+                    question = "Làm thế nào để tăng cấp cho thú cưng?",
+                    answer = "Viết nhật ký hàng ngày để nhận điểm kinh nghiệm (XP) cho người bạn đồng hành ảo của mình."
+                )
+                FAQItem(
+                    question = "Dữ liệu của tôi có được bảo mật không?",
+                    answer = "Tất cả nhật ký và phân tích cảm xúc chỉ hiển thị duy nhất với bạn và được bảo mật tuyệt đối bởi Firebase."
+                )
+                FAQItem(
+                    question = "Ứng dụng có cần kết nối mạng không?",
+                    answer = "Có, ứng dụng yêu cầu kết nối mạng internet để đồng bộ dữ liệu đám mây và chạy phân tích AI."
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Đóng", color = MaterialTheme.colors.primary, fontWeight = FontWeight.Bold)
+            }
+        },
+        backgroundColor = MaterialTheme.colors.surface,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun FAQItem(question: String, answer: String) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.05f))
+            .clickable { expanded = !expanded }
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = question,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = MaterialTheme.colors.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = Color.Gray
+            )
+        }
+        if (expanded) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = answer,
+                fontSize = 13.sp,
+                color = Color.Gray
             )
         }
     }

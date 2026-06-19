@@ -12,23 +12,32 @@ class AIRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) : IAIRepository {
 
-    override suspend fun predictMood(text: String): Result<String> {
-        return runCatching {
-            val normalizedText = text.trim()
-            require(normalizedText.isNotBlank()) { "Noi dung khong duoc de trong." }
+    private suspend fun <T> executeWithToken(forceRefresh: Boolean = false, block: suspend (String) -> T): T {
+        val currentUser = firebaseAuth.currentUser ?: throw IllegalStateException("Ban can dang nhap de su dung AI.")
+        val token = currentUser.getIdToken(forceRefresh).await().token
+            ?: throw IllegalStateException("Khong the lay Firebase ID token.")
+        return try {
+            block(token)
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 401 && !forceRefresh) {
+                executeWithToken(forceRefresh = true, block)
+            } else {
+                throw e
+            }
+        }
+    }
 
-            val currentUser = firebaseAuth.currentUser
-                ?: throw IllegalStateException("Ban can dang nhap de su dung AI.")
+    override suspend fun predictMood(text: String): Result<String> = runCatching {
+        val normalizedText = text.trim()
+        require(normalizedText.isNotBlank()) { "Noi dung khong duoc de trong." }
 
-            val idToken = currentUser.getIdToken(true).await().token
-                ?: throw IllegalStateException("Khong the lay Firebase ID token.")
-
-            val response = backendApiService.predictMood(
+        val response = executeWithToken { idToken ->
+            backendApiService.predictMood(
                 authorization = "Bearer $idToken",
                 request = PredictMoodRequestDto(text = normalizedText)
             )
-
-            response.mood.trim().ifBlank { "Neutral" }
         }
+
+        response.mood.trim().ifBlank { "Neutral" }
     }
 }

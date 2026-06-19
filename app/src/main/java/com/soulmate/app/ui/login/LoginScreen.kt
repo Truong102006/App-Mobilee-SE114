@@ -43,6 +43,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
     
     val context = LocalContext.current
     val isLoading by viewModel.isLoading
@@ -56,6 +57,12 @@ fun LoginScreen(
     LaunchedEffect(Unit) {
         viewModel.error.collectLatest { errorMsg ->
             Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.resetPasswordSuccess.collectLatest { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -202,7 +209,7 @@ fun LoginScreen(
                         color = Color(0xFF2A7B9B),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable(enabled = !isLoading) { /* Forgot password logic */ }
+                        modifier = Modifier.clickable(enabled = !isLoading) { showForgotPasswordDialog = true }
                     )
                 }
 
@@ -276,7 +283,86 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
+
+        if (showForgotPasswordDialog) {
+            ForgotPasswordDialog(
+                isLoading = isLoading,
+                onDismiss = { showForgotPasswordDialog = false },
+                onConfirm = { email -> 
+                    viewModel.sendPasswordResetEmail(email)
+                }
+            )
+        }
     }
+}
+
+@Composable
+fun ForgotPasswordDialog(
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var resetEmail by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        title = {
+            Text(
+                text = "Quên mật khẩu",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color.Black
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Nhập email của bạn để nhận liên kết khôi phục mật khẩu.",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = resetEmail,
+                    onValueChange = { resetEmail = it },
+                    label = { Text("Email Address", color = Color.Gray) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading,
+                    singleLine = true,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFF3fd6a7),
+                        unfocusedBorderColor = Color.LightGray,
+                        backgroundColor = Color.White,
+                        textColor = Color.Black
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (resetEmail.isNotBlank()) {
+                        onConfirm(resetEmail)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF2A7B9B)),
+                shape = RoundedCornerShape(18.dp),
+                enabled = !isLoading && resetEmail.isNotBlank()
+            ) {
+                Text("Gửi", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { if (!isLoading) onDismiss() },
+                enabled = !isLoading
+            ) {
+                Text("Hủy", color = Color.Gray)
+            }
+        },
+        backgroundColor = Color.White,
+        shape = RoundedCornerShape(16.dp)
+    )
 }
 
 @Composable

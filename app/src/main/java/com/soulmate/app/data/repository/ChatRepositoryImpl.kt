@@ -25,10 +25,20 @@ class ChatRepositoryImpl @Inject constructor(
         private const val TAG = "ChatRepositoryImpl"
     }
 
-    private suspend fun requireIdToken(): String {
+    private suspend fun <T> executeWithToken(forceRefresh: Boolean = false, block: suspend (String) -> T): T {
         val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
-        return currentUser.getIdToken(false).await().token
+        val token = currentUser.getIdToken(forceRefresh).await().token
             ?: throw IllegalStateException("Cannot get Firebase ID token")
+        return try {
+            block(token)
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 401 && !forceRefresh) {
+                Log.d(TAG, "Token expired (401), force-refreshing token and retrying...")
+                executeWithToken(forceRefresh = true, block)
+            } else {
+                throw e
+            }
+        }
     }
 
     private fun mapMessage(item: ChatMessageItemDto): ChatMessage {
@@ -50,64 +60,86 @@ class ChatRepositoryImpl @Inject constructor(
             "messageText or imageUrl is required"
         }
 
-        val idToken = requireIdToken()
-        backendApiService.sendChatMessage(
-            authorization = "Bearer $idToken",
-            request = SendChatMessageRequestDto(
-                receiverId = message.receiverId,
-                messageText = message.messageText.ifBlank { null },
-                imageUrl = message.imageUrl
+        executeWithToken { idToken ->
+            backendApiService.sendChatMessage(
+                authorization = "Bearer $idToken",
+                request = SendChatMessageRequestDto(
+                    receiverId = message.receiverId,
+                    messageText = message.messageText.ifBlank { null },
+                    imageUrl = message.imageUrl
+                )
             )
-        )
+        }
     }
 
     override fun getMessages(senderId: String, receiverId: String): Flow<List<ChatMessage>> = flow {
-        val idToken = requireIdToken()
         val currentUid = auth.currentUser?.uid.orEmpty()
         val otherUserId = if (currentUid == senderId) receiverId else senderId
 
-        val messages = backendApiService
-            .listConversation(
-                authorization = "Bearer $idToken",
-                otherUserId = otherUserId,
-                limit = 200
-            )
-            .messages
-            .map(::mapMessage)
-            .sortedBy { it.timestamp?.seconds ?: 0L }
+        val messages = try {
+            executeWithToken { idToken ->
+                backendApiService
+                    .listConversation(
+                        authorization = "Bearer $idToken",
+                        otherUserId = otherUserId,
+                        limit = 200
+                    )
+                    .messages
+                    .map(::mapMessage)
+                    .sortedBy { it.timestamp?.seconds ?: 0L }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load messages for conversation with $otherUserId", e)
+            emptyList()
+        }
 
         emit(messages)
     }
 
     override fun getLastMessages(userId: String): Flow<List<ChatMessage>> = flow {
-        val idToken = requireIdToken()
-        val messages = backendApiService
-            .listInbox(
-                authorization = "Bearer $idToken",
-                limit = 100
-            )
-            .messages
-            .map(::mapMessage)
-            .sortedByDescending { it.timestamp?.seconds ?: 0L }
+        val messages = try {
+            executeWithToken { idToken ->
+                backendApiService
+                    .listInbox(
+                        authorization = "Bearer $idToken",
+                        limit = 100
+                    )
+                    .messages
+                    .map(::mapMessage)
+                    .sortedByDescending { it.timestamp?.seconds ?: 0L }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load inbox messages", e)
+            emptyList()
+        }
 
         emit(messages)
     }
 
     override suspend fun deleteConversation(userId: String, otherUserId: String): Result<Unit> = runCatching {
-        val idToken = requireIdToken()
-        backendApiService.deleteConversation(
-            authorization = "Bearer $idToken",
-            otherUserId = otherUserId
-        )
+        executeWithToken { idToken ->
+            backendApiService.deleteConversation(
+                authorization = "Bearer $idToken",
+                otherUserId = otherUserId
+            )
+        }
     }
 
     override suspend fun markAsRead(userId: String, otherUserId: String): Result<Unit> = runCatching {
-        // TODO: add backend endpoint to mark conversation messages as read.
-        Log.d(TAG, "markAsRead is not implemented on backend yet: userId=$userId otherUserId=$otherUserId")
+        executeWithToken { idToken ->
+            backendApiService.markAsRead(
+                authorization = "Bearer $idToken",
+                otherUserId = otherUserId
+            )
+        }
     }
 
     override suspend fun deleteMessage(messageId: String): Result<Unit> = runCatching {
-        // TODO: add backend endpoint to delete a single message by id.
-        Log.d(TAG, "deleteMessage is not implemented on backend yet: messageId=$messageId")
+        executeWithToken { idToken ->
+            backendApiService.deleteMessage(
+                authorization = "Bearer $idToken",
+                messageId = messageId
+            )
+        }
     }
 }
