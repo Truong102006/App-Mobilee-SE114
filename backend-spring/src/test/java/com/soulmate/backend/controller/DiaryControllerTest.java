@@ -71,7 +71,7 @@ public class DiaryControllerTest {
                 uid = authHeader.substring(7).trim();
             }
 
-            AuthContextHolder.set(request, new AuthContext(uid, "mock-app-id"));
+            AuthContextHolder.set(request, new AuthContext(uid, "mock-app-id", "user"));
             chain.doFilter(request, response);
             return null;
         }).when(firebaseSecurityFilter).doFilter(any(), any(), any());

@@ -1,19 +1,20 @@
 package com.soulmate.app.data.repository
 
+import android.net.Uri
 import android.util.Log
-import androidx.core.net.toUri
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.data.remote.api.BackendApiService
+import com.soulmate.app.data.remote.dto.CreateCommentRequestDto
+import com.soulmate.app.data.remote.dto.CreatePostRequestDto
+import com.soulmate.app.data.remote.dto.ResolveReportRequestDto
 import com.soulmate.app.domain.repository.ICommunityRepository
 import com.soulmate.app.ui.social.Comment
 import com.soulmate.app.ui.social.CommunityPost
 import com.soulmate.app.utils.CloudinaryHelper
-import com.soulmate.app.data.remote.dto.*
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
@@ -22,21 +23,17 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import java.text.SimpleDateFormat
-import java.util.*
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import com.soulmate.app.data.remote.api.BackendApiService
 
 @Singleton
 class CommunityRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val backendApiService: BackendApiService
+    private val backendApiService: BackendApiService,
+    private val auth: FirebaseAuth
 ) : ICommunityRepository {
 
-    private val postsCollection = firestore.collection("community_posts")
-    private val auth = FirebaseAuth.getInstance()
+    companion object {
+        private const val TAG = "CommunityRepositoryImpl"
+        private const val POLL_INTERVAL_MS = 10000L
+    }
 
     private fun formatTimeAgo(timestampMs: Long): String {
         val now = System.currentTimeMillis()
@@ -63,7 +60,7 @@ class CommunityRepositoryImpl @Inject constructor(
             imagePath
         } else {
             try {
-                CloudinaryHelper.uploadImageSuspend(imagePath.toUri())
+                CloudinaryHelper.uploadImageSuspend(Uri.parse(imagePath))
             } catch (e: Exception) {
                 Log.e(TAG, "Cloudinary upload failed for $imagePath", e)
                 imagePath
@@ -71,10 +68,14 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun <T> executeWithToken(forceRefresh: Boolean = false, block: suspend (String) -> T): T {
+    private suspend fun <T> executeWithToken(
+        forceRefresh: Boolean = false,
+        block: suspend (String) -> T
+    ): T {
         val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
         val token = currentUser.getIdToken(forceRefresh).await().token
             ?: throw IllegalStateException("Cannot get Firebase ID token")
+
         return try {
             block(token)
         } catch (e: retrofit2.HttpException) {
@@ -89,6 +90,7 @@ class CommunityRepositoryImpl @Inject constructor(
 
     override fun getPosts(): Flow<List<CommunityPost>> = flow {
         var currentDelay = POLL_INTERVAL_MS
+
         while (currentCoroutineContext().isActive) {
             var success = false
             val posts = try {
@@ -114,9 +116,13 @@ class CommunityRepositoryImpl @Inject constructor(
                     result
                 }
             } catch (e: Exception) {
-                Log.e("COMMUNITY_BUG", "❌ Lỗi fetch posts: ${e.javaClass.simpleName}: ${e.message}", e)
+                Log.e("COMMUNITY_BUG", "Lỗi fetch posts: ${e.javaClass.simpleName}: ${e.message}", e)
                 if (e is retrofit2.HttpException) {
-                    val errBody = try { e.response()?.errorBody()?.string() } catch (_: Exception) { null }
+                    val errBody = try {
+                        e.response()?.errorBody()?.string()
+                    } catch (_: Exception) {
+                        null
+                    }
                     Log.e("COMMUNITY_BUG", "HTTP ${e.code()}: $errBody")
                 }
                 if (e is retrofit2.HttpException && e.code() == 429) {
@@ -124,18 +130,21 @@ class CommunityRepositoryImpl @Inject constructor(
                 }
                 null
             }
+
             if (posts != null) {
                 emit(posts)
                 if (success) {
                     currentDelay = POLL_INTERVAL_MS
                 }
             }
+
             delay(currentDelay)
         }
     }
 
     override fun getComments(postId: String): Flow<List<Comment>> = flow {
         var currentDelay = POLL_INTERVAL_MS
+
         while (currentCoroutineContext().isActive) {
             var success = false
             val comments = try {
@@ -165,20 +174,20 @@ class CommunityRepositoryImpl @Inject constructor(
                 }
                 null
             }
+
             if (comments != null) {
                 emit(comments)
                 if (success) {
                     currentDelay = POLL_INTERVAL_MS
                 }
             }
+
             delay(currentDelay)
         }
     }
 
     override suspend fun addPost(post: CommunityPost): Result<Unit> = runCatching {
-        val uploadedUrls = post.imageUrls.map { path ->
-            uploadToCloudinary(path)
-        }
+        val uploadedUrls = post.imageUrls.map { path -> uploadToCloudinary(path) }
         executeWithToken { idToken ->
             backendApiService.createCommunityPost(
                 authorization = "Bearer $idToken",
@@ -211,11 +220,12 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun toggleCommentLike(postId: String, commentId: String, userId: String): Result<Unit> = runCatching {
-        executeWithToken { idToken ->
-            backendApiService.toggleCommunityCommentLike("Bearer $idToken", postId, commentId)
+    override suspend fun toggleCommentLike(postId: String, commentId: String, userId: String): Result<Unit> =
+        runCatching {
+            executeWithToken { idToken ->
+                backendApiService.toggleCommunityCommentLike("Bearer $idToken", postId, commentId)
+            }
         }
-    }
 
     override suspend fun deletePost(postId: String): Result<Unit> = runCatching {
         executeWithToken { idToken ->
@@ -228,9 +238,7 @@ class CommunityRepositoryImpl @Inject constructor(
             backendApiService.updateCommunityPost(
                 authorization = "Bearer $idToken",
                 id = postId,
-                request = CreatePostRequestDto(
-                    textContent = newContent
-                )
+                request = CreatePostRequestDto(textContent = newContent)
             )
         }
     }
@@ -244,24 +252,25 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun reportPost(postId: String): Result<Unit> = runCatching {
         val token = requireIdToken()
         val response = backendApiService.reportPost("Bearer $token", postId)
-        if (!response.success) throw Exception(response.message)
+        if (!response.success) {
+            throw Exception(response.message)
+        }
     }
 
-    override suspend fun getReportedPosts(): Flow<List<CommunityPost>> = flow<List<CommunityPost>> {
+    override suspend fun getReportedPosts(): Flow<List<CommunityPost>> = flow {
         val token = requireIdToken()
-        val response = backendApiService.getReportedPosts("Bearer $token")
-        emit(response)
+        emit(backendApiService.getReportedPosts("Bearer $token"))
     }.catch {
-        emit(emptyList<CommunityPost>())
+        emit(emptyList())
     }
 
     override suspend fun resolveReport(postId: String, action: String): Result<Unit> = runCatching {
         val token = requireIdToken()
-
         val request = ResolveReportRequestDto(postId = postId, action = action)
-
         val response = backendApiService.resolveReport("Bearer $token", request)
 
-        if (!response.success) throw Exception(response.message)
+        if (!response.success) {
+            throw Exception(response.message)
+        }
     }
 }

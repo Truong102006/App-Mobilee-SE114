@@ -162,6 +162,18 @@ class AuthRepositoryImpl @Inject constructor(
         Result.failure(e)
     }
 
+    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> = try {
+        val query = usersCollection.whereEqualTo("email", email).get().await()
+        if (query.isEmpty) {
+            Result.failure(Exception("Email này chưa được đăng ký trong hệ thống."))
+        } else {
+            auth.sendPasswordResetEmail(email).await()
+            Result.success(Unit)
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
     override suspend fun searchUsers(query: String): Result<List<User>> = try {
         val snapshot = usersCollection
             .whereGreaterThanOrEqualTo("anonymousName", query)
@@ -189,6 +201,7 @@ class AuthRepositoryImpl @Inject constructor(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
     override suspend fun hidePost(userId: String, postId: String): Result<Unit> = try {
         usersCollection.document(userId)
             .update("hiddenPostIds", com.google.firebase.firestore.FieldValue.arrayUnion(postId))
