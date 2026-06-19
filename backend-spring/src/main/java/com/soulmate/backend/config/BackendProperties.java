@@ -8,6 +8,7 @@ public class BackendProperties {
     private final Security security = new Security();
     private final Gemini gemini = new Gemini();
     private final Cloudinary cloudinary = new Cloudinary();
+    private final Payment payment = new Payment();
 
     public Security getSecurity() {
         return security;
@@ -19,6 +20,10 @@ public class BackendProperties {
 
     public Cloudinary getCloudinary() {
         return cloudinary;
+    }
+
+    public Payment getPayment() {
+        return payment;
     }
 
     public static class Security {
@@ -99,6 +104,151 @@ public class BackendProperties {
 
         public void setUploadFolder(String uploadFolder) {
             this.uploadFolder = uploadFolder;
+        }
+    }
+
+    public static class Payment {
+        private final Sepay sepay = new Sepay();
+        private final Premium premium = new Premium();
+
+        public Sepay getSepay() {
+            return sepay;
+        }
+
+        public Premium getPremium() {
+            return premium;
+        }
+    }
+
+    public static class Sepay {
+        private String apiToken;
+        private String webhookSecret;
+        private String bankCode;
+        private String bankAccount;
+        private String accountHolder;
+        private String apiUrl = "https://my.sepay.vn/userapi";
+        private String qrBaseUrl = "https://qr.sepay.vn/img";
+        private long webhookMaxSkewSeconds = 300L;
+        private long reconcileCooldownSeconds = 15L;
+
+        public String getApiToken() {
+            return apiToken;
+        }
+
+        public void setApiToken(String apiToken) {
+            this.apiToken = apiToken;
+        }
+
+        public String getWebhookSecret() {
+            return webhookSecret;
+        }
+
+        public void setWebhookSecret(String webhookSecret) {
+            this.webhookSecret = webhookSecret;
+        }
+
+        public String getBankCode() {
+            return bankCode;
+        }
+
+        public void setBankCode(String bankCode) {
+            this.bankCode = bankCode;
+        }
+
+        public String getBankAccount() {
+            return bankAccount;
+        }
+
+        public void setBankAccount(String bankAccount) {
+            this.bankAccount = bankAccount;
+        }
+
+        public String getAccountHolder() {
+            return accountHolder;
+        }
+
+        public void setAccountHolder(String accountHolder) {
+            this.accountHolder = accountHolder;
+        }
+
+        public String getApiUrl() {
+            return apiUrl;
+        }
+
+        public void setApiUrl(String apiUrl) {
+            this.apiUrl = apiUrl;
+        }
+
+        public String getQrBaseUrl() {
+            return qrBaseUrl;
+        }
+
+        public void setQrBaseUrl(String qrBaseUrl) {
+            this.qrBaseUrl = qrBaseUrl;
+        }
+
+        public long getWebhookMaxSkewSeconds() {
+            return webhookMaxSkewSeconds;
+        }
+
+        public void setWebhookMaxSkewSeconds(long webhookMaxSkewSeconds) {
+            this.webhookMaxSkewSeconds = webhookMaxSkewSeconds;
+        }
+
+        public long getReconcileCooldownSeconds() {
+            return reconcileCooldownSeconds;
+        }
+
+        public void setReconcileCooldownSeconds(long reconcileCooldownSeconds) {
+            this.reconcileCooldownSeconds = reconcileCooldownSeconds;
+        }
+    }
+
+    public static class Premium {
+        private String planCode = "PREMIUM_30D_V1";
+        private long priceVnd = 49_000L;
+        private int durationDays = 30;
+        private int orderExpireMinutes = 15;
+        private int reconcileWindowHours = 24;
+
+        public String getPlanCode() {
+            return planCode;
+        }
+
+        public void setPlanCode(String planCode) {
+            this.planCode = planCode;
+        }
+
+        public long getPriceVnd() {
+            return priceVnd;
+        }
+
+        public void setPriceVnd(long priceVnd) {
+            this.priceVnd = priceVnd;
+        }
+
+        public int getDurationDays() {
+            return durationDays;
+        }
+
+        public void setDurationDays(int durationDays) {
+            this.durationDays = durationDays;
+        }
+
+        public int getOrderExpireMinutes() {
+            return orderExpireMinutes;
+        }
+
+        public void setOrderExpireMinutes(int orderExpireMinutes) {
+            this.orderExpireMinutes = orderExpireMinutes;
+        }
+
+        public int getReconcileWindowHours() {
+            return reconcileWindowHours;
+        }
+
+        public void setReconcileWindowHours(int reconcileWindowHours) {
+            this.reconcileWindowHours = reconcileWindowHours;
         }
     }
 }

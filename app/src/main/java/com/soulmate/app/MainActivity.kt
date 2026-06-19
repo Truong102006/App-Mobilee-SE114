@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,6 +38,8 @@ import com.soulmate.app.ui.journal.history.HistoryScreen
 import com.soulmate.app.ui.journal.history.HistoryViewModel
 import com.soulmate.app.ui.login.LoginScreen
 import com.soulmate.app.ui.login.RegisterScreen
+import com.soulmate.app.ui.login.AuthViewModel
+import com.soulmate.app.ui.setting.PremiumUpgradeScreen
 import com.soulmate.app.ui.setting.SettingScreen
 import com.soulmate.app.ui.setting.ThemeViewModel
 import com.soulmate.app.ui.social.CommunityViewModel
@@ -77,7 +80,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val route = currentDestination?.route
                         val isChatDetail = route?.startsWith(Screen.ChatDetail.route) == true
-                        if (!isAuthScreen && route != Screen.ChatList.route && !isChatDetail) {
+                        if (!isAuthScreen && route != Screen.ChatList.route && route != Screen.Premium.route && !isChatDetail) {
                             CustomBottomNav(navController = navController)
                         }
                     }
@@ -213,6 +216,16 @@ class MainActivity : ComponentActivity() {
                                     GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
                                     navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
                                 }
+                            )
+                        }
+                        composable(Screen.Premium.route) {
+                            val parentEntry = remember(navController) {
+                                navController.getBackStackEntry(Screen.Setting.route)
+                            }
+                            val authViewModel: AuthViewModel = hiltViewModel(parentEntry)
+                            PremiumUpgradeScreen(
+                                authViewModel = authViewModel,
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
                         composable(Screen.AdminDashboard.route) {

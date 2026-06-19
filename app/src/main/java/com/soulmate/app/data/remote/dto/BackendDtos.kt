@@ -100,3 +100,48 @@ data class ResolveReportRequestDto(
     val postId: String,
     val action: String // "delete" or "ignore"
 )
+
+data class PremiumOfferResponseDto(
+    val planCode: String = "",
+    val priceVnd: Long = 0L,
+    val durationDays: Int = 0,
+    val orderExpireMinutes: Int = 15,
+    val bankCode: String = "",
+    val bankAccount: String = "",
+    val accountHolder: String = "",
+    val currentPremiumUntil: Long? = null
+)
+
+data class CreatePremiumOrderResponseDto(
+    val orderId: String = "",
+    val status: String = "",
+    val planCode: String = "",
+    val amountVnd: Long = 0L,
+    val durationDays: Int = 0,
+    val paymentCode: String = "",
+    val expiresAt: Long = 0L,
+    val qrImageUrl: String = "",
+    val bankCode: String = "",
+    val bankAccount: String = "",
+    val accountHolder: String = ""
+)
+
+data class PaymentOrderStatusResponseDto(
+    val orderId: String = "",
+    val status: String = "",
+    val planCode: String = "",
+    val amountVnd: Long = 0L,
+    val durationDays: Int = 0,
+    val paymentCode: String = "",
+    val createdAt: Long = 0L,
+    val expiresAt: Long = 0L,
+    val paidAt: Long? = null,
+    val premiumGrantedUntil: Long? = null,
+    val latePayment: Boolean = false
+)
+
+data class ReconcilePaymentOrderResponseDto(
+    val matched: Boolean = false,
+    val message: String = "",
+    val order: PaymentOrderStatusResponseDto = PaymentOrderStatusResponseDto()
+)

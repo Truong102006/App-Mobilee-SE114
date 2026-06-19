@@ -6,8 +6,12 @@ import com.soulmate.app.data.remote.dto.DeleteDiaryResponseDto
 import com.soulmate.app.data.remote.dto.ListConversationResponseDto
 import com.soulmate.app.data.remote.dto.ListDiariesResponseDto
 import com.soulmate.app.data.remote.dto.ListInboxResponseDto
+import com.soulmate.app.data.remote.dto.PaymentOrderStatusResponseDto
 import com.soulmate.app.data.remote.dto.PredictMoodRequestDto
 import com.soulmate.app.data.remote.dto.PredictMoodResponseDto
+import com.soulmate.app.data.remote.dto.PremiumOfferResponseDto
+import com.soulmate.app.data.remote.dto.CreatePremiumOrderResponseDto
+import com.soulmate.app.data.remote.dto.ReconcilePaymentOrderResponseDto
 import com.soulmate.app.data.remote.dto.ResolveReportRequestDto
 import com.soulmate.app.data.remote.dto.SaveDiaryRequestDto
 import com.soulmate.app.data.remote.dto.SaveDiaryResponseDto
@@ -115,5 +119,27 @@ interface BackendApiService {
         @Query("targetUserId") targetUserId: String,
         @Query("isBanned") isBanned: Boolean
     ): CommonResponseDto
+
+    @GET("api/secure/payments/premium/offer")
+    suspend fun getPremiumOffer(
+        @Header("Authorization") authorization: String
+    ): PremiumOfferResponseDto
+
+    @POST("api/secure/payments/premium/orders")
+    suspend fun createOrResumePremiumOrder(
+        @Header("Authorization") authorization: String
+    ): CreatePremiumOrderResponseDto
+
+    @GET("api/secure/payments/orders/{orderId}")
+    suspend fun getPaymentOrderStatus(
+        @Header("Authorization") authorization: String,
+        @Path("orderId") orderId: String
+    ): PaymentOrderStatusResponseDto
+
+    @POST("api/secure/payments/orders/{orderId}/reconcile")
+    suspend fun reconcilePaymentOrder(
+        @Header("Authorization") authorization: String,
+        @Path("orderId") orderId: String
+    ): ReconcilePaymentOrderResponseDto
 }
 
