@@ -27,11 +27,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.soulmate.app.domain.model.User
+import com.soulmate.app.ui.components.Screen
 import com.soulmate.app.ui.login.AuthViewModel
 import java.util.Locale
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.collectLatest
+import java.text.SimpleDateFormat
+import java.util.Date
 
 @Composable
 fun SettingScreen(
@@ -117,6 +120,22 @@ fun SettingScreen(
             onClick = { showPrivacyDialog = true }
         )
         SettingItem(icon = Icons.Default.Language, title = "Language", subtitle = "Vietnamese")
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        SettingSectionTitle("Premium")
+        SettingItem(
+            icon = Icons.Default.Star,
+            title = if (currentUser?.isPremiumActive() == true) "Renew Premium" else "Upgrade Premium",
+            subtitle = if (currentUser?.isPremiumActive() == true && currentUser?.premiumUntil != null) {
+                "Active until ${formatPremiumDate(currentUser!!.premiumUntil!!)}"
+            } else {
+                "Pay with SePay to upgrade your account"
+            },
+            onClick = {
+                navController.navigate(Screen.Premium.route)
+            }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -252,6 +271,21 @@ fun ProfileSection(user: User?) {
                 color = Color.Gray,
                 fontSize = 14.sp
             )
+            if (user?.isPremiumActive() == true) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Surface(
+                    color = Color(0xFFFFF3E0),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = "Premium until ${formatPremiumDate(user.premiumUntil ?: 0L)}",
+                        color = Color(0xFFEF6C00),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
             if (user?.isSocialBanned == true) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Surface(
@@ -274,6 +308,10 @@ fun ProfileSection(user: User?) {
 private fun buildAvatarInitial(name: String): String {
     val firstLetter = name.trim().firstOrNull { it.isLetterOrDigit() } ?: 'U'
     return firstLetter.toString().uppercase(Locale.getDefault())
+}
+
+private fun formatPremiumDate(timestamp: Long): String {
+    return SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(timestamp))
 }
 
 @Composable

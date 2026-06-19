@@ -29,3 +29,20 @@ backend:
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
     upload-folder: ${CLOUDINARY_UPLOAD_FOLDER:soulmate_uploads}
+  payment:
+    sepay:
+      api-token: ${SEPAY_API_TOKEN:}
+      webhook-secret: ${SEPAY_WEBHOOK_SECRET:}
+      bank-code: ${SEPAY_BANK_CODE:}
+      bank-account: ${SEPAY_BANK_ACCOUNT:}
+      account-holder: ${SEPAY_ACCOUNT_HOLDER:}
+      api-url: ${SEPAY_API_URL:https://my.sepay.vn/userapi}
+      qr-base-url: ${SEPAY_QR_BASE_URL:https://qr.sepay.vn/img}
+      webhook-max-skew-seconds: ${SEPAY_WEBHOOK_MAX_SKEW_SECONDS:300}
+      reconcile-cooldown-seconds: ${SEPAY_RECONCILE_COOLDOWN_SECONDS:15}
+    premium:
+      plan-code: ${PREMIUM_PLAN_CODE:PREMIUM_30D_V1}
+      price-vnd: ${PREMIUM_PRICE_VND:49000}
+      duration-days: ${PREMIUM_DURATION_DAYS:30}
+      order-expire-minutes: ${PAYMENT_ORDER_EXPIRE_MINUTES:15}
+      reconcile-window-hours: ${PAYMENT_RECONCILE_WINDOW_HOURS:24}

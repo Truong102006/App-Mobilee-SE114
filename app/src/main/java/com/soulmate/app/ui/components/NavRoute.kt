@@ -14,5 +14,6 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int) {
     object ChatList : Screen("chat_list", "Messenger", 0)
     object ChatDetail : Screen("chat_detail", "Chat Detail", 0)
     object Pet : Screen("pet", "Pet", 0)
+    object Premium : Screen("premium", "Premium", 0)
     object AdminDashboard : Screen("admin_dashboard", "Admin", 0)
 }

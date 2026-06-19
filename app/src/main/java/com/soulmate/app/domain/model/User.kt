@@ -21,10 +21,15 @@ data class User(
     val totalDiaries: Int = 0,
     val status: String = "active",
     val isProfileCompleted: Boolean = false,
-
+    val premiumUntil: Long? = null,
+    val premiumUpdatedAt: Long? = null,
     val isSocialBanned: Boolean = false,
     val hiddenPostIds: List<String> = emptyList()
 ) {
+    fun isPremiumActive(nowMillis: Long = System.currentTimeMillis()): Boolean {
+        return (premiumUntil ?: 0L) > nowMillis
+    }
+
     // Hàm helper để convert sang Map khi update Firestore (nếu cần)
     fun toMap(): Map<String, Any?> {
         return mapOf(
@@ -48,6 +53,8 @@ data class User(
             "totalDiaries" to totalDiaries,
             "status" to status,
             "isProfileCompleted" to isProfileCompleted,
+            "premiumUntil" to premiumUntil,
+            "premiumUpdatedAt" to premiumUpdatedAt,
 
             "isSocialBanned" to isSocialBanned,
             "hiddenPostIds" to hiddenPostIds,
