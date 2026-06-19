@@ -29,6 +29,11 @@ backend:
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
     upload-folder: ${CLOUDINARY_UPLOAD_FOLDER:soulmate_uploads}
+  one-signal:
+    enabled: ${ONESIGNAL_ENABLED:false}
+    app-id: ${ONESIGNAL_APP_ID:}
+    api-key: ${ONESIGNAL_API_KEY:}
+    api-url: ${ONESIGNAL_API_URL:https://api.onesignal.com}
   payment:
     sepay:
       api-token: ${SEPAY_API_TOKEN:}

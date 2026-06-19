@@ -8,6 +8,7 @@ interface IUserRepository {
     suspend fun getCurrentUser(userId: String): Result<User?>
     suspend fun updateAnonymousProfile(userId: String, name: String, avatarUrl: String?): Result<Unit>
     suspend fun updateSettings(userId: String, notification: Boolean, reminder: Boolean, time: String?): Result<Unit>
+    suspend fun updateNotificationPreference(userId: String, isEnabled: Boolean): Result<Unit>
     suspend fun updateCurrentMood(userId: String, mood: String): Result<Unit>
     suspend fun checkIsAdmin(userId: String): Boolean
     suspend fun updateLastLogin(userId: String): Result<Unit>

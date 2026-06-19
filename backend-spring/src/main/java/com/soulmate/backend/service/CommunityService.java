@@ -37,9 +37,11 @@ public class CommunityService {
     private static final Logger log = LoggerFactory.getLogger(CommunityService.class);
 
     private final Firestore firestore;
+    private final OneSignalPushNotificationService pushNotificationService;
 
-    public CommunityService(Firestore firestore) {
+    public CommunityService(Firestore firestore, OneSignalPushNotificationService pushNotificationService) {
         this.firestore = firestore;
+        this.pushNotificationService = pushNotificationService;
     }
 
     public PostResponse createPost(String uid, SavePostRequest request) {
@@ -161,7 +163,7 @@ public class CommunityService {
     public void toggleLike(String uid, String postId) {
         DocumentReference docRef = postsCollection().document(postId);
         try {
-            firestore.runTransaction(transaction -> {
+            LikeToggleResult toggleResult = firestore.runTransaction(transaction -> {
                 DocumentSnapshot snapshot = transaction.get(docRef).get();
                 if (!snapshot.exists()) {
                     throw new IllegalStateException("Post not found.");
@@ -169,16 +171,23 @@ public class CommunityService {
 
                 List<String> likedBy = getStringList(snapshot, "liked_by");
                 List<String> newLikedBy = new ArrayList<>(likedBy);
+                boolean addedLike;
                 if (newLikedBy.contains(uid)) {
                     newLikedBy.remove(uid);
+                    addedLike = false;
                 } else {
                     newLikedBy.add(uid);
+                    addedLike = true;
                 }
 
                 transaction.update(docRef, "liked_by", newLikedBy);
                 transaction.update(docRef, "like_count", newLikedBy.size());
-                return null;
+                return new LikeToggleResult(addedLike, resolveUserId(snapshot));
             }).get();
+
+            if (toggleResult.addedLike()) {
+                pushNotificationService.sendPostLikeNotification(uid, toggleResult.postOwnerUserId(), postId);
+            }
         } catch (ExecutionException | InterruptedException e) {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
@@ -194,6 +203,11 @@ public class CommunityService {
         DocumentReference commentRef = postRef.collection("comments").document();
 
         try {
+            DocumentSnapshot postSnapshot = postRef.get().get();
+            if (!postSnapshot.exists()) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "Post not found.");
+            }
+
             Map<String, Object> commentData = new HashMap<>();
             commentData.put("user_id", uid);
             commentData.put("user_name", userDetails.get("name"));
@@ -209,7 +223,7 @@ public class CommunityService {
             batch.update(postRef, "comment_count", FieldValue.increment(1));
             batch.commit().get();
 
-            return new CommentResponse(
+            CommentResponse response = new CommentResponse(
                 commentRef.getId(),
                 uid,
                 (String) userDetails.get("name"),
@@ -220,6 +234,13 @@ public class CommunityService {
                 request.parentId(),
                 request.replyToUserName()
             );
+            pushNotificationService.sendPostCommentNotification(
+                uid,
+                resolveUserId(postSnapshot),
+                postId,
+                request.content().trim()
+            );
+            return response;
         } catch (ExecutionException | InterruptedException e) {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
@@ -465,5 +486,8 @@ public class CommunityService {
             }
         }
         return null;
+    }
+
+    private record LikeToggleResult(boolean addedLike, String postOwnerUserId) {
     }
 }

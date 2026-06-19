@@ -8,6 +8,7 @@ public class BackendProperties {
     private final Security security = new Security();
     private final Gemini gemini = new Gemini();
     private final Cloudinary cloudinary = new Cloudinary();
+    private final OneSignal oneSignal = new OneSignal();
     private final Payment payment = new Payment();
 
     public Security getSecurity() {
@@ -20,6 +21,10 @@ public class BackendProperties {
 
     public Cloudinary getCloudinary() {
         return cloudinary;
+    }
+
+    public OneSignal getOneSignal() {
+        return oneSignal;
     }
 
     public Payment getPayment() {
@@ -104,6 +109,45 @@ public class BackendProperties {
 
         public void setUploadFolder(String uploadFolder) {
             this.uploadFolder = uploadFolder;
+        }
+    }
+
+    public static class OneSignal {
+        private boolean enabled;
+        private String appId;
+        private String apiKey;
+        private String apiUrl = "https://api.onesignal.com";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getAppId() {
+            return appId;
+        }
+
+        public void setAppId(String appId) {
+            this.appId = appId;
+        }
+
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        public void setApiKey(String apiKey) {
+            this.apiKey = apiKey;
+        }
+
+        public String getApiUrl() {
+            return apiUrl;
+        }
+
+        public void setApiUrl(String apiUrl) {
+            this.apiUrl = apiUrl;
         }
     }
 

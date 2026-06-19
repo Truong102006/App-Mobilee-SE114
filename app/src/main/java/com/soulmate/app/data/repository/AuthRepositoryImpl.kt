@@ -6,6 +6,8 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.soulmate.app.domain.model.User
 import com.soulmate.app.domain.repository.IAuthRepository
+import com.soulmate.app.domain.repository.ISettingsRepository
+import com.soulmate.app.notifications.AppNotificationManager
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +17,9 @@ import com.soulmate.app.data.remote.api.BackendApiService
 class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
-    private val backendApiService: BackendApiService
+    private val backendApiService: BackendApiService,
+    private val settingsRepository: ISettingsRepository,
+    private val notificationManager: AppNotificationManager
 ) : IAuthRepository {
     private val usersCollection = firestore.collection("users")
 
@@ -42,6 +46,8 @@ class AuthRepositoryImpl @Inject constructor(
         )
 
         usersCollection.document(uid).set(newUser).await()
+        settingsRepository.toggleNotification(newUser.notificationEnabled)
+        notificationManager.onUserAuthenticated(newUser, requestPermissionIfNeeded = true)
         Result.success(newUser)
     } catch (e: Exception) {
         Result.failure(e)
@@ -65,6 +71,8 @@ class AuthRepositoryImpl @Inject constructor(
             firebaseUser.updateProfile(profileUpdateRequest).await()
         }
 
+        settingsRepository.toggleNotification(user.notificationEnabled)
+        notificationManager.onUserAuthenticated(user, requestPermissionIfNeeded = true)
         Result.success(user)
     } catch (e: Exception) {
         Result.failure(e)
@@ -102,12 +110,15 @@ class AuthRepositoryImpl @Inject constructor(
             updatedUser
         }
 
+        settingsRepository.toggleNotification(user.notificationEnabled)
+        notificationManager.onUserAuthenticated(user, requestPermissionIfNeeded = true)
         Result.success(user)
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     override fun logout(): Result<Unit> = try {
+        notificationManager.logout()
         auth.signOut()
         Result.success(Unit)
     } catch (e: Exception) {

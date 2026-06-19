@@ -20,9 +20,11 @@ public class ChatService {
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     private final Firestore firestore;
+    private final OneSignalPushNotificationService pushNotificationService;
 
-    public ChatService(Firestore firestore) {
+    public ChatService(Firestore firestore, OneSignalPushNotificationService pushNotificationService) {
         this.firestore = firestore;
+        this.pushNotificationService = pushNotificationService;
     }
 
     public SendChatMessageResponse sendMessage(String uid, SendChatMessageRequest request) {
@@ -49,6 +51,7 @@ public class ChatService {
 
         try {
             DocumentReference created = firestore.collection("chats").add(payload).get();
+            pushNotificationService.sendChatMessageNotification(uid, receiverId, messageText, imageUrl);
             return new SendChatMessageResponse(created.getId(), conversationId);
         } catch (ExecutionException | InterruptedException e) {
             if (e instanceof InterruptedException) {

@@ -17,6 +17,7 @@ def normalizeBaseUrl = { value ->
 def backendBaseUrlOverride = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL") ?: System.getenv("BACKEND_BASE_URL") ?: "")
 def backendDeviceBaseUrl = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL_DEVICE") ?: System.getenv("BACKEND_BASE_URL_DEVICE") ?: "http://localhost:8080/")
 def backendEmulatorBaseUrl = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL_EMULATOR") ?: System.getenv("BACKEND_BASE_URL_EMULATOR") ?: "http://10.0.2.2:8080/")
+def oneSignalAppId = (project.findProperty("ONESIGNAL_APP_ID") ?: System.getenv("ONESIGNAL_APP_ID") ?: "").toString().trim()
 
 android {
     namespace 'com.soulmate.app'
@@ -38,6 +39,7 @@ android {
         buildConfigField "String", "BACKEND_BASE_URL", "\"${backendBaseUrlOverride}\""
         buildConfigField "String", "BACKEND_BASE_URL_DEVICE", "\"${backendDeviceBaseUrl}\""
         buildConfigField "String", "BACKEND_BASE_URL_EMULATOR", "\"${backendEmulatorBaseUrl}\""
+        buildConfigField "String", "ONESIGNAL_APP_ID", "\"${oneSignalAppId}\""
     }
 
     buildTypes {
@@ -133,6 +135,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-storage-ktx'
+    implementation 'com.onesignal:OneSignal:5.4.1'
 
     // Test
     testImplementation 'junit:junit:4.13.2'
