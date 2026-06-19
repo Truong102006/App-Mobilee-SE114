@@ -1,17 +1,17 @@
 package com.soulmate.app.data.repository
 
-import android.net.Uri
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
-import com.soulmate.app.data.remote.api.BackendApiService
-import com.soulmate.app.data.remote.dto.CreateCommentRequestDto
-import com.soulmate.app.data.remote.dto.CreatePostRequestDto
+import androidx.core.net.toUri
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.soulmate.app.domain.repository.ICommunityRepository
 import com.soulmate.app.ui.social.Comment
 import com.soulmate.app.ui.social.CommunityPost
 import com.soulmate.app.utils.CloudinaryHelper
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
+import com.soulmate.app.data.remote.dto.*
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
@@ -22,17 +22,21 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.text.SimpleDateFormat
+import java.util.*
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import com.soulmate.app.data.remote.api.BackendApiService
 
 @Singleton
 class CommunityRepositoryImpl @Inject constructor(
-    private val backendApiService: BackendApiService,
-    private val auth: FirebaseAuth
+    private val firestore: FirebaseFirestore,
+    private val backendApiService: BackendApiService
 ) : ICommunityRepository {
 
-    companion object {
-        private const val TAG = "CommunityRepositoryImpl"
-        private const val POLL_INTERVAL_MS = 10000L
-    }
+    private val postsCollection = firestore.collection("community_posts")
+    private val auth = FirebaseAuth.getInstance()
 
     private fun formatTimeAgo(timestampMs: Long): String {
         val now = System.currentTimeMillis()
@@ -59,7 +63,7 @@ class CommunityRepositoryImpl @Inject constructor(
             imagePath
         } else {
             try {
-                CloudinaryHelper.uploadImageSuspend(Uri.parse(imagePath))
+                CloudinaryHelper.uploadImageSuspend(imagePath.toUri())
             } catch (e: Exception) {
                 Log.e(TAG, "Cloudinary upload failed for $imagePath", e)
                 imagePath
@@ -229,5 +233,35 @@ class CommunityRepositoryImpl @Inject constructor(
                 )
             )
         }
+    }
+
+    private fun requireIdToken(): String {
+        val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in")
+        return com.google.android.gms.tasks.Tasks.await(currentUser.getIdToken(false)).token
+            ?: throw IllegalStateException("Cannot get ID Token")
+    }
+
+    override suspend fun reportPost(postId: String): Result<Unit> = runCatching {
+        val token = requireIdToken()
+        val response = backendApiService.reportPost("Bearer $token", postId)
+        if (!response.success) throw Exception(response.message)
+    }
+
+    override suspend fun getReportedPosts(): Flow<List<CommunityPost>> = flow<List<CommunityPost>> {
+        val token = requireIdToken()
+        val response = backendApiService.getReportedPosts("Bearer $token")
+        emit(response)
+    }.catch {
+        emit(emptyList<CommunityPost>())
+    }
+
+    override suspend fun resolveReport(postId: String, action: String): Result<Unit> = runCatching {
+        val token = requireIdToken()
+
+        val request = ResolveReportRequestDto(postId = postId, action = action)
+
+        val response = backendApiService.resolveReport("Bearer $token", request)
+
+        if (!response.success) throw Exception(response.message)
     }
 }

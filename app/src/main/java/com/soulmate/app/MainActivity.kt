@@ -26,6 +26,7 @@ import androidx.navigation.navArgument
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.ui.admin.AdminDashboardScreen
 import com.soulmate.app.ui.components.Screen
 import com.soulmate.app.ui.components.CustomBottomNav
 import com.soulmate.app.ui.home.HomeScreen
@@ -52,7 +53,6 @@ class MainActivity : ComponentActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
-    private val communityViewModel: CommunityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 musicViewModel = musicViewModel, 
                                 historyViewModel = hiltViewModel(),
-                                communityViewModel = communityViewModel,
+                                communityViewModel = hiltViewModel(),
                                 onChatBubbleClick = { navController.navigate(Screen.ChatList.route) },
                                 onNavigateToChat = { userId, name, avatarUrl ->
                                     val encodedName = Uri.encode(name)
@@ -164,17 +164,15 @@ class MainActivity : ComponentActivity() {
                             DiaryDetailScreen(
                                 diaryId = diaryId,
                                 viewModel = hiltViewModel(),
-                                communityViewModel = communityViewModel,
+                                communityViewModel = hiltViewModel(),
                                 onBackClick = { navController.popBackStack() },
                                 onEditClick = { id -> navController.navigate(Screen.Diary.route + "?diaryId=$id") },
                                 onShareSuccess = { navController.navigate(Screen.Home.route) { popUpTo(Screen.Home.route) { inclusive = true } } }
                             )
                         }
-
-                        // Chat Routes
                         composable(Screen.ChatList.route) {
                             ChatListScreen(
-                                communityViewModel = communityViewModel,
+                                communityViewModel = hiltViewModel(),
                                 onChatClick = { userId, name, avatarUrl ->
                                     val encodedName = Uri.encode(name)
                                     val encodedUrl = if (avatarUrl != null) Uri.encode(avatarUrl) else "none"
@@ -204,15 +202,21 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
-
                         composable(Screen.Stats.route) { StatsScreen() }
                         composable(Screen.Setting.route) {
                             val context = LocalContext.current
-                            SettingScreen(themeViewModel = themeViewModel, onLogout = {
-                                FirebaseAuth.getInstance().signOut()
-                                GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
-                                navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
-                            })
+                            SettingScreen(
+                                themeViewModel = themeViewModel,
+                                navController = navController,
+                                onLogout = {
+                                    FirebaseAuth.getInstance().signOut()
+                                    GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
+                                    navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                                }
+                            )
+                        }
+                        composable(Screen.AdminDashboard.route) {
+                            AdminDashboardScreen(navController = navController)
                         }
                     }
                 }

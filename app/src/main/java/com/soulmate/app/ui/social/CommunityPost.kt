@@ -32,5 +32,7 @@ data class CommunityPost(
     val isLiked: Boolean = false,
     val likedBy: List<String> = emptyList(),
     val comments: List<Comment> = emptyList(),
-    val timestamp: Timestamp? = null
+    val timestamp: Timestamp? = null,
+    val reportCount: Int = 0,
+    val reportedBy: List<String> = emptyList()
 )

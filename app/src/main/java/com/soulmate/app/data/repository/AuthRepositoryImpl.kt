@@ -9,13 +9,14 @@ import com.soulmate.app.domain.repository.IAuthRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.soulmate.app.data.remote.api.BackendApiService
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val backendApiService: BackendApiService
 ) : IAuthRepository {
-
     private val usersCollection = firestore.collection("users")
 
     override suspend fun register(name: String, email: String, password: String): Result<User> = try {
@@ -161,15 +162,40 @@ class AuthRepositoryImpl @Inject constructor(
         Result.failure(e)
     }
 
-    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> = try {
-        val query = usersCollection.whereEqualTo("email", email).get().await()
-        if (query.isEmpty) {
-            Result.failure(Exception("Email này chưa được đăng ký trong hệ thống."))
-        } else {
-            auth.sendPasswordResetEmail(email).await()
+    override suspend fun searchUsers(query: String): Result<List<User>> = try {
+        val snapshot = usersCollection
+            .whereGreaterThanOrEqualTo("anonymousName", query)
+            .whereLessThanOrEqualTo("anonymousName", query + "\uf8ff")
+            .get().await()
+
+        val users = snapshot.toObjects(User::class.java)
+        Result.success(users)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun toggleSocialBan(targetUserId: String, isBanned: Boolean): Result<Unit> = try {
+        val idToken = auth.currentUser?.getIdToken(false)?.await()?.token
+            ?: throw Exception("Unauthorized")
+
+        val response = backendApiService.toggleSocialBan("Bearer $idToken", targetUserId, isBanned)
+
+        if (response.success) {
+            usersCollection.document(targetUserId).update("isSocialBanned", isBanned).await()
             Result.success(Unit)
+        } else {
+            Result.failure(Exception(response.message))
         }
     } catch (e: Exception) {
         Result.failure(e)
     }
+    override suspend fun hidePost(userId: String, postId: String): Result<Unit> = try {
+        usersCollection.document(userId)
+            .update("hiddenPostIds", com.google.firebase.firestore.FieldValue.arrayUnion(postId))
+            .await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
 }

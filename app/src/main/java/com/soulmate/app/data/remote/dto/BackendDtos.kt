@@ -1,5 +1,7 @@
 package com.soulmate.app.data.remote.dto
 
+import com.soulmate.app.ui.social.CommunityPost
+
 data class SaveDiaryRequestDto(
     val diaryId: String? = null,
     val title: String? = null,
@@ -85,43 +87,16 @@ data class SignUploadResponseDto(
     val uploadUrl: String = ""
 )
 
-data class CreatePostRequestDto(
-    val mood: String? = null,
-    val textContent: String,
-    val imageUrls: List<String> = emptyList()
+data class CommonResponseDto(
+    val success: Boolean = true,
+    val message: String = ""
 )
 
-data class CreatePostResponseDto(
-    val id: String? = null,
-    val userId: String? = null,
-    val userName: String? = null,
-    val userAvatarUrl: String? = null,
-    val isVerified: Boolean? = false,
-    val mood: String? = "Neutral",
-    val textContent: String? = "",
-    val imageUrls: List<String>? = emptyList(),
-    val likeCount: Int? = 0,
-    val commentCount: Int? = 0,
-    val viewCount: Int? = 0,
-    val likedBy: List<String>? = emptyList(),
-    val timestamp: Long? = 0L
+data class ListReportedPostsResponseDto(
+    val posts: List<CommunityPost> = emptyList()
 )
 
-data class CreateCommentRequestDto(
-    val content: String,
-    val parentId: String? = null,
-    val replyToUserName: String? = null
+data class ResolveReportRequestDto(
+    val postId: String,
+    val action: String // "delete" or "ignore"
 )
-
-data class CreateCommentResponseDto(
-    val id: String = "",
-    val userId: String = "",
-    val userName: String = "",
-    val userAvatarUrl: String? = null,
-    val content: String = "",
-    val timestamp: Long = 0L,
-    val likedBy: List<String> = emptyList(),
-    val parentId: String? = null,
-    val replyToUserName: String? = null
-)
-

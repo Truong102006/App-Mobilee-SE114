@@ -1,5 +1,6 @@
 package com.soulmate.app.data.remote.api
 
+import com.soulmate.app.data.remote.dto.CommonResponseDto
 import com.soulmate.app.data.remote.dto.DeleteConversationResponseDto
 import com.soulmate.app.data.remote.dto.DeleteDiaryResponseDto
 import com.soulmate.app.data.remote.dto.ListConversationResponseDto
@@ -7,16 +8,14 @@ import com.soulmate.app.data.remote.dto.ListDiariesResponseDto
 import com.soulmate.app.data.remote.dto.ListInboxResponseDto
 import com.soulmate.app.data.remote.dto.PredictMoodRequestDto
 import com.soulmate.app.data.remote.dto.PredictMoodResponseDto
+import com.soulmate.app.data.remote.dto.ResolveReportRequestDto
 import com.soulmate.app.data.remote.dto.SaveDiaryRequestDto
 import com.soulmate.app.data.remote.dto.SaveDiaryResponseDto
 import com.soulmate.app.data.remote.dto.SendChatMessageRequestDto
 import com.soulmate.app.data.remote.dto.SendChatMessageResponseDto
 import com.soulmate.app.data.remote.dto.SignUploadRequestDto
 import com.soulmate.app.data.remote.dto.SignUploadResponseDto
-import com.soulmate.app.data.remote.dto.CreatePostRequestDto
-import com.soulmate.app.data.remote.dto.CreatePostResponseDto
-import com.soulmate.app.data.remote.dto.CreateCommentRequestDto
-import com.soulmate.app.data.remote.dto.CreateCommentResponseDto
+import com.soulmate.app.ui.social.CommunityPost
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -93,54 +92,28 @@ interface BackendApiService {
         @Body request: SignUploadRequestDto
     ): SignUploadResponseDto
 
-    @POST("api/secure/community/posts")
-    suspend fun createCommunityPost(
+    @POST("api/secure/community/report/{postId}")
+    suspend fun reportPost(
         @Header("Authorization") authorization: String,
-        @Body request: CreatePostRequestDto
-    ): CreatePostResponseDto
+        @Path("postId") postId: String
+    ): CommonResponseDto
 
-    @GET("api/secure/community/posts")
-    suspend fun listCommunityPosts(
+    @GET("api/secure/admin/community/reported-posts")
+    suspend fun getReportedPosts(
         @Header("Authorization") authorization: String
-    ): List<CreatePostResponseDto>
+    ): List<CommunityPost>
 
-    @PUT("api/secure/community/posts/{id}")
-    suspend fun updateCommunityPost(
+    @POST("api/secure/admin/community/resolve-report")
+    suspend fun resolveReport(
         @Header("Authorization") authorization: String,
-        @Path("id") id: String,
-        @Body request: CreatePostRequestDto
-    ): CreatePostResponseDto
+        @Body request: ResolveReportRequestDto
+    ): CommonResponseDto
 
-    @DELETE("api/secure/community/posts/{id}")
-    suspend fun deleteCommunityPost(
+    @POST("api/secure/admin/users/social-ban")
+    suspend fun toggleSocialBan(
         @Header("Authorization") authorization: String,
-        @Path("id") id: String
-    ): Unit
-
-    @POST("api/secure/community/posts/{id}/like")
-    suspend fun toggleCommunityPostLike(
-        @Header("Authorization") authorization: String,
-        @Path("id") id: String
-    ): Unit
-
-    @POST("api/secure/community/posts/{id}/comments/{commentId}/like")
-    suspend fun toggleCommunityCommentLike(
-        @Header("Authorization") authorization: String,
-        @Path("id") id: String,
-        @Path("commentId") commentId: String
-    ): Unit
-
-    @POST("api/secure/community/posts/{id}/comments")
-    suspend fun addCommunityComment(
-        @Header("Authorization") authorization: String,
-        @Path("id") id: String,
-        @Body request: CreateCommentRequestDto
-    ): CreateCommentResponseDto
-
-    @GET("api/secure/community/posts/{id}/comments")
-    suspend fun listCommunityComments(
-        @Header("Authorization") authorization: String,
-        @Path("id") id: String
-    ): List<CreateCommentResponseDto>
+        @Query("targetUserId") targetUserId: String,
+        @Query("isBanned") isBanned: Boolean
+    ): CommonResponseDto
 }
 

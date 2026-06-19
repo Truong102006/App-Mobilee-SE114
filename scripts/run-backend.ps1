@@ -14,16 +14,17 @@ if (-not (Test-Path -LiteralPath $backendScript)) {
     throw "Backend run script was not found at $backendScript."
 }
 
-if ($EnvFile -and -not [System.IO.Path]::IsPathRooted($EnvFile)) {
-    $EnvFile = Join-Path $repoRoot $EnvFile
+$argumentList = @{
+    Port = $Port
 }
 
-$env:SERVER_PORT = "$Port"
-
-$argumentList = @{}
 if ($EnvFile) {
+    if (-not [System.IO.Path]::IsPathRooted($EnvFile)) {
+        $EnvFile = Join-Path $repoRoot $EnvFile
+    }
     $argumentList["EnvFile"] = $EnvFile
 }
+
 if ($DisableAppCheck) {
     $argumentList["DisableAppCheck"] = $true
 }
