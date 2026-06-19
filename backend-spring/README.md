@@ -92,3 +92,4 @@ If you configured full secrets and App Check token:
   - `https://firebaseappcheck.googleapis.com/v1/jwks`
 - Cloudinary uses server-generated signed upload parameters.
 - Gemini API key is read from environment and never shipped in APK.
+- OneSignal push notifications are optional and only active when `ONESIGNAL_ENABLED=true` plus valid `ONESIGNAL_APP_ID` and `ONESIGNAL_API_KEY`.

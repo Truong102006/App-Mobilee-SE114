@@ -54,6 +54,16 @@ class UserRepositoryImpl @Inject constructor(
         Result.failure(e)
     }
 
+    override suspend fun updateNotificationPreference(userId: String, isEnabled: Boolean): Result<Unit> = try {
+        usersCollection.document(userId).update(
+            "notificationEnabled", isEnabled,
+            "updatedAt", System.currentTimeMillis()
+        ).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
     override suspend fun updateCurrentMood(userId: String, mood: String): Result<Unit> = try {
         usersCollection.document(userId).update(
             "currentMood", mood,

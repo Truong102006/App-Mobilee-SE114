@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -27,6 +28,8 @@ import androidx.navigation.navArgument
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.notifications.AppNotificationManager
+import com.soulmate.app.notifications.NotificationDestination
 import com.soulmate.app.ui.admin.AdminDashboardScreen
 import com.soulmate.app.ui.components.Screen
 import com.soulmate.app.ui.components.CustomBottomNav
@@ -50,12 +53,16 @@ import com.soulmate.app.ui.chat.ChatDetailScreen
 import com.soulmate.app.ui.chat.ChatViewModel
 import com.soulmate.app.ui.pet.PetScreen
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
     private val musicViewModel: MusicViewModel by viewModels()
+
+    @Inject
+    lateinit var notificationManager: AppNotificationManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +74,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
+                val pendingNotification by notificationManager.pendingNavigation.collectAsState()
 
                 val isAuthScreen = currentDestination?.hierarchy?.any {
                     it.route == Screen.Login.route || it.route == Screen.Register.route
@@ -74,6 +82,34 @@ class MainActivity : ComponentActivity() {
 
                 val auth = FirebaseAuth.getInstance()
                 val startDest = if (auth.currentUser != null) Screen.Home.route else Screen.Login.route
+
+                LaunchedEffect(pendingNotification) {
+                    val target = pendingNotification ?: return@LaunchedEffect
+                    if (auth.currentUser == null) {
+                        notificationManager.consumePendingNavigation()
+                        return@LaunchedEffect
+                    }
+
+                    when (target) {
+                        NotificationDestination.Home -> {
+                            navController.navigate(Screen.Home.route) {
+                                launchSingleTop = true
+                            }
+                        }
+
+                        is NotificationDestination.Chat -> {
+                            val encodedName = Uri.encode(target.userName)
+                            val encodedUrl = target.avatarUrl?.let(Uri::encode) ?: "none"
+                            navController.navigate(
+                                "${Screen.ChatDetail.route}?userId=${target.userId}&userName=$encodedName&avatarUrl=$encodedUrl"
+                            ) {
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+
+                    notificationManager.consumePendingNavigation()
+                }
 
                 Scaffold(
                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
