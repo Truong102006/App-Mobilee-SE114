@@ -1,8 +1,8 @@
 package com.soulmate.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.firestore.Firestore;
 import com.soulmate.backend.dto.community.CommentRequest;
+import com.soulmate.backend.dto.community.CommonResponse;
 import com.soulmate.backend.dto.community.SavePostRequest;
 import com.soulmate.backend.security.AuthContext;
 import com.soulmate.backend.security.AuthContextHolder;
@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,7 +41,6 @@ public class CommunityControllerIntegrationTest {
     @MockBean
     private FirebaseSecurityFilter firebaseSecurityFilter;
 
-    // We can run integration test with a mocked CommunityService to verify endpoint routing.
     @MockBean
     private CommunityService communityService;
 
@@ -68,7 +66,7 @@ public class CommunityControllerIntegrationTest {
                 uid = authHeader.substring(7).trim();
             }
 
-            AuthContextHolder.set(request, new AuthContext(uid, "mock-app-id"));
+            AuthContextHolder.set(request, new AuthContext(uid, "mock-app-id", "user"));
             chain.doFilter(request, response);
             return null;
         }).when(firebaseSecurityFilter).doFilter(any(), any(), any());
@@ -82,7 +80,7 @@ public class CommunityControllerIntegrationTest {
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).createPost(eq("test-user-123"), any(SavePostRequest.class));
     }
@@ -92,7 +90,7 @@ public class CommunityControllerIntegrationTest {
         mockMvc.perform(get("/api/secure/community/posts")
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).listPosts();
     }
@@ -105,7 +103,7 @@ public class CommunityControllerIntegrationTest {
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).updatePost(eq("test-user-123"), eq("post-123"), any(SavePostRequest.class));
     }
@@ -115,7 +113,7 @@ public class CommunityControllerIntegrationTest {
         mockMvc.perform(delete("/api/secure/community/posts/post-123")
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).deletePost(eq("test-user-123"), eq("post-123"));
     }
@@ -125,7 +123,7 @@ public class CommunityControllerIntegrationTest {
         mockMvc.perform(post("/api/secure/community/posts/post-123/like")
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).toggleLike(eq("test-user-123"), eq("post-123"));
     }
@@ -138,7 +136,7 @@ public class CommunityControllerIntegrationTest {
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).addComment(eq("test-user-123"), eq("post-123"), any(CommentRequest.class));
     }
@@ -148,7 +146,7 @@ public class CommunityControllerIntegrationTest {
         mockMvc.perform(get("/api/secure/community/posts/post-123/comments")
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).listComments(eq("post-123"));
     }
@@ -158,8 +156,21 @@ public class CommunityControllerIntegrationTest {
         mockMvc.perform(post("/api/secure/community/posts/post-123/comments/comment-456/like")
                 .header("Authorization", "Bearer test-user-123")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         Mockito.verify(communityService).toggleCommentLike(eq("test-user-123"), eq("post-123"), eq("comment-456"));
+    }
+
+    @Test
+    public void testReportPost_Success() throws Exception {
+        Mockito.when(communityService.reportPost(eq("test-user-123"), eq("post-123")))
+            .thenReturn(new CommonResponse(true, "Reported"));
+
+        mockMvc.perform(post("/api/secure/community/report/post-123")
+                .header("Authorization", "Bearer test-user-123")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        Mockito.verify(communityService).reportPost(eq("test-user-123"), eq("post-123"));
     }
 }

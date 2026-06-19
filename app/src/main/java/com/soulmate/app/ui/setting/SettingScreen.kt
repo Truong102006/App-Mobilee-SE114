@@ -49,6 +49,9 @@ fun SettingScreen(
     val currentUser by authViewModel.currentUser
     val notificationEnabled by settingsViewModel.notificationEnabled.collectAsState()
     var showEditProfileDialog by remember { mutableStateOf(false) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showFAQDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         authViewModel.error.collectLatest { errorMsg ->

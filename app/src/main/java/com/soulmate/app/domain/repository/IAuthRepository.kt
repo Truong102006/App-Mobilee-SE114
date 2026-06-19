@@ -21,4 +21,10 @@ interface IAuthRepository {
 
     // Gửi email khôi phục mật khẩu
     suspend fun sendPasswordResetEmail(email: String): Result<Unit>
+
+    suspend fun searchUsers(query: String): Result<List<User>>
+
+    suspend fun toggleSocialBan(targetUserId: String, isBanned: Boolean): Result<Unit>
+
+    suspend fun hidePost(userId: String, postId: String): Result<Unit>
 }
