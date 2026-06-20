@@ -21,6 +21,8 @@ import com.soulmate.app.data.repository.PetRepositoryImpl
 import com.soulmate.app.domain.repository.IPetRepository
 import com.soulmate.app.data.repository.PaymentRepositoryImpl
 import com.soulmate.app.domain.repository.IPaymentRepository
+import com.soulmate.app.data.repository.UserPresenceRepositoryImpl
+import com.soulmate.app.domain.repository.IUserPresenceRepository
 
 
 @Module
@@ -74,4 +76,10 @@ abstract class RepositoryModule {
     abstract fun bindPaymentRepository(
         paymentRepositoryImpl: PaymentRepositoryImpl
     ): IPaymentRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserPresenceRepository(
+        userPresenceRepositoryImpl: UserPresenceRepositoryImpl
+    ): IUserPresenceRepository
 }

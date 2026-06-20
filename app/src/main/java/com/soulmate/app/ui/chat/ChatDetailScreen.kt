@@ -13,19 +13,66 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.VideoCall
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,13 +87,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.soulmate.app.R
 import com.soulmate.app.domain.model.ChatMessage
-import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.ui.components.OnlineStatusBadge
+import com.soulmate.app.ui.presence.PresenceViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 @Composable
 fun ChatDetailScreen(
@@ -54,11 +105,13 @@ fun ChatDetailScreen(
     userName: String,
     userAvatarUrl: String?,
     chatViewModel: ChatViewModel,
+    presenceViewModel: PresenceViewModel = hiltViewModel(),
     onBackClick: () -> Unit
 ) {
     val currentUserId = remember { FirebaseAuth.getInstance().currentUser?.uid ?: "" }
     val messages by chatViewModel.messages.collectAsState()
     val replyingTo by chatViewModel.replyingTo
+    val userPresences by presenceViewModel.userPresences.collectAsState()
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
@@ -66,7 +119,6 @@ fun ChatDetailScreen(
     var messageToDelete by remember { mutableStateOf<ChatMessage?>(null) }
     var showOptionsSheet by remember { mutableStateOf(false) }
     var selectedMessage by remember { mutableStateOf<ChatMessage?>(null) }
-    
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -84,12 +136,16 @@ fun ChatDetailScreen(
         }
     }
 
+    LaunchedEffect(userId) {
+        presenceViewModel.observeUsers(setOf(userId))
+    }
+
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
         }
     }
-    
+
     val isKeyboardVisible = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
     LaunchedEffect(isKeyboardVisible) {
         if (isKeyboardVisible && messages.isNotEmpty()) {
@@ -97,7 +153,12 @@ fun ChatDetailScreen(
         }
     }
 
-    Scaffold(
+    val otherUserPresence = userPresences[userId]
+    val isOtherUserOnline = otherUserPresence?.isOnlineNow() == true
+    val resolvedUserName = otherUserPresence?.userName?.ifBlank { userName }.orEmpty().ifBlank { userName }
+    val resolvedAvatarUrl = otherUserPresence?.userAvatarUrl ?: userAvatarUrl
+
+    androidx.compose.material.Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
@@ -119,7 +180,7 @@ fun ChatDetailScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(contentAlignment = Alignment.BottomEnd) {
                             AsyncImage(
-                                model = userAvatarUrl ?: R.drawable.ava1,
+                                model = resolvedAvatarUrl ?: R.drawable.ava1,
                                 contentDescription = null,
                                 modifier = Modifier
                                     .size(36.dp)
@@ -127,27 +188,36 @@ fun ChatDetailScreen(
                                 contentScale = ContentScale.Crop,
                                 error = painterResource(R.drawable.ava1)
                             )
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Black)
-                                    .padding(1.5.dp)
-                            ) {
-                                Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(Color(0xFF42B72A)))
+                            if (isOtherUserOnline) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Black)
+                                        .padding(1.5.dp)
+                                ) {
+                                    OnlineStatusBadge(
+                                        modifier = Modifier.fillMaxSize(),
+                                        color = Color(0xFF42B72A)
+                                    )
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = userName,
+                                text = resolvedUserName,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            Text("Đang hoạt động", fontSize = 11.sp, color = Color.Gray)
+                            Text(
+                                text = if (isOtherUserOnline) "Đang hoạt động" else "Hiện không online",
+                                fontSize = 11.sp,
+                                color = Color.Gray
+                            )
                         }
                     }
                 },
@@ -179,12 +249,13 @@ fun ChatDetailScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     state = listState
                 ) {
-                    itemsIndexed(messages, key = { index, message -> 
-                        message.id.ifEmpty { "msg_$index" } 
+                    itemsIndexed(messages, key = { index, message ->
+                        message.id.ifEmpty { "msg_$index" }
                     }) { index, message ->
                         val showHeader = remember(messages, index) {
-                            if (index == 0) true
-                            else {
+                            if (index == 0) {
+                                true
+                            } else {
                                 val current = messages[index].timestamp?.seconds ?: 0L
                                 val previous = messages[index - 1].timestamp?.seconds ?: 0L
                                 (current - previous) > 10 * 60
@@ -207,9 +278,9 @@ fun ChatDetailScreen(
                         MessageBubble(
                             message = message,
                             isMine = message.senderId == currentUserId,
-                            userAvatarUrl = userAvatarUrl,
-                            otherUserName = userName,
-                            showTime = index == messages.lastIndex || messages[index+1].senderId != message.senderId,
+                            userAvatarUrl = resolvedAvatarUrl,
+                            otherUserName = resolvedUserName,
+                            showTime = index == messages.lastIndex || messages[index + 1].senderId != message.senderId,
                             showAvatar = message.senderId != currentUserId,
                             onLongPress = {
                                 selectedMessage = message
@@ -233,7 +304,7 @@ fun ChatDetailScreen(
                         backgroundColor = Color(0xFF242526)
                     )
                 }
-                
+
                 ChatBottomBar(
                     messageText = messageText,
                     onMessageChange = { messageText = it },
@@ -246,7 +317,7 @@ fun ChatDetailScreen(
                         }
                     },
                     onLikeClick = {
-                        chatViewModel.sendMessage(currentUserId, userId, "👍")
+                        chatViewModel.sendMessage(currentUserId, userId, "ðŸ‘")
                     },
                     onImageClick = {
                         imagePickerLauncher.launch("image/*")
@@ -268,7 +339,7 @@ fun ChatDetailScreen(
                     }
                 )
             }
-            
+
             AnimatedVisibility(
                 visible = fullScreenImageUrl != null,
                 enter = fadeIn(),
@@ -320,7 +391,7 @@ fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit
         )
-        
+
         IconButton(
             onClick = onDismiss,
             modifier = Modifier
@@ -349,14 +420,18 @@ fun ModalOptions(onDismiss: () -> Unit, onReply: () -> Unit, onDelete: () -> Uni
     ) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.width(200.dp).clickable(enabled = false) { },
+            modifier = Modifier
+                .width(200.dp)
+                .clickable(enabled = false) { },
             backgroundColor = Color(0xFF242526),
             elevation = 8.dp
         ) {
             Column {
                 TextButton(
                     onClick = onReply,
-                    modifier = Modifier.fillMaxWidth().padding(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.AutoMirrored.Filled.Reply, contentDescription = null, tint = Color.White)
@@ -367,7 +442,9 @@ fun ModalOptions(onDismiss: () -> Unit, onReply: () -> Unit, onDelete: () -> Uni
                 Divider(color = Color.Gray.copy(alpha = 0.2f))
                 TextButton(
                     onClick = onDelete,
-                    modifier = Modifier.fillMaxWidth().padding(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
@@ -385,7 +462,7 @@ private fun ClarificationSpacer() {
     Spacer(Modifier.width(12.dp))
 }
 
-private fun formatHeaderDate(timestamp: com.google.firebase.Timestamp?): String {
+private fun formatHeaderDate(timestamp: Timestamp?): String {
     if (timestamp == null) return ""
     val date = timestamp.toDate()
     val sdf = SimpleDateFormat("d 'THG' M 'LÚC' HH:mm", Locale("vi", "VN"))
@@ -411,7 +488,9 @@ fun MessageBubble(
     val timeString = remember(message.timestamp) {
         if (message.timestamp != null) {
             SimpleDateFormat("HH:mm", Locale.getDefault()).format(message.timestamp.toDate())
-        } else ""
+        } else {
+            ""
+        }
     }
 
     Box(
@@ -481,9 +560,9 @@ fun MessageBubble(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Reply, 
-                        contentDescription = null, 
-                        modifier = Modifier.size(12.dp), 
+                        imageVector = Icons.AutoMirrored.Filled.Reply,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
                         tint = Color.Gray
                     )
                     Spacer(Modifier.width(4.dp))
@@ -504,7 +583,9 @@ fun MessageBubble(
                         AsyncImage(
                             model = userAvatarUrl ?: R.drawable.ava1,
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp).clip(CircleShape),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape),
                             contentScale = ContentScale.Crop,
                             error = painterResource(R.drawable.ava1)
                         )
@@ -544,9 +625,7 @@ fun MessageBubble(
                         }
                     }
 
-                    Column(
-                        horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
-                    ) {
+                    Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
                         if (message.imageUrl != null) {
                             AsyncImage(
                                 model = message.imageUrl,
@@ -562,7 +641,7 @@ fun MessageBubble(
                                 contentScale = ContentScale.Fit
                             )
                         }
-                        
+
                         if (message.messageText.isNotBlank()) {
                             Box(
                                 modifier = Modifier
@@ -592,7 +671,7 @@ fun MessageBubble(
                     }
                 }
             }
-            
+
             if (showTime && timeString.isNotEmpty()) {
                 Text(
                     text = timeString,
@@ -626,16 +705,24 @@ fun ChatBottomBar(
         Column {
             if (replyingTo != null) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Color(0xFF242526)).padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF242526))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Đang trả lời tin nhắn", fontSize = 12.sp, color = Color(0xFF0084FF), fontWeight = FontWeight.Bold)
                         Text(
-                            text = if (replyingTo.messageText.isNotBlank()) replyingTo.messageText else "Hình ảnh", 
-                            fontSize = 14.sp, 
-                            color = Color.Gray, 
-                            maxLines = 1, 
+                            "Đang trả lời tin nhắn",
+                            fontSize = 12.sp,
+                            color = Color(0xFF0084FF),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = if (replyingTo.messageText.isNotBlank()) replyingTo.messageText else "Hình ảnh",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
@@ -651,13 +738,21 @@ fun ChatBottomBar(
                         )
                     }
                     IconButton(onClick = onCancelReply, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.White
+                        )
                     }
                 }
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp).background(Color.Black),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 8.dp)
+                    .background(Color.Black),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {}) {
@@ -666,7 +761,7 @@ fun ChatBottomBar(
                 IconButton(onClick = onImageClick) {
                     Icon(Icons.Default.Image, contentDescription = null, tint = Color(0xFF0084FF))
                 }
-                
+
                 TextField(
                     value = messageText,
                     onValueChange = onMessageChange,
@@ -703,7 +798,11 @@ fun ChatBottomBar(
                     }
                 } else {
                     IconButton(onClick = onSendClick) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Gửi", tint = Color(0xFF0084FF))
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Gửi",
+                            tint = Color(0xFF0084FF)
+                        )
                     }
                 }
             }
