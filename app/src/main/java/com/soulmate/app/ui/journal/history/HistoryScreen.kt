@@ -1,8 +1,11 @@
 package com.soulmate.app.ui.journal.history
 
 import MonthYearPickerDialog
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,10 +22,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.soulmate.app.R
 import com.soulmate.app.ui.home.components.RecordingNote
 import java.util.Calendar
@@ -34,6 +42,7 @@ fun HistoryScreen(
     onNavigateToDetail: (String) -> Unit
 ) {
     val notes = viewModel.historyNotes
+    val greeting = rememberJournalGreeting()
     var noteToDelete by remember { mutableStateOf<RecordingNote?>(null) }
 
     val calendar = Calendar.getInstance()
@@ -69,17 +78,17 @@ fun HistoryScreen(
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Chào buổi sáng!",
+                        text = greeting.title,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = headerColor
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "🌸", fontSize = 28.sp)
+                    Text(text = greeting.emoji, fontSize = 28.sp)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Hôm nay là một ngày tuyệt vời để\nghi lại những khoảnh khắc đáng nhớ",
+                    text = greeting.message,
                     fontSize = 16.sp,
                     color = headerColor.copy(alpha = 0.7f),
                     lineHeight = 22.sp,
@@ -97,7 +106,11 @@ fun HistoryScreen(
                 color = Color.White,
                 elevation = 0.dp
             ) {
-                Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Surface(
@@ -182,15 +195,18 @@ fun HistoryScreen(
         AlertDialog(
             onDismissRequest = { noteToDelete = null },
             title = { Text("Xác nhận xóa", fontWeight = FontWeight.Bold) },
-            text = { Text("Bạn có muốn xóa nhật kí này không?") },
+            text = { Text("Bạn có muốn xóa nhật ký này không?") },
             confirmButton = {
-                TextButton(onClick = { viewModel.deleteNote(noteToDelete!!); noteToDelete = null }) {
+                TextButton(onClick = {
+                    viewModel.deleteNote(noteToDelete!!)
+                    noteToDelete = null
+                }) {
                     Text("Xóa", color = Color.Red, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { noteToDelete = null }) { 
-                    Text("Hủy", color = Color.Gray) 
+                TextButton(onClick = { noteToDelete = null }) {
+                    Text("Hủy", color = Color.Gray)
                 }
             },
             shape = RoundedCornerShape(16.dp)
@@ -202,7 +218,53 @@ fun HistoryScreen(
             currentMonth = selectedMonth,
             currentYear = selectedYear,
             onDismiss = { showMonthPicker = false },
-            onConfirm = { m, y -> selectedMonth = m; selectedYear = y; showMonthPicker = false }
+            onConfirm = { month, year ->
+                selectedMonth = month
+                selectedYear = year
+                showMonthPicker = false
+            }
         )
     }
+}
+
+@Composable
+private fun rememberJournalGreeting(): JournalGreetingContent {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var greeting by remember { mutableStateOf(journalGreetingForCurrentTime()) }
+
+    DisposableEffect(context, lifecycleOwner) {
+        val appContext = context.applicationContext
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                greeting = journalGreetingForCurrentTime()
+            }
+        }
+        val intentFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_TIME_TICK)
+            addAction(Intent.ACTION_TIME_CHANGED)
+            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        }
+        val lifecycleObserver = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                greeting = journalGreetingForCurrentTime()
+            }
+        }
+
+        greeting = journalGreetingForCurrentTime()
+        ContextCompat.registerReceiver(
+            appContext,
+            receiver,
+            intentFilter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
+            appContext.unregisterReceiver(receiver)
+        }
+    }
+
+    return greeting
 }
