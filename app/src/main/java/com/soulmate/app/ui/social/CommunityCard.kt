@@ -49,6 +49,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.text.HtmlCompat
 import coil.compose.AsyncImage
+import com.soulmate.app.domain.model.UserPresence
+import com.soulmate.app.ui.components.OnlineStatusBadge
 import com.soulmate.app.ui.components.SavableImageDialog
 import com.soulmate.app.ui.components.rememberGalleryImageSaver
 import com.soulmate.app.ui.journal.editor.Mood
@@ -138,6 +140,7 @@ fun CommunityCard(
     onEditClick: (String) -> Unit,
     currentUserAvatarUrl: String?,
     currentUserName: String,
+    presenceMap: Map<String, UserPresence> = emptyMap(),
     onUserClick: () -> Unit = {},
     onChatClick: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -151,6 +154,7 @@ fun CommunityCard(
     var hasOverflow by remember { mutableStateOf(false) }
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
     val galleryImageSaver = rememberGalleryImageSaver()
+    val postIsOnline = presenceMap[post.userId]?.isOnlineNow() == true
 
     Card(
         modifier = modifier
@@ -215,6 +219,10 @@ fun CommunityCard(
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colors.onSurface
                             )
+                            if (postIsOnline) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                OnlineStatusBadge(size = 8.dp)
+                            }
                             if (post.isVerified) {
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Icon(
@@ -514,7 +522,8 @@ fun CommunityCard(
                         onAddComment = onCommentClick,
                         onLikeComment = onLikeComment,
                         currentUserAvatarUrl = currentUserAvatarUrl,
-                        currentUserName = currentUserName
+                        currentUserName = currentUserName,
+                        presenceMap = presenceMap
                     )
                 }
             }

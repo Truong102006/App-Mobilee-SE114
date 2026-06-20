@@ -24,7 +24,9 @@ data class User(
     val premiumUntil: Long? = null,
     val premiumUpdatedAt: Long? = null,
     val isSocialBanned: Boolean = false,
-    val hiddenPostIds: List<String> = emptyList()
+    val hiddenPostIds: List<String> = emptyList(),
+    val isAppOnline: Boolean = false,
+    val lastActiveAt: Long? = null
 ) {
     fun isPremiumActive(nowMillis: Long = System.currentTimeMillis()): Boolean {
         return (premiumUntil ?: 0L) > nowMillis
@@ -58,6 +60,8 @@ data class User(
 
             "isSocialBanned" to isSocialBanned,
             "hiddenPostIds" to hiddenPostIds,
+            "isAppOnline" to isAppOnline,
+            "lastActiveAt" to lastActiveAt,
         )
     }
 }

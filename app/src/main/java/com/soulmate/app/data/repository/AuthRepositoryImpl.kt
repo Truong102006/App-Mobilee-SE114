@@ -4,10 +4,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.soulmate.app.domain.model.User
 import com.soulmate.app.domain.repository.IAuthRepository
 import com.soulmate.app.domain.repository.ISettingsRepository
 import com.soulmate.app.notifications.AppNotificationManager
+import com.soulmate.app.presence.PresenceSyncManager
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +21,8 @@ class AuthRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val backendApiService: BackendApiService,
     private val settingsRepository: ISettingsRepository,
-    private val notificationManager: AppNotificationManager
+    private val notificationManager: AppNotificationManager,
+    private val presenceSyncManager: PresenceSyncManager
 ) : IAuthRepository {
     private val usersCollection = firestore.collection("users")
 
@@ -42,12 +45,14 @@ class AuthRepositoryImpl @Inject constructor(
             anonymousName = displayName,
             createdAt = now,
             updatedAt = now,
-            lastLoginAt = now
+            lastLoginAt = now,
+            lastActiveAt = now
         )
 
-        usersCollection.document(uid).set(newUser).await()
+        usersCollection.document(uid).set(newUser, SetOptions.merge()).await()
         settingsRepository.toggleNotification(newUser.notificationEnabled)
         notificationManager.onUserAuthenticated(newUser, requestPermissionIfNeeded = true)
+        presenceSyncManager.onUserAuthenticated()
         Result.success(newUser)
     } catch (e: Exception) {
         Result.failure(e)
@@ -73,6 +78,7 @@ class AuthRepositoryImpl @Inject constructor(
 
         settingsRepository.toggleNotification(user.notificationEnabled)
         notificationManager.onUserAuthenticated(user, requestPermissionIfNeeded = true)
+        presenceSyncManager.onUserAuthenticated()
         Result.success(user)
     } catch (e: Exception) {
         Result.failure(e)
@@ -95,29 +101,33 @@ class AuthRepositoryImpl @Inject constructor(
                 avatarUrl = firebaseUser.photoUrl?.toString(),
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis(),
-                lastLoginAt = System.currentTimeMillis()
+                lastLoginAt = System.currentTimeMillis(),
+                lastActiveAt = System.currentTimeMillis()
             ).also {
-                usersCollection.document(uid).set(it).await()
+                usersCollection.document(uid).set(it, SetOptions.merge()).await()
             }
         } else {
             val updatedUser = existingUser.copy(
                 anonymousName = firebaseUser.displayName ?: existingUser.anonymousName,
                 avatarUrl = firebaseUser.photoUrl?.toString() ?: existingUser.avatarUrl,
                 lastLoginAt = System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis()
+                updatedAt = System.currentTimeMillis(),
+                lastActiveAt = System.currentTimeMillis()
             )
-            usersCollection.document(uid).set(updatedUser).await()
+            usersCollection.document(uid).set(updatedUser, SetOptions.merge()).await()
             updatedUser
         }
 
         settingsRepository.toggleNotification(user.notificationEnabled)
         notificationManager.onUserAuthenticated(user, requestPermissionIfNeeded = true)
+        presenceSyncManager.onUserAuthenticated()
         Result.success(user)
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     override fun logout(): Result<Unit> = try {
+        presenceSyncManager.markOfflineForLogout()
         notificationManager.logout()
         auth.signOut()
         Result.success(Unit)

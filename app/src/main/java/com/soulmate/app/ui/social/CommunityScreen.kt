@@ -8,31 +8,69 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.soulmate.app.ui.login.AuthViewModel
+import com.soulmate.app.ui.presence.PresenceViewModel
 
 @Composable
 fun CommunityScreen(
     viewModel: CommunityViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel(),
+    presenceViewModel: PresenceViewModel = hiltViewModel(),
     onNavigateToChat: (String, String, String?) -> Unit = { _, _, _ -> }
 ) {
     val feedPosts by viewModel.posts
     val currentUser by authViewModel.currentUser
     val allComments = viewModel.postComments
+    val presenceMap by presenceViewModel.userPresences.collectAsState()
+    val onlineUsersCount by presenceViewModel.onlineUsersCount.collectAsState()
+
+    val trackedUserIds = remember(feedPosts, allComments.values.toList()) {
+        buildSet {
+            feedPosts
+                .map { it.userId }
+                .filter(String::isNotBlank)
+                .forEach(::add)
+
+            allComments.values
+                .flatten()
+                .map { it.userId }
+                .filter(String::isNotBlank)
+                .forEach(::add)
+        }
+    }
+
+    LaunchedEffect(trackedUserIds) {
+        presenceViewModel.observeUsers(trackedUserIds)
+    }
 
     Scaffold(
         topBar = {
             Column(modifier = Modifier.background(MaterialTheme.colors.surface)) {
                 Spacer(modifier = Modifier.height(30.dp))
                 TopAppBar(
-                    title = { Text("Feeds", fontWeight = FontWeight.Bold, fontSize = 24.sp) },
+                    title = {
+                        Column {
+                            Text("Feeds", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Hiện có $onlineUsersCount người đang thức cùng bạn",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    },
                     backgroundColor = MaterialTheme.colors.surface,
                     contentColor = MaterialTheme.colors.primary,
                     elevation = 0.dp
@@ -72,6 +110,7 @@ fun CommunityScreen(
                     onEditClick = { newContent -> viewModel.updatePostContent(post.id, newContent) },
                     currentUserAvatarUrl = currentUser?.avatarUrl,
                     currentUserName = currentUser?.anonymousName ?: "User",
+                    presenceMap = presenceMap,
                     onUserClick = {
                         if (post.userId.isNotEmpty()) {
                             onNavigateToChat(post.userId, post.userName, post.userAvatarUrl)
