@@ -1,8 +1,10 @@
 package com.soulmate.app.ui.journal.history
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -13,8 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,12 +29,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
+import com.soulmate.app.ui.components.SavableImageDialog
+import com.soulmate.app.ui.components.rememberGalleryImageSaver
 import com.soulmate.app.ui.journal.editor.Mood
 import com.soulmate.app.ui.login.AuthViewModel
 import com.soulmate.app.ui.social.CommunityPost
 import com.soulmate.app.ui.social.CommunityViewModel
 import java.util.UUID
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiaryDetailScreen(
     diaryId: String,
@@ -48,6 +52,8 @@ fun DiaryDetailScreen(
     val richTextState = rememberRichTextState()
     val context = LocalContext.current
     val currentUser = authViewModel.currentUser.value
+    val galleryImageSaver = rememberGalleryImageSaver()
+    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(note) {
         note?.let {
@@ -65,12 +71,19 @@ fun DiaryDetailScreen(
                     elevation = 0.dp,
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
                         }
                     },
                     actions = {
                         IconButton(onClick = { onEditClick(diaryId) }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF4CAF50))
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                tint = Color(0xFF4CAF50)
+                            )
                         }
                     }
                 )
@@ -79,7 +92,10 @@ fun DiaryDetailScreen(
         backgroundColor = Color.White
     ) { paddingValues ->
         if (note == null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("Không tìm thấy nhật ký")
             }
         } else {
@@ -91,7 +107,7 @@ fun DiaryDetailScreen(
                     .padding(horizontal = 24.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Mood.entries.find { it.label == note.moodTag }?.let { mood ->
                         AsyncImage(
@@ -131,12 +147,43 @@ fun DiaryDetailScreen(
 
                 if (note.imageUrls.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = "Hình ảnh",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Hình ảnh",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Chạm để xem lớn, nhấn giữ để lưu nhanh vào thư viện.",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        OutlinedButton(
+                            onClick = { galleryImageSaver.saveImages(note.imageUrls) },
+                            enabled = !galleryImageSaver.isSaving,
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = if (note.imageUrls.size > 1) "Lưu tất cả" else "Lưu ảnh",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1E88E5)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     note.imageUrls.forEach { url ->
                         AsyncImage(
                             model = url,
@@ -146,12 +193,20 @@ fun DiaryDetailScreen(
                                 .heightIn(max = 400.dp)
                                 .padding(vertical = 8.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .border(1.dp, Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.LightGray.copy(alpha = 0.3f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .combinedClickable(
+                                    onClick = { fullScreenImageUrl = url },
+                                    onLongClick = { galleryImageSaver.saveImage(url) }
+                                ),
                             contentScale = ContentScale.FillWidth
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
@@ -170,7 +225,11 @@ fun DiaryDetailScreen(
                             viewCount = 0
                         )
                         communityViewModel.addPost(newPost)
-                        Toast.makeText(context, "Đã chia sẻ lên cộng đồng!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Đã chia sẻ lên cộng đồng!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         onShareSuccess()
                     },
                     modifier = Modifier
@@ -184,11 +243,24 @@ fun DiaryDetailScreen(
                 ) {
                     Icon(Icons.Default.Send, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Chia sẻ lên cộng đồng", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        text = "Chia sẻ lên cộng đồng",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))
             }
         }
+    }
+
+    fullScreenImageUrl?.let { imageUrl ->
+        SavableImageDialog(
+            imageUrl = imageUrl,
+            isSaving = galleryImageSaver.isSaving,
+            onDismiss = { fullScreenImageUrl = null },
+            onSaveClick = galleryImageSaver::saveImage
+        )
     }
 }
