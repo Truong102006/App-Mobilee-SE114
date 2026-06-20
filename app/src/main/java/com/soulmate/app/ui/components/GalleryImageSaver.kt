@@ -13,12 +13,11 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -37,15 +36,21 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -61,6 +66,9 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+private const val MAX_IMAGE_SCALE = 5f
+private const val DOUBLE_TAP_SCALE = 2.5f
 
 data class GalleryImageSaverState(
     val isSaving: Boolean,
@@ -96,7 +104,11 @@ fun rememberGalleryImageSaver(
 
     fun startSave(request: PendingSaveRequest) {
         if (isSaving) {
-            Toast.makeText(context, "Đang lưu ảnh, vui lòng đợi một chút.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Đang lưu ảnh, vui lòng đợi một chút.",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -160,7 +172,6 @@ fun rememberGalleryImageSaver(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SavableImageDialog(
     imageUrl: String,
@@ -168,6 +179,10 @@ fun SavableImageDialog(
     onDismiss: () -> Unit,
     onSaveClick: (String) -> Unit
 ) {
+    var scale by remember(imageUrl) { mutableFloatStateOf(1f) }
+    var offset by remember(imageUrl) { mutableStateOf(Offset.Zero) }
+    var containerSize by remember(imageUrl) { mutableStateOf(IntSize.Zero) }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -182,10 +197,37 @@ fun SavableImageDialog(
                 contentDescription = "Preview Image",
                 modifier = Modifier
                     .fillMaxSize()
-                    .combinedClickable(
-                        onClick = {},
-                        onLongClick = { onSaveClick(imageUrl) }
-                    ),
+                    .onSizeChanged { containerSize = it }
+                    .pointerInput(imageUrl) {
+                        detectTapGestures(
+                            onDoubleTap = {
+                                if (scale > 1.05f) {
+                                    scale = 1f
+                                    offset = Offset.Zero
+                                } else {
+                                    scale = DOUBLE_TAP_SCALE
+                                    offset = Offset.Zero
+                                }
+                            }
+                        )
+                    }
+                    .pointerInput(imageUrl, containerSize) {
+                        detectTransformGestures { _, pan, zoom, _ ->
+                            val nextScale = (scale * zoom).coerceIn(1f, MAX_IMAGE_SCALE)
+                            scale = nextScale
+                            offset = calculateBoundedOffset(
+                                currentOffset = offset + pan,
+                                containerSize = containerSize,
+                                scale = nextScale
+                            )
+                        }
+                    }
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        translationX = offset.x
+                        translationY = offset.y
+                    },
                 contentScale = ContentScale.Fit
             )
 
@@ -198,9 +240,7 @@ fun SavableImageDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                OverlayIconButton(
-                    onClick = onDismiss
-                ) {
+                OverlayIconButton(onClick = onDismiss) {
                     androidx.compose.material.Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Đóng",
@@ -234,10 +274,10 @@ fun SavableImageDialog(
                     .navigationBarsPadding()
                     .padding(bottom = 20.dp),
                 shape = RoundedCornerShape(999.dp),
-                color = Color.Black.copy(alpha = 0.55f)
+                color = Color.Black.copy(alpha = 0.58f)
             ) {
                 Text(
-                    text = "Nhấn giữ ảnh hoặc bấm tải xuống để lưu vào thư viện",
+                    text = "Chụm để phóng to, kéo để xem chi tiết, chạm đúp để zoom nhanh.",
                     style = MaterialTheme.typography.caption,
                     color = Color.White,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -265,6 +305,24 @@ private fun OverlayIconButton(
             content()
         }
     }
+}
+
+private fun calculateBoundedOffset(
+    currentOffset: Offset,
+    containerSize: IntSize,
+    scale: Float
+): Offset {
+    if (scale <= 1f || containerSize == IntSize.Zero) {
+        return Offset.Zero
+    }
+
+    val maxX = (containerSize.width * (scale - 1f)) / 2f
+    val maxY = (containerSize.height * (scale - 1f)) / 2f
+
+    return Offset(
+        x = currentOffset.x.coerceIn(-maxX, maxX),
+        y = currentOffset.y.coerceIn(-maxY, maxY)
+    )
 }
 
 private suspend fun saveImagesToGallery(
@@ -376,6 +434,7 @@ private fun saveWithMediaStore(
     resolver.update(imageUri, values, null, null)
 }
 
+@Suppress("DEPRECATION")
 private fun saveWithPublicDirectory(
     context: Context,
     inputStream: InputStream,
