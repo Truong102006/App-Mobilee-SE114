@@ -2,35 +2,33 @@ package com.soulmate.app.ui.social
 
 import android.text.TextUtils
 import android.widget.TextView
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RemoveRedEye
-import androidx.compose.material.*
-import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +49,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.text.HtmlCompat
 import coil.compose.AsyncImage
+import com.soulmate.app.ui.components.SavableImageDialog
+import com.soulmate.app.ui.components.rememberGalleryImageSaver
 import com.soulmate.app.ui.journal.editor.Mood
 import com.soulmate.app.ui.theme.CommunityTick
 
@@ -64,7 +64,7 @@ fun ActionPillButton(
     Surface(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .clickable { onClick() },
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(50),
         border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.1f)),
         color = Color.Transparent
@@ -94,7 +94,7 @@ fun ActionPillButton(
 @Composable
 fun HtmlText(
     html: String,
-    textColor: androidx.compose.ui.graphics.Color,
+    textColor: Color,
     maxLines: Int = Int.MAX_VALUE,
     onTextOverflow: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
@@ -113,22 +113,17 @@ fun HtmlText(
             textView.maxLines = maxLines
 
             textView.post {
-                val layout = textView.layout
-                if (layout != null) {
-                    val lines = layout.lineCount
-                    if (lines > 0 && maxLines != Int.MAX_VALUE) {
-                        val ellipsisCount = layout.getEllipsisCount(lines - 1)
-                        if (ellipsisCount > 0) {
-                            onTextOverflow(true)
-                        }
-                    }
+                val layout = textView.layout ?: return@post
+                val lines = layout.lineCount
+                if (lines > 0 && maxLines != Int.MAX_VALUE) {
+                    onTextOverflow(layout.getEllipsisCount(lines - 1) > 0)
                 }
             }
         }
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommunityCard(
     post: CommunityPost,
@@ -152,17 +147,18 @@ fun CommunityCard(
     var showCommentsModal by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var editedText by remember { mutableStateOf(post.textContent) }
-    
-    // State to handle full screen image viewing
+    var isExpanded by remember { mutableStateOf(false) }
+    var hasOverflow by remember { mutableStateOf(false) }
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
+    val galleryImageSaver = rememberGalleryImageSaver()
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .border(
-                1.5.dp,
-                MaterialTheme.colors.primary.copy(alpha = 0.5f),
-                RoundedCornerShape(20.dp)
+                width = 1.5.dp,
+                color = MaterialTheme.colors.primary.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(20.dp)
             ),
         shape = RoundedCornerShape(24.dp),
         backgroundColor = MaterialTheme.colors.surface,
@@ -173,7 +169,6 @@ fun CommunityCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // --- HEADER ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -232,16 +227,23 @@ fun CommunityCard(
                         }
 
                         val moodEnum = Mood.entries.find { it.label == post.mood } ?: Mood.Neutral
-                        val moodColor = moodEnum.displayColor
-
                         val moodTimeText = buildAnnotatedString {
                             append("Feeling ")
-                            withStyle(style = SpanStyle(color = moodColor, fontWeight = FontWeight.Bold)) {
+                            withStyle(
+                                style = SpanStyle(
+                                    color = moodEnum.displayColor,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
                                 append(post.mood)
                             }
                             append(", ${post.timeAgo}")
                         }
-                        Text(text = moodTimeText, fontSize = 13.sp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f))
+                        Text(
+                            text = moodTimeText,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                        )
                     }
                 }
 
@@ -253,6 +255,7 @@ fun CommunityCard(
                             tint = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                         )
                     }
+
                     DropdownMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
@@ -261,31 +264,76 @@ fun CommunityCard(
                             showMenu = false
                             onChatClick()
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color(0xFF0084FF))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Chat,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = Color(0xFF0084FF)
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Chat")
                         }
+
+                        if (post.imageUrls.isNotEmpty()) {
+                            DropdownMenuItem(onClick = {
+                                showMenu = false
+                                galleryImageSaver.saveImages(post.imageUrls)
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.FileDownload,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color(0xFF1E88E5)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    if (post.imageUrls.size > 1) {
+                                        "Lưu tất cả ảnh"
+                                    } else {
+                                        "Lưu ảnh"
+                                    }
+                                )
+                            }
+                        }
+
                         DropdownMenuItem(onClick = {
                             showMenu = false
                             onHideClick()
                         }) {
-                            Icon(Icons.Default.VisibilityOff, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.Gray)
+                            Icon(
+                                imageVector = Icons.Default.VisibilityOff,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = Color.Gray
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Ẩn bài viết")
                         }
+
                         DropdownMenuItem(onClick = {
                             showMenu = false
                             onReportClick()
                         }) {
-                            Icon(Icons.Default.Flag, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.Red)
+                            Icon(
+                                imageVector = Icons.Default.Flag,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = Color.Red
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Báo cáo vi phạm", color = Color.Red)
                         }
+
                         DropdownMenuItem(onClick = {
                             showMenu = false
                             showDeleteDialog = true
                         }) {
-                            Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = Color.Red
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Delete", color = Color.Red)
                         }
@@ -295,16 +343,12 @@ fun CommunityCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // --- BODY ---
-            var isExpanded by remember { mutableStateOf(false) }
-            var hasOverflow by remember { mutableStateOf(false) }
-
             Column(modifier = Modifier.animateContentSize()) {
                 HtmlText(
                     html = post.textContent,
                     textColor = MaterialTheme.colors.onSurface,
                     maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                    onTextOverflow = { isOverflowing -> hasOverflow = isOverflowing },
+                    onTextOverflow = { hasOverflow = it },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -335,11 +379,14 @@ fun CommunityCard(
                                 .size(120.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .border(
-                                    1.dp,
-                                    MaterialTheme.colors.onSurface.copy(alpha = 0.05f),
-                                    RoundedCornerShape(12.dp)
+                                    width = 1.dp,
+                                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.05f),
+                                    shape = RoundedCornerShape(12.dp)
                                 )
-                                .clickable { fullScreenImageUrl = imageUrl }, // Bấm để xem full
+                                .combinedClickable(
+                                    onClick = { fullScreenImageUrl = imageUrl },
+                                    onLongClick = { galleryImageSaver.saveImage(imageUrl) }
+                                ),
                             contentScale = ContentScale.Crop
                         )
                     }
@@ -348,15 +395,22 @@ fun CommunityCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- FOOTER ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ActionPillButton(
-                    icon = if (post.isLiked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                    icon = if (post.isLiked) {
+                        Icons.Outlined.Favorite
+                    } else {
+                        Icons.Outlined.FavoriteBorder
+                    },
                     text = post.likeCount.toString(),
-                    iconTint = if (post.isLiked) Color.Red else MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                    iconTint = if (post.isLiked) {
+                        Color.Red
+                    } else {
+                        MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                    },
                     onClick = onLikeClick
                 )
 
@@ -365,17 +419,20 @@ fun CommunityCard(
                 ActionPillButton(
                     icon = Icons.Outlined.ChatBubbleOutline,
                     text = post.commentCount.toString(),
-                    onClick = { 
+                    onClick = {
                         onOpenComments()
-                        showCommentsModal = true 
+                        showCommentsModal = true
                     }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                IconButton(onClick = { /* TODO */ }, modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)) {
+                IconButton(
+                    onClick = { /* TODO */ },
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Share,
                         contentDescription = "Share",
@@ -405,44 +462,15 @@ fun CommunityCard(
         }
     }
 
-    // --- FULL SCREEN IMAGE VIEW ---
-    if (fullScreenImageUrl != null) {
-        Dialog(
-            onDismissRequest = { fullScreenImageUrl = null },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .clickable { fullScreenImageUrl = null }
-            ) {
-                AsyncImage(
-                    model = fullScreenImageUrl,
-                    contentDescription = "Full Image",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
-                IconButton(
-                    onClick = { fullScreenImageUrl = null },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .align(Alignment.TopStart)
-                        .statusBarsPadding()
-                        .background(Color.Black.copy(alpha = 0.3f), CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-        }
+    fullScreenImageUrl?.let { imageUrl ->
+        SavableImageDialog(
+            imageUrl = imageUrl,
+            isSaving = galleryImageSaver.isSaving,
+            onDismiss = { fullScreenImageUrl = null },
+            onSaveClick = galleryImageSaver::saveImage
+        )
     }
 
-    // --- COMMENTS MODAL ---
     if (showCommentsModal) {
         Dialog(
             onDismissRequest = { showCommentsModal = false },
@@ -452,11 +480,20 @@ fun CommunityCard(
                 topBar = {
                     TopAppBar(
                         title = {
-                            Text("Bài viết của ${post.userName}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                text = "Bài viết của ${post.userName}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         },
                         actions = {
                             IconButton(onClick = { showCommentsModal = false }) {
-                                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Close",
+                                    tint = Color.White
+                                )
                             }
                         },
                         backgroundColor = Color(0xFF242526),
@@ -465,13 +502,15 @@ fun CommunityCard(
                 },
                 backgroundColor = Color(0xFF18191A)
             ) { padding ->
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .background(Color(0xFF18191A))) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .background(Color(0xFF18191A))
+                ) {
                     CommentSection(
                         comments = comments,
-                        postAuthorId = post.userId, // BỔ SUNG THIẾU SÓT QUAN TRỌNG
+                        postAuthorId = post.userId,
                         onAddComment = onCommentClick,
                         onLikeComment = onLikeComment,
                         currentUserAvatarUrl = currentUserAvatarUrl,
@@ -482,7 +521,6 @@ fun CommunityCard(
         }
     }
 
-    // Dialogs...
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
