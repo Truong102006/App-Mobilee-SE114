@@ -102,4 +102,9 @@ public class CommunityController {
         String uid = AuthContextHolder.getRequired(request).uid();
         return communityService.reportPost(uid, postId);
     }
+
+    @GetMapping("/posts/{id}/author")
+    public com.soulmate.backend.dto.user.UserProfileResponse getPostAuthorProfile(@PathVariable String id) {
+        return communityService.getPostAuthorProfile(id);
+    }
 }

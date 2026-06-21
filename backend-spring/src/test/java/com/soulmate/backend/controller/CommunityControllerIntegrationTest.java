@@ -173,4 +173,19 @@ public class CommunityControllerIntegrationTest {
 
         Mockito.verify(communityService).reportPost(eq("test-user-123"), eq("post-123"));
     }
+
+    @Test
+    public void testGetPostAuthorProfile_Success() throws Exception {
+        com.soulmate.backend.dto.user.UserProfileResponse response = new com.soulmate.backend.dto.user.UserProfileResponse(
+            "test-user-123", "Anonymous Name", "http://avatar", "Bio", Collections.emptyList(), System.currentTimeMillis()
+        );
+        Mockito.when(communityService.getPostAuthorProfile(eq("post-123"))).thenReturn(response);
+
+        mockMvc.perform(get("/api/secure/community/posts/post-123/author")
+                .header("Authorization", "Bearer test-user-123")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        Mockito.verify(communityService).getPostAuthorProfile(eq("post-123"));
+    }
 }

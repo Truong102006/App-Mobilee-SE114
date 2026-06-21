@@ -31,6 +31,7 @@ public class ChatService {
         String receiverId = request.receiverId().trim();
         String messageText = trimToEmpty(request.messageText());
         String imageUrl = trimToNull(request.imageUrl());
+        String replyToMessageId = trimToNull(request.replyToMessageId());
 
         if (!StringUtils.hasText(messageText) && !StringUtils.hasText(imageUrl)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "messageText or imageUrl is required.");
@@ -38,6 +39,21 @@ public class ChatService {
 
         if (uid.equals(receiverId)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "receiverId cannot be the same as sender.");
+        }
+
+        // Verify blocking
+        try {
+            DocumentSnapshot receiverDoc = firestore.collection("users").document(receiverId).get().get();
+            if (receiverDoc.exists()) {
+                List<?> blocked = (List<?>) receiverDoc.get("blockedUsers");
+                if (blocked != null && blocked.contains(uid)) {
+                    throw new ApiException(HttpStatus.FORBIDDEN, "Bạn đã bị chặn.");
+                }
+            }
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Failed to check blocked users in sendMessage for sender={} receiver={}", uid, receiverId, e);
         }
 
         String conversationId = buildConversationId(uid, receiverId);
@@ -48,6 +64,26 @@ public class ChatService {
         payload.put("messageText", messageText);
         payload.put("imageUrl", imageUrl);
         payload.put("timestamp", FieldValue.serverTimestamp());
+
+        if (replyToMessageId != null) {
+            String replyToMessageText = null;
+            String replyToSenderId = null;
+            try {
+                DocumentSnapshot origDoc = firestore.collection("chats").document(replyToMessageId).get().get();
+                if (origDoc.exists()) {
+                    replyToSenderId = origDoc.getString("senderId");
+                    String origText = origDoc.getString("messageText");
+                    if (origText != null) {
+                        replyToMessageText = origText.length() > 100 ? origText.substring(0, 100) : origText;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to fetch replied-to message: {}", replyToMessageId, e);
+            }
+            payload.put("replyToMessageId", replyToMessageId);
+            payload.put("replyToMessageText", replyToMessageText);
+            payload.put("replyToSenderId", replyToSenderId);
+        }
 
         try {
             DocumentReference created = firestore.collection("chats").add(payload).get();
@@ -271,15 +307,148 @@ public class ChatService {
         }
     }
 
-    private ChatMessageItemResponse toMessage(QueryDocumentSnapshot doc) {
+    public void reactToMessage(String uid, String messageId, String emoji) {
+        if (!StringUtils.hasText(messageId)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "messageId is required.");
+        }
+        if (!StringUtils.hasText(emoji)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "emoji is required.");
+        }
+
+        DocumentReference docRef = firestore.collection("chats").document(messageId);
+        try {
+            DocumentSnapshot snapshot = docRef.get().get();
+            if (!snapshot.exists()) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "Message not found.");
+            }
+
+            Map<String, Object> data = snapshot.getData();
+            Map<String, List<String>> reactions = new HashMap<>();
+            Object rawReactions = data.get("reactions");
+            if (rawReactions instanceof Map<?, ?> map) {
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    if (entry.getKey() instanceof String key && entry.getValue() instanceof List<?> list) {
+                        List<String> users = new ArrayList<>();
+                        for (Object o : list) {
+                            if (o instanceof String u) {
+                                users.add(u);
+                            }
+                        }
+                        reactions.put(key, users);
+                    }
+                }
+            }
+
+            List<String> usersOfEmoji = reactions.computeIfAbsent(emoji, k -> new ArrayList<>());
+            if (usersOfEmoji.contains(uid)) {
+                usersOfEmoji.remove(uid);
+                if (usersOfEmoji.isEmpty()) {
+                    reactions.remove(emoji);
+                }
+            } else {
+                usersOfEmoji.add(uid);
+            }
+
+            docRef.update("reactions", reactions).get();
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to react to message={} for uid={}", messageId, uid, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to react to message: " + e.getMessage());
+        }
+    }
+
+    public void editMessage(String uid, String messageId, String newMessageText) {
+        if (!StringUtils.hasText(messageId)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "messageId is required.");
+        }
+        if (!StringUtils.hasText(newMessageText)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "newMessageText is required.");
+        }
+
+        DocumentReference docRef = firestore.collection("chats").document(messageId);
+        try {
+            DocumentSnapshot snapshot = docRef.get().get();
+            if (!snapshot.exists()) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "Message not found.");
+            }
+
+            String senderId = snapshot.getString("senderId");
+            if (!uid.equals(senderId)) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "You can only edit your own messages.");
+            }
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("messageText", newMessageText.trim());
+            updates.put("isEdited", true);
+            updates.put("editedAt", FieldValue.serverTimestamp());
+
+            docRef.update(updates).get();
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to edit message={} for uid={}", messageId, uid, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to edit message: " + e.getMessage());
+        }
+    }
+
+    public List<String> listConversationMedia(String uid, String otherUserId) {
+        if (!StringUtils.hasText(otherUserId)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "otherUserId is required.");
+        }
+        String conversationId = buildConversationId(uid, otherUserId.trim());
+        Query query = firestore.collection("chats").whereEqualTo("conversationId", conversationId);
+        try {
+            QuerySnapshot snapshot = query.get().get();
+            List<String> mediaUrls = new ArrayList<>();
+            for (QueryDocumentSnapshot doc : snapshot.getDocuments()) {
+                String imgUrl = doc.getString("imageUrl");
+                if (StringUtils.hasText(imgUrl)) {
+                    mediaUrls.add(imgUrl.trim());
+                }
+            }
+            return mediaUrls;
+        } catch (Exception e) {
+            log.error("Failed to list media for uid={} otherUserId={}", uid, otherUserId, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to list media: " + e.getMessage());
+        }
+    }
+
+    private ChatMessageItemResponse toMessage(DocumentSnapshot doc) {
         Map<String, Object> data = doc.getData();
+        if (data == null) {
+            data = new HashMap<>();
+        }
+
+        Map<String, List<String>> reactions = new HashMap<>();
+        Object rawReactions = data.get("reactions");
+        if (rawReactions instanceof Map<?, ?> map) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() instanceof String key && entry.getValue() instanceof List<?> list) {
+                    List<String> userList = new ArrayList<>();
+                    for (Object o : list) {
+                        if (o instanceof String user) {
+                            userList.add(user);
+                        }
+                    }
+                    reactions.put(key, userList);
+                }
+            }
+        }
+
         return new ChatMessageItemResponse(
             doc.getId(),
             asString(data.get("senderId")),
             asString(data.get("receiverId")),
             asString(data.get("messageText")),
             asNullableString(data.get("imageUrl")),
-            toMillis(data.get("timestamp"))
+            toMillis(data.get("timestamp")),
+            asNullableString(data.get("replyToMessageId")),
+            asNullableString(data.get("replyToMessageText")),
+            asNullableString(data.get("replyToSenderId")),
+            reactions,
+            data.get("isEdited") instanceof Boolean b ? b : false,
+            data.get("editedAt") instanceof Long l ? l : toMillis(data.get("editedAt"))
         );
     }
 

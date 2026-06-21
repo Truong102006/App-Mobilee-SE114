@@ -19,6 +19,7 @@ import com.soulmate.backend.exception.ApiException;
 import com.soulmate.backend.exception.FirestoreApiExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.soulmate.backend.dto.user.UserProfileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -38,10 +39,12 @@ public class CommunityService {
 
     private final Firestore firestore;
     private final OneSignalPushNotificationService pushNotificationService;
+    private final UserService userService;
 
-    public CommunityService(Firestore firestore, OneSignalPushNotificationService pushNotificationService) {
+    public CommunityService(Firestore firestore, OneSignalPushNotificationService pushNotificationService, UserService userService) {
         this.firestore = firestore;
         this.pushNotificationService = pushNotificationService;
+        this.userService = userService;
     }
 
     public PostResponse createPost(String uid, SavePostRequest request) {
@@ -489,5 +492,25 @@ public class CommunityService {
     }
 
     private record LikeToggleResult(boolean addedLike, String postOwnerUserId) {
+    }
+
+    public UserProfileResponse getPostAuthorProfile(String postId) {
+        DocumentReference docRef = postsCollection().document(postId);
+        try {
+            DocumentSnapshot snapshot = docRef.get().get();
+            if (!snapshot.exists()) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "Post not found.");
+            }
+            String userId = resolveUserId(snapshot);
+            if (!StringUtils.hasText(userId)) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "Author not found for this post.");
+            }
+            return userService.getUserProfile(userId);
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to get post author profile for post={}", postId, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to get author profile: " + e.getMessage());
+        }
     }
 }

@@ -10,6 +10,8 @@ import jakarta.validation.constraints.Min;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @Validated
 @RequestMapping("/api/secure/chats")
@@ -74,5 +76,34 @@ public class ChatController {
     ) {
         String uid = AuthContextHolder.getRequired(request).uid();
         return chatService.deleteMessage(uid, messageId);
+    }
+
+    @PostMapping("/messages/{messageId}/react")
+    public void reactToMessage(
+        HttpServletRequest request,
+        @PathVariable String messageId,
+        @Valid @RequestBody ReactMessageRequest body
+    ) {
+        String uid = AuthContextHolder.getRequired(request).uid();
+        chatService.reactToMessage(uid, messageId, body.emoji());
+    }
+
+    @PutMapping("/messages/{messageId}/edit")
+    public void editMessage(
+        HttpServletRequest request,
+        @PathVariable String messageId,
+        @Valid @RequestBody EditMessageRequest body
+    ) {
+        String uid = AuthContextHolder.getRequired(request).uid();
+        chatService.editMessage(uid, messageId, body.newMessageText());
+    }
+
+    @GetMapping("/conversation/{otherUserId}/media")
+    public List<String> listConversationMedia(
+        HttpServletRequest request,
+        @PathVariable String otherUserId
+    ) {
+        String uid = AuthContextHolder.getRequired(request).uid();
+        return chatService.listConversationMedia(uid, otherUserId);
     }
 }

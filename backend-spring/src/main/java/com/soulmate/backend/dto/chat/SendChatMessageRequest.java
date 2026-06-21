@@ -10,6 +10,8 @@ public record SendChatMessageRequest(
     @Size(max = 4000, message = "messageText max length is 4000")
     String messageText,
     @Size(max = 2048, message = "imageUrl max length is 2048")
-    String imageUrl
+    String imageUrl,
+    @Size(max = 128, message = "replyToMessageId max length is 128")
+    String replyToMessageId
 ) {
 }
