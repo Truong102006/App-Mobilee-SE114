@@ -192,31 +192,3 @@ Hoặc override riêng cho emulator và thiết bị thật:
 ```powershell
 .\gradlew installDebug -PBACKEND_BASE_URL_DEVICE=http://localhost:8080/ -PBACKEND_BASE_URL_EMULATOR=http://10.0.2.2:8080/
 ```
-
-## Tính năng nào cần cấu hình thêm
-
-| Tính năng | Cần gì để hoạt động đầy đủ |
-| --- | --- |
-| Đăng nhập và dữ liệu cơ bản | Firebase Auth + Firestore + service account |
-| Upload ảnh diary, chat, community | `CLOUDINARY_*` |
-| Phân tích mood bằng AI | `GEMINI_API_KEY` |
-| Push notification | `ONESIGNAL_*` |
-| Premium payment | `SEPAY_*` và `PREMIUM_*` |
-
-## Troubleshooting
-
-- `401` hoặc `403` từ backend: kiểm tra `BACKEND_SECURITY_REQUIRE_APP_CHECK`, Firebase project, ID token và service account.
-- App không gọi được backend trên điện thoại thật: chạy lại `adb reverse tcp:8080 tcp:8080`.
-- App không gọi được backend trên emulator: xác nhận backend đang nghe ở cổng `8080` và app dùng `10.0.2.2`.
-- Build lỗi vì Java: kiểm tra `java -version`, cần `17+`.
-- Firebase không hoạt động: kiểm tra lại `app/google-services.json` và `backend-spring/secrets/service-account.json` có cùng project hay không.
-
-## Thành phần không bắt buộc để chạy runtime chính
-
-- `functions/` vẫn còn trong repo nhưng hiện không phải backend chính của app Android.
-- Bạn không cần setup `functions/` để chạy luồng local chuẩn của dự án này.
-
-## Đóng góp
-
-- Không commit secrets như `.env`, `service-account.json` hoặc file cấu hình Firebase riêng của nhóm.
-- Nếu chỉnh runtime local, ưu tiên cập nhật README hoặc `docs/` để người sau dựng môi trường nhanh hơn.
