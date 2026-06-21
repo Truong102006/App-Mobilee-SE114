@@ -25,7 +25,7 @@
 [INFO] 
 [INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ backend-spring ---
 [INFO] Recompiling the module because of changed dependency.
-[INFO] Compiling 10 source files with javac [debug parameters release 17] to target\test-classes
+[INFO] Compiling 13 source files with javac [debug parameters release 17] to target\test-classes
 [WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/ChatControllerIntegrationTest.java:[39,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
 [WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/ChatControllerIntegrationTest.java:[42,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
 [WARNING] /D:/App-Mobilee-SE114/backend-spring/src/test/java/com/soulmate/backend/controller/ChatControllerIntegrationTest.java:[45,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
@@ -61,10 +61,10 @@
 [INFO] -------------------------------------------------------
 [INFO] Running com.soulmate.backend.config.FirebaseAdminConfigTest
 Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.190 s -- in com.soulmate.backend.config.FirebaseAdminConfigTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.207 s -- in com.soulmate.backend.config.FirebaseAdminConfigTest
 [INFO] Running com.soulmate.backend.controller.ChatControllerIntegrationTest
-19:37:41.625 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.soulmate.backend.controller.ChatControllerIntegrationTest]: ChatControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-19:37:41.784 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.ChatControllerIntegrationTest
+19:45:31.352 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.soulmate.backend.controller.ChatControllerIntegrationTest]: ChatControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:45:31.518 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.ChatControllerIntegrationTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -75,18 +75,18 @@ Standard Commons Logging discovery in action with spring-jcl: please remove comm
 
  :: Spring Boot ::                (v3.5.0)
 
-2026-06-21T19:37:42.442+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.ChatControllerIntegrationTest    : Starting ChatControllerIntegrationTest using Java 17.0.12 with PID 28552 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
-2026-06-21T19:37:42.443+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.ChatControllerIntegrationTest    : No active profile set, falling back to 1 default profile: "default"
+2026-06-21T19:45:32.140+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.ChatControllerIntegrationTest    : Starting ChatControllerIntegrationTest using Java 17.0.12 with PID 39456 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
+2026-06-21T19:45:32.142+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.ChatControllerIntegrationTest    : No active profile set, falling back to 1 default profile: "default"
 Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-2026-06-21T19:37:52.939+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-06-21T19:37:52.944+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-06-21T19:37:52.986+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
-2026-06-21T19:37:53.017+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 68 ms
-2026-06-21T19:37:53.499+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.ChatControllerIntegrationTest    : Started ChatControllerIntegrationTest in 11.562 seconds (process running for 12.872)
-[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.81 s -- in com.soulmate.backend.controller.ChatControllerIntegrationTest
+2026-06-21T19:45:42.226+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-06-21T19:45:42.229+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-06-21T19:45:42.263+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-06-21T19:45:42.295+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 61 ms
+2026-06-21T19:45:42.675+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.ChatControllerIntegrationTest    : Started ChatControllerIntegrationTest in 11.023 seconds (process running for 12.465)
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.05 s -- in com.soulmate.backend.controller.ChatControllerIntegrationTest
 [INFO] Running com.soulmate.backend.controller.CommunityControllerIntegrationTest
-2026-06-21T19:37:55.348+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.CommunityControllerIntegrationTest]: CommunityControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-06-21T19:37:55.365+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.CommunityControllerIntegrationTest
+2026-06-21T19:45:44.276+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.CommunityControllerIntegrationTest]: CommunityControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-06-21T19:45:44.288+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.CommunityControllerIntegrationTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -97,17 +97,17 @@ Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot lo
 
  :: Spring Boot ::                (v3.5.0)
 
-2026-06-21T19:37:55.554+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] s.b.c.CommunityControllerIntegrationTest : Starting CommunityControllerIntegrationTest using Java 17.0.12 with PID 28552 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
-2026-06-21T19:37:55.555+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] s.b.c.CommunityControllerIntegrationTest : No active profile set, falling back to 1 default profile: "default"
-2026-06-21T19:37:57.676+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-06-21T19:37:57.676+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-06-21T19:37:57.682+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
-2026-06-21T19:37:57.690+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 14 ms
-2026-06-21T19:37:57.736+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] s.b.c.CommunityControllerIntegrationTest : Started CommunityControllerIntegrationTest in 2.357 seconds (process running for 17.118)
-[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.707 s -- in com.soulmate.backend.controller.CommunityControllerIntegrationTest
+2026-06-21T19:45:44.446+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] s.b.c.CommunityControllerIntegrationTest : Starting CommunityControllerIntegrationTest using Java 17.0.12 with PID 39456 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
+2026-06-21T19:45:44.447+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] s.b.c.CommunityControllerIntegrationTest : No active profile set, falling back to 1 default profile: "default"
+2026-06-21T19:45:46.493+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-06-21T19:45:46.493+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-06-21T19:45:46.497+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-06-21T19:45:46.505+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 12 ms
+2026-06-21T19:45:46.550+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] s.b.c.CommunityControllerIntegrationTest : Started CommunityControllerIntegrationTest in 2.249 seconds (process running for 16.342)
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.701 s -- in com.soulmate.backend.controller.CommunityControllerIntegrationTest
 [INFO] Running com.soulmate.backend.controller.DiaryControllerTest
-2026-06-21T19:37:58.080+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.DiaryControllerTest]: DiaryControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-06-21T19:37:58.100+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.DiaryControllerTest
+2026-06-21T19:45:46.995+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.DiaryControllerTest]: DiaryControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-06-21T19:45:47.004+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.DiaryControllerTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -118,17 +118,17 @@ Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot lo
 
  :: Spring Boot ::                (v3.5.0)
 
-2026-06-21T19:37:58.204+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : Starting DiaryControllerTest using Java 17.0.12 with PID 28552 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
-2026-06-21T19:37:58.209+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : No active profile set, falling back to 1 default profile: "default"
-2026-06-21T19:37:59.513+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-06-21T19:37:59.513+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-06-21T19:37:59.518+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
-2026-06-21T19:37:59.531+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 17 ms
-2026-06-21T19:37:59.719+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : Started DiaryControllerTest in 1.609 seconds (process running for 19.101)
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.169 s -- in com.soulmate.backend.controller.DiaryControllerTest
+2026-06-21T19:45:47.079+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : Starting DiaryControllerTest using Java 17.0.12 with PID 39456 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
+2026-06-21T19:45:47.079+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-21T19:45:49.022+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-06-21T19:45:49.023+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-06-21T19:45:49.028+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-06-21T19:45:49.035+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 12 ms
+2026-06-21T19:45:49.097+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.controller.DiaryControllerTest     : Started DiaryControllerTest in 2.081 seconds (process running for 18.889)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.560 s -- in com.soulmate.backend.controller.DiaryControllerTest
 [INFO] Running com.soulmate.backend.controller.PrivacyControllerIntegrationTest
-2026-06-21T19:38:00.248+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.PrivacyControllerIntegrationTest]: PrivacyControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-06-21T19:38:00.255+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.PrivacyControllerIntegrationTest
+2026-06-21T19:45:49.556+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.PrivacyControllerIntegrationTest]: PrivacyControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-06-21T19:45:49.570+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.PrivacyControllerIntegrationTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -139,17 +139,17 @@ Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot lo
 
  :: Spring Boot ::                (v3.5.0)
 
-2026-06-21T19:38:00.399+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.PrivacyControllerIntegrationTest : Starting PrivacyControllerIntegrationTest using Java 17.0.12 with PID 28552 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
-2026-06-21T19:38:00.399+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.PrivacyControllerIntegrationTest : No active profile set, falling back to 1 default profile: "default"
-2026-06-21T19:38:01.748+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-06-21T19:38:01.748+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-06-21T19:38:01.751+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
-2026-06-21T19:38:01.757+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 9 ms
-2026-06-21T19:38:01.788+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.PrivacyControllerIntegrationTest : Started PrivacyControllerIntegrationTest in 1.514 seconds (process running for 21.17)
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.670 s -- in com.soulmate.backend.controller.PrivacyControllerIntegrationTest
+2026-06-21T19:45:49.658+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.PrivacyControllerIntegrationTest : Starting PrivacyControllerIntegrationTest using Java 17.0.12 with PID 39456 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
+2026-06-21T19:45:49.659+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.PrivacyControllerIntegrationTest : No active profile set, falling back to 1 default profile: "default"
+2026-06-21T19:45:51.363+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-06-21T19:45:51.363+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-06-21T19:45:51.369+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-06-21T19:45:51.379+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 15 ms
+2026-06-21T19:45:51.446+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.PrivacyControllerIntegrationTest : Started PrivacyControllerIntegrationTest in 1.857 seconds (process running for 21.238)
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.028 s -- in com.soulmate.backend.controller.PrivacyControllerIntegrationTest
 [INFO] Running com.soulmate.backend.controller.UserControllerIntegrationTest
-2026-06-21T19:38:01.930+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.UserControllerIntegrationTest]: UserControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-06-21T19:38:01.944+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.UserControllerIntegrationTest
+2026-06-21T19:45:51.593+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.soulmate.backend.controller.UserControllerIntegrationTest]: UserControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-06-21T19:45:51.603+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.soulmate.backend.SoulMateBackendApplication for test class com.soulmate.backend.controller.UserControllerIntegrationTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -160,30 +160,38 @@ Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot lo
 
  :: Spring Boot ::                (v3.5.0)
 
-2026-06-21T19:38:02.010+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.UserControllerIntegrationTest    : Starting UserControllerIntegrationTest using Java 17.0.12 with PID 28552 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
-2026-06-21T19:38:02.010+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.UserControllerIntegrationTest    : No active profile set, falling back to 1 default profile: "default"
-2026-06-21T19:38:03.374+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-06-21T19:38:03.374+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-06-21T19:38:03.377+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
-2026-06-21T19:38:03.381+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 7 ms
-2026-06-21T19:38:03.410+07:00  INFO 28552 --- [soulmate-backend-spring] [           main] c.s.b.c.UserControllerIntegrationTest    : Started UserControllerIntegrationTest in 1.455 seconds (process running for 22.792)
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.729 s -- in com.soulmate.backend.controller.UserControllerIntegrationTest
+2026-06-21T19:45:51.657+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.UserControllerIntegrationTest    : Starting UserControllerIntegrationTest using Java 17.0.12 with PID 39456 (started by FPT SHOP in D:\App-Mobilee-SE114\backend-spring)
+2026-06-21T19:45:51.658+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.UserControllerIntegrationTest    : No active profile set, falling back to 1 default profile: "default"
+2026-06-21T19:45:52.758+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-06-21T19:45:52.758+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-06-21T19:45:52.761+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-06-21T19:45:52.769+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 11 ms
+2026-06-21T19:45:52.801+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.b.c.UserControllerIntegrationTest    : Started UserControllerIntegrationTest in 1.186 seconds (process running for 22.593)
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.359 s -- in com.soulmate.backend.controller.UserControllerIntegrationTest
+[INFO] Running com.soulmate.backend.service.ChatServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.342 s -- in com.soulmate.backend.service.ChatServiceTest
 [INFO] Running com.soulmate.backend.service.DiaryServiceTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.997 s -- in com.soulmate.backend.service.DiaryServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.138 s -- in com.soulmate.backend.service.DiaryServiceTest
 [INFO] Running com.soulmate.backend.service.payment.PaymentCodeUtilsTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.soulmate.backend.service.payment.PaymentCodeUtilsTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.soulmate.backend.service.payment.PaymentCodeUtilsTest
 [INFO] Running com.soulmate.backend.service.payment.PremiumTimeCalculatorTest
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.soulmate.backend.service.payment.PremiumTimeCalculatorTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.soulmate.backend.service.payment.PremiumTimeCalculatorTest
 [INFO] Running com.soulmate.backend.service.payment.SepayWebhookVerifierTest
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.soulmate.backend.service.payment.SepayWebhookVerifierTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in com.soulmate.backend.service.payment.SepayWebhookVerifierTest
+[INFO] Running com.soulmate.backend.service.PrivacyServiceTest
+2026-06-21T19:45:54.732+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.backend.service.PrivacyService       : Successfully deleted user account: uid-123
+2026-06-21T19:45:54.751+07:00  INFO 39456 --- [soulmate-backend-spring] [           main] c.s.backend.service.PrivacyService       : Generated password reset link for user@example.com: https://reset-link
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.204 s -- in com.soulmate.backend.service.PrivacyServiceTest
+[INFO] Running com.soulmate.backend.service.UserServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.049 s -- in com.soulmate.backend.service.UserServiceTest
 [INFO] 
 [INFO] Results:
 [INFO] 
-[INFO] Tests run: 43, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  41.992 s
-[INFO] Finished at: 2026-06-21T19:38:04+07:00
+[INFO] Total time:  41.641 s
+[INFO] Finished at: 2026-06-21T19:45:54+07:00
 [INFO] ------------------------------------------------------------------------
