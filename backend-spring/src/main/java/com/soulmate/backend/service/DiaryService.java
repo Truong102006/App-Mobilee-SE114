@@ -92,14 +92,15 @@ public class DiaryService {
     }
 
     public ListDiariesResponse listMyDiaries(String uid) {
+        // Avoid requiring a composite index on (user_id, timestamp) for new Firebase projects.
         Query query = firestore.collection("diaries")
-            .whereEqualTo("user_id", uid)
-            .orderBy("timestamp", Query.Direction.DESCENDING);
+            .whereEqualTo("user_id", uid);
 
         try {
             QuerySnapshot snapshot = query.get().get();
             List<DiaryItemResponse> diaries = snapshot.getDocuments().stream()
                 .map(this::toDiaryItem)
+                .sorted((left, right) -> compareDiaryDesc(left, right))
                 .toList();
             return new ListDiariesResponse(diaries);
         } catch (ExecutionException | InterruptedException e) {
@@ -202,6 +203,12 @@ public class DiaryService {
             return number.longValue();
         }
         return null;
+    }
+
+    private int compareDiaryDesc(DiaryItemResponse left, DiaryItemResponse right) {
+        long leftSortValue = left.createdAt() != null ? left.createdAt() : (left.updatedAt() != null ? left.updatedAt() : 0L);
+        long rightSortValue = right.createdAt() != null ? right.createdAt() : (right.updatedAt() != null ? right.updatedAt() : 0L);
+        return Long.compare(rightSortValue, leftSortValue);
     }
 
     private String trimToNull(String value) {
