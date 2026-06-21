@@ -35,8 +35,10 @@ Client flow:
    - `backend-spring/.env.example`
 2. Keep `GOOGLE_APPLICATION_CREDENTIALS` as a repo-relative path, for example:
    - `secrets/service-account.json`
-3. `backend-spring/.env` is auto-imported on startup, so you do not need to export those values into the shell for local runs.
-4. Ensure App Check project number is configured:
+3. Ensure `FIREBASE_PROJECT_ID` and `FIREBASE_STORAGE_BUCKET` match `app/google-services.json`.
+4. Ensure `backend-spring/secrets/service-account.json` belongs to the same Firebase project as `app/google-services.json`.
+5. `backend-spring/.env` is auto-imported on startup, so you do not need to export those values into the shell for local runs.
+6. Ensure App Check project number is configured if you enable App Check:
    - `BACKEND_SECURITY_FIREBASE_PROJECT_NUMBER`
 
 ## Run

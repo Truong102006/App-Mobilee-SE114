@@ -43,10 +43,11 @@ Keep Firebase as data store, but prevent APK reverse-engineering from exposing s
 
 1. Copy values from `backend-spring/.env.example` into `backend-spring/.env`.
 2. Keep `GOOGLE_APPLICATION_CREDENTIALS=secrets/service-account.json` unless you intentionally store the file elsewhere.
-3. Start backend:
+3. Keep `backend-spring/.env`, `backend-spring/secrets/service-account.json`, and `app/google-services.json` on the same Firebase project.
+4. Start backend:
    - from repo root: `powershell -ExecutionPolicy Bypass -File .\scripts\run-backend.ps1`
    - or inside `backend-spring/`: `.\mvnw.cmd spring-boot:run`
-4. Build:
+5. Build:
    - `cd .\backend-spring`
    - `.\mvnw.cmd clean package`
 
