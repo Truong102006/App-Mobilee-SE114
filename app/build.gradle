@@ -17,7 +17,7 @@ def normalizeBaseUrl = { value ->
 def backendBaseUrlOverride = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL") ?: System.getenv("BACKEND_BASE_URL") ?: "")
 def backendDeviceBaseUrl = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL_DEVICE") ?: System.getenv("BACKEND_BASE_URL_DEVICE") ?: "http://localhost:8080/")
 def backendEmulatorBaseUrl = normalizeBaseUrl(project.findProperty("BACKEND_BASE_URL_EMULATOR") ?: System.getenv("BACKEND_BASE_URL_EMULATOR") ?: "http://10.0.2.2:8080/")
-def oneSignalAppId = (project.findProperty("ONESIGNAL_APP_ID") ?: System.getenv("ONESIGNAL_APP_ID") ?: "").toString().trim()
+def oneSignalAppId = (project.findProperty("ONESIGNAL_APP_ID") ?: System.getenv("ONESIGNAL_APP_ID") ?: "2d82258d-4926-46b2-a889-fbb95cba0312").toString().trim()
 
 android {
     namespace 'com.soulmate.app'

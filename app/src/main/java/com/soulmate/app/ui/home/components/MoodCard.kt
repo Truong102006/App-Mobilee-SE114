@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -163,8 +164,20 @@ fun MoodCard(
                 updateNotes(recordingNotes.filter { it.id != note.id })
             },
             onSave = { note ->
-                historyViewModel?.addNote(note)
-                updateNotes(recordingNotes.filter { it.id != note.id })
+                scope.launch {
+                    val result = historyViewModel?.saveQuickNote(note)
+                        ?: Result.failure(IllegalStateException("HistoryViewModel is not available"))
+
+                    result.onSuccess {
+                        updateNotes(recordingNotes.filter { it.id != note.id })
+                    }.onFailure { error ->
+                        Toast.makeText(
+                            context,
+                            error.message ?: "Khong the luu nhat ki luc nay",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             },
             onNavigateToDiary = onNavigateToDiary,
             history = recordingNotes
@@ -187,6 +200,7 @@ fun RecordingOverlay(
     
     // States for animations and dialogs
     var showSaveSuccess by remember { mutableStateOf(false) }
+    var noteToSave by remember { mutableStateOf<RecordingNote?>(null) }
     var noteToDelete by remember { mutableStateOf<RecordingNote?>(null) }
 
     val speechRecognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
@@ -262,7 +276,8 @@ fun RecordingOverlay(
                             SwipeableDiaryItem(
                                 item = item,
                                 onDelete = { noteToDelete = item },
-                                onSave = { 
+                                onSave = {
+                                    noteToSave = item
                                     showSaveSuccess = true
                                 },
                                 onNavigateToDiary = { onNavigateToDiary(item.text) }
@@ -336,9 +351,8 @@ fun RecordingOverlay(
                 SaveSuccessNotification(
                     onAnimationFinish = {
                         showSaveSuccess = false
-                        if (history.isNotEmpty()) {
-                            onSave(history[0]) 
-                        }
+                        noteToSave?.let(onSave)
+                        noteToSave = null
                     }
                 )
             }

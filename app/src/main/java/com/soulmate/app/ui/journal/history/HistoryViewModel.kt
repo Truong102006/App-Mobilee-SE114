@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.soulmate.app.domain.model.Diary
 import com.soulmate.app.domain.repository.IDiaryRepository
 import com.soulmate.app.ui.home.components.RecordingNote
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -72,9 +73,33 @@ class HistoryViewModel @Inject constructor(
         }
     }
 
-    fun addNote(note: RecordingNote) {
-        if (!_historyNotes.any { it.text == note.text && it.dateTime == note.dateTime }) {
-            _historyNotes.add(0, note)
+    suspend fun saveQuickNote(
+        note: RecordingNote,
+        currentUid: String? = FirebaseAuth.getInstance().currentUser?.uid,
+        fallbackTimeMillis: Long = System.currentTimeMillis()
+    ): Result<Unit> {
+        val userId = currentUid?.trim().orEmpty()
+        if (userId.isBlank()) {
+            val error = IllegalStateException("No user logged in")
+            Log.w("HistoryViewModel", error.message ?: "No user logged in")
+            return Result.failure(error)
+        }
+
+        val normalizedText = note.text.trim()
+        if (normalizedText.isBlank()) {
+            val error = IllegalArgumentException("Nội dung nhật kí đang trống")
+            Log.w("HistoryViewModel", error.message ?: "Diary content is empty")
+            return Result.failure(error)
+        }
+
+        return diaryRepository.saveDiary(
+            recordingNoteToDiary(
+                note = note.copy(text = normalizedText),
+                userId = userId,
+                fallbackTimeMillis = fallbackTimeMillis
+            )
+        ).onFailure { error ->
+            Log.e("HistoryViewModel", "Quick save failed", error)
         }
     }
 
@@ -109,4 +134,47 @@ class HistoryViewModel @Inject constructor(
     fun getNoteById(diaryId: String): RecordingNote? {
         return _historyNotes.find { it.diaryId == diaryId }
     }
+}
+
+internal fun recordingNoteToDiary(
+    note: RecordingNote,
+    userId: String,
+    fallbackTimeMillis: Long = System.currentTimeMillis(),
+    locale: Locale = Locale.getDefault()
+): Diary {
+    val createdAt = parseRecordingNoteDateTime(note.dateTime, locale) ?: fallbackTimeMillis
+    val updatedAt = maxOf(createdAt, fallbackTimeMillis)
+    val normalizedText = note.text.trim()
+    val derivedTitle = normalizedText
+        .lineSequence()
+        .map(String::trim)
+        .firstOrNull { it.isNotEmpty() }
+        ?.take(80)
+        .orEmpty()
+
+    return Diary(
+        diaryId = note.diaryId,
+        userId = userId,
+        title = derivedTitle,
+        content = normalizedText,
+        imageUrls = note.imageUrls,
+        moodTag = note.moodTag,
+        createdAt = createdAt,
+        updatedAt = updatedAt
+    )
+}
+
+internal fun parseRecordingNoteDateTime(
+    value: String,
+    locale: Locale = Locale.getDefault()
+): Long? {
+    if (value.isBlank()) {
+        return null
+    }
+
+    return runCatching {
+        SimpleDateFormat("dd/MM/yyyy HH:mm", locale).apply {
+            isLenient = false
+        }.parse(value.trim())?.time
+    }.getOrNull()
 }
