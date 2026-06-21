@@ -15,11 +15,11 @@ Du an SoulMate da dat duoc buoc tien lon va hoan thien dang ke ca ve phan Androi
 - **Admin Dashboard & Moderation Flow**: Giao dien dashboard cap quyen admin, an bai viet vi pham, block social interaction doi voi user bi ban.
 - **Realtime (OneSignal & Online Presence)**: Nhan thong bao day tren thiet bi cho cuoc tro chuyen, tin nhan va hien thi dong thoi trang thai online/offline trong chat va community.
 - **Nang cap hinh anh**: Xem anh thu phong toan man hinh (zoom viewer) va luu/tai anh tu nhat ky/community ve album thiet bi.
-- **Co ke hoach chi tiet cho cac tinh nang moi (rw.md)**: Ke hoach trien khai phan con thieu ve chat (reactions, reply, edit tin nhan), user info page, privacy (doi pass, xoa account).
+- **Hoan thanh toan bo cac tinh nang backend tu rw.md**: Trien khai thanh cong tin nhan reactions, reply context, sua tin nhan, endpoints xem profile & links, user blocking, password reset request link, xoa han tai khoan va duoc unit/integration test day du.
 
 Uoc luong tien do hien tai:
-- Muc hoan thien theo huong demo/bao cao mon hoc: khoang 90-95%.
-- Muc san sang de chay nhu san pham hoan chinh: khoang 75-85%.
+- Muc hoan thien theo huong demo/bao cao mon hoc: khoang 93-97%.
+- Muc san sang de chay nhu san pham hoan chinh: khoang 85-90%.
 
 ## 2. Tien do theo hang muc
 
@@ -32,11 +32,11 @@ Uoc luong tien do hien tai:
 | Mood statistics | 90% | Hoan thien UseCase thong ke mood tag, noi vao UI bieu do phan tich trong can doi du lieu. |
 | History diary | 90% | Doc ghi dong bo tu Firestore, sua triet de loi cache phan du lieu lich su note cuc bo. |
 | Voice/recording | 75% | Co speech-to-text, pipeline audio nhat ky dang trong giai doan tinh chinh. |
-| Setting & Profile | 85% | Giao dien profile, doi mat khau quen, thay doi ngon ngu, navigation sang Admin. |
+| Setting & Profile | 95% | Giao dien profile, block list, doi mat khau, thay doi ngon ngu, cap nhat social links va delete account. |
 | Pet UI & Backend | 95% | Hoan tat UI Pet Screen, Animation level up, phep tinh kinh nghiem va repository backend dong bo. |
 | Admin & Moderation | 95% | AdminDashboard UI, logic an bai viet phan anh, khoa user khoi social runtime. |
 | SePay Integration | 90% | He thong nang cap tai khoan vip tu dong qua webhook SePay backend. |
-| Kiem thu / build / release readiness | 85% | Gradle build on dinh, day du file setup-dev, viet cac manual unit test & web integration test. |
+| Kiem thu / build / release readiness | 95% | Gradle build on dinh, viet day du bo test auto integration mock cho tat ca controller va endpoint cua he thong. |
 
 ## 3. Nhung phan da lam duoc
 
@@ -88,6 +88,7 @@ Uoc luong tien do hien tai:
 - **Buoc 14. Push notification & user presence (2026-06-20)**: Tich hop sdk OneSignal voi backend trigger notification event; real-time checking presence trigger de cap nhat view online.
 - **Buoc 15. Hinh anh zoom/download & code audit (2026-06-20)**: Fix logic dong bo community, code profile editor cap nhat layout va full images view.
 - **Buoc 16. Ke hoach bo sung tinh nang backend chat/user tu rw.md (2026-06-21)**: Len ke hoach chi tiet cho 5 nhom tinh nang (emoji chat, block user, reset pass, xoa nick) va lap sanity checking integration tests.
+- **Buoc 17. Trien khai toan dien backend theo rw.md & test coverage (2026-06-21)**: Viet logic cho message reactions, replies, edits, block list, user profile retrieval/update, password reset, account deletion batch. Bo dung va chay thanh cong toan bo 43 integration tests.
 
 ## 5. Cac blocker va rui ro chinh
 
@@ -96,6 +97,5 @@ Uoc luong tien do hien tai:
 
 ## 6. De xuat uu tien tiep theo
 
-1. **Trien khai cac APIs va DTO cho Chat chat/user**: Them truong `replyTo`, `reactions` va build api `editMessage` theo file `implementation-plan`.
-2. **Bo sung API Block, Profile va Social Links** trong `UserController` moi.
-3. **Thuc hien chay integration mock test suites** bang `mvnw test` de dat chat luong verify 100% cho phan logic moi.
+1. **On dinh giao dien front-end (Android)** ket noi voi cac endpoint backend va social blocking vua hoan thien.
+2. **Kiem thu E2E** toan bo luong hoat dong tren thiet bi di dong qua emulator/giao dien di dong.
