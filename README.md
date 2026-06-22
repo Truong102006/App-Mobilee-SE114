@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore%20%7C%20Storage-FFCA28?logo=firebase&logoColor=black)
 
-SoulMate là đồ án Android về nhật ký cảm xúc, phân tích mood bằng AI, cộng đồng chia sẻ, chat cá nhân, thú cưng đồng hành và gói premium. Runtime chính của dự án hiện đi theo mô hình `Android app + Spring Boot backend + Firebase`.
+SoulMate là đồ án Android về nhật ký cảm xúc, phân tích mood bằng AI, cộng đồng chia sẻ và chat cá nhân. Runtime chính của dự án hiện đi theo mô hình `Android app + Spring Boot backend + Firebase`.
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ SoulMate là đồ án Android về nhật ký cảm xúc, phân tích mood bằ
 | Đường dẫn | Vai trò |
 | --- | --- |
 | `app/` | Ứng dụng Android viết bằng Kotlin + Jetpack Compose |
-| `backend-spring/` | Backend Spring Boot xử lý AI mood, Cloudinary, diary, chat, payment |
+| `backend-spring/` | Backend Spring Boot xử lý AI mood, Cloudinary, diary và chat |
 | `functions/` | Firebase Functions cũ, hiện không phải runtime chính |
 
 ## Stack chính
@@ -32,7 +32,7 @@ SoulMate là đồ án Android về nhật ký cảm xúc, phân tích mood bằ
 | Android | Kotlin `1.9.24`, Jetpack Compose, Hilt, Retrofit, Room, DataStore |
 | Backend | Spring Boot `3.5.0`, Maven Wrapper, Firebase Admin SDK |
 | Dữ liệu | Firebase Auth, Firestore, Firebase Storage |
-| Tích hợp | Gemini, Cloudinary, OneSignal, SePay |
+| Tích hợp | Gemini, Cloudinary, OneSignal |
 | Build | Android Gradle Plugin `8.2.2`, Java `17` |
 
 ## Yêu cầu môi trường
@@ -47,7 +47,7 @@ SoulMate là đồ án Android về nhật ký cảm xúc, phân tích mood bằ
   - `emulator`
   - `system-images;android-34;google_apis;x86_64` nếu chạy emulator
 - Một Android Emulator hoặc điện thoại Android thật đã bật `USB debugging`.
-- Internet để truy cập Firebase, Cloudinary, Gemini, OneSignal và SePay khi test đầy đủ tính năng.
+- Internet để truy cập Firebase, Cloudinary, Gemini và OneSignal khi test các tính năng chính.
 
 Ghi chú:
 
@@ -93,15 +93,13 @@ BACKEND_SECURITY_REQUIRE_APP_CHECK=false
 
 `BACKEND_SECURITY_REQUIRE_APP_CHECK=false` được khuyến nghị cho local vì app hiện chưa gửi `X-Firebase-AppCheck` ở mọi luồng.
 
-Các biến cần thêm nếu muốn test đầy đủ tính năng:
+Các biến cần thêm nếu muốn test các tính năng AI, media và thông báo:
 
 - `GEMINI_API_KEY`
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 - `ONESIGNAL_ENABLED`, `ONESIGNAL_APP_ID`, `ONESIGNAL_API_KEY`
-- `SEPAY_*`
-- `PREMIUM_*`
 
 ### 2. Đặt Firebase service account
 
