@@ -1,0 +1,11 @@
+.git
+.idea
+.vscode
+target
+secrets
+.env
+.env.*
+!.env.example
+*.log
+*.txt
+scripts
