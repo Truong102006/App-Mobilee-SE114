@@ -59,7 +59,7 @@ class AppNotificationManagerTest {
         every { Log.d(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
-        every { Log.w(any(), any()) } returns 0
+        every { Log.w(any<String>(), any<String>()) } returns 0
 
         mockkStatic(OneSignal::class)
         mockkStatic(FirebaseAuth::class)
@@ -130,7 +130,6 @@ class AppNotificationManagerTest {
             anonymousName = "Name",
             avatarUrl = "url",
             notificationEnabled = true,
-            isPremium = false,
             premiumUntil = null,
             createdAt = 0L,
             updatedAt = 0L

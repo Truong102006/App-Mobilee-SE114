@@ -7,8 +7,10 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GetTokenResult
 import com.soulmate.app.data.remote.api.BackendApiService
 import com.soulmate.app.data.remote.dto.ChatMessageItemDto
-import com.soulmate.app.data.remote.dto.ConversationResponseDto
-import com.soulmate.app.data.remote.dto.InboxResponseDto
+import com.soulmate.app.data.remote.dto.ListConversationResponseDto
+import com.soulmate.app.data.remote.dto.ListInboxResponseDto
+import com.soulmate.app.data.remote.dto.DeleteConversationResponseDto
+import com.soulmate.app.data.remote.dto.SendChatMessageResponseDto
 import com.soulmate.app.data.remote.dto.SendChatMessageRequestDto
 import com.soulmate.app.domain.model.ChatMessage
 import io.mockk.coEvery
@@ -44,7 +46,7 @@ class ChatRepositoryImplTest {
         every { Log.d(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
-        every { Log.w(any(), any()) } returns 0
+        every { Log.w(any<String>(), any<String>()) } returns 0
 
         backendApiService = mockk()
         auth = mockk()
@@ -94,7 +96,7 @@ class ChatRepositoryImplTest {
                     imageUrl = null
                 )
             )
-        } returns Unit
+        } returns SendChatMessageResponseDto(messageId = "msg-123", conversationId = "conv-456")
 
         // Act
         val result = chatRepository.sendMessage(message)
@@ -170,7 +172,7 @@ class ChatRepositoryImplTest {
                 otherUserId = "their-user-id",
                 limit = 200
             )
-        } returns ConversationResponseDto(messages = mockDtoList)
+        } returns ListConversationResponseDto(conversationId = "conv-456", messages = mockDtoList)
 
         // Act
         val flow = chatRepository.getMessages("my-user-id", "their-user-id")
@@ -221,7 +223,7 @@ class ChatRepositoryImplTest {
                 authorization = "Bearer fake-firebase-token",
                 limit = 100
             )
-        } returns InboxResponseDto(messages = mockDtoList)
+        } returns ListInboxResponseDto(messages = mockDtoList)
 
         // Act
         val flow = chatRepository.getLastMessages("my-user-id")
@@ -240,7 +242,7 @@ class ChatRepositoryImplTest {
                 authorization = "Bearer fake-firebase-token",
                 otherUserId = "their-user-id"
             )
-        } returns Unit
+        } returns DeleteConversationResponseDto(conversationId = "conv-456", deletedCount = 1)
 
         // Act
         val result = chatRepository.deleteConversation("my-user-id", "their-user-id")
@@ -270,7 +272,7 @@ class ChatRepositoryImplTest {
                 authorization = "Bearer fake-firebase-token",
                 request = any()
             )
-        } throws httpException andThen Unit // First call throws 401, second succeeds
+        } throws httpException andThen SendChatMessageResponseDto(messageId = "msg-123") // First call throws 401, second succeeds
 
         val mockRefreshedTokenTask = mockk<Task<GetTokenResult>>()
         val mockRefreshedTokenResult = mockk<GetTokenResult>()
@@ -288,7 +290,7 @@ class ChatRepositoryImplTest {
                 authorization = "Bearer refreshed-firebase-token",
                 request = any()
             )
-        } returns Unit
+        } returns SendChatMessageResponseDto(messageId = "msg-123")
 
         // Act
         val result = chatRepository.sendMessage(message)
